@@ -58,3 +58,7 @@ dist/
 # Local development
 *.sqlite3
 *.sqlite3-journal
+
+#redis
+dump.rdb
+*.rdb
