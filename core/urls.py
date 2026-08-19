@@ -49,12 +49,20 @@ urlpatterns = [
         "api/v1/accounts/", include("accounts.api.v1.urls", namespace="accounts_api_v1")
     ),
 # ---------------------------------------------------------
-#Locations
+#addresses
 # ---------------------------------------------------------
 
     path(
         "api/v1/locations/",include("addresses.api.v1.urls", namespace="addresses_api_v1"),
     ),
+
+# ---------------------------------------------------------
+#contact
+# ---------------------------------------------------------
+    path(
+        "api/v1/contact/",include("contact.api.v1.urls", namespace="contact_api_v1"),
+    ),
+
 # ---------------------------------------------------------
 #swagger
 # ---------------------------------------------------------
