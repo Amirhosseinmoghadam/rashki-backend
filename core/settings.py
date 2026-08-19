@@ -16,6 +16,7 @@ from datetime import timedelta
 
 import environ
 
+import addresses
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -56,6 +57,8 @@ INSTALLED_APPS = [
     # ---- Internal apps ----
     "base",
     "accounts",
+    "addresses",
+    "contact",
 
 ]
 

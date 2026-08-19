@@ -53,7 +53,7 @@ urlpatterns = [
 # ---------------------------------------------------------
 
     path(
-        "api/v1/locations/",include("base.api.v1.locations.urls", namespace="locations_api_v1"),
+        "api/v1/locations/",include("addresses.api.v1.urls", namespace="addresses_api_v1"),
     ),
 # ---------------------------------------------------------
 #swagger

@@ -2,7 +2,7 @@ import json
 import os
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
-from base.models import Province, City
+from addresses.models import Province, City
 
 # Static filename expected in the same directory as this command
 JSON_FILENAME = "iran_locations.json"
