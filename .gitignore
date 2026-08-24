@@ -44,8 +44,8 @@ htmlcov/
 
 # Django migrations
 # اگر migrationها را باید commit کنی، این بخش را فعال نکن
-# **/migrations/*
-# !**/migrations/__init__.py
+**/migrations/*
+!**/migrations/__init__.py
 
 # Build / distribution
 build/

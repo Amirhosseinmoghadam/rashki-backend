@@ -54,11 +54,23 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework_simplejwt.token_blacklist",
     "corsheaders",
+    "django_extensions",
+
     # ---- Internal apps ----
-    "base",
     "accounts",
     "addresses",
+    "articles",
+    "base",
+    "brands",
+    "carts",
+    "categories",
     "contact",
+    "discounts",
+    "inventory",
+    "motorcycles",
+    "orders",
+    "payments",
+    "products",
 
 ]
 

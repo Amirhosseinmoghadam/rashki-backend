@@ -60,29 +60,6 @@ class City(models.Model):
         return f"{self.name} ({self.province.name})"
 
 
-class Location(models.Model):
-    """
-    Model representing a geographical location (Province and City).
-    """
-
-    province = models.ForeignKey(
-        "addresses.Province", on_delete=models.CASCADE, verbose_name="Province"
-    )
-    city = models.ForeignKey(
-        "addresses.City",
-        on_delete=models.CASCADE,
-        null=True,
-        blank=True,
-        verbose_name="City",
-    )
-
-    class Meta:
-        verbose_name = "Location"
-        verbose_name_plural = "Locations"
-
-    def __str__(self):
-        return f"{self.province.name}, {self.city.name if self.city else 'N/A'}"
-
 
 # =========================================================
 # Address
