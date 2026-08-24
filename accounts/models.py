@@ -218,6 +218,3 @@ class OTPCode(models.Model):
             and not self.is_expired
             and self.attempts < self.max_attempts
         )
-
-
-

@@ -1,10 +1,7 @@
-
-
 # Register your models here.
 from django.contrib import admin
 
 from addresses.models import Province, City
-
 
 
 from django.contrib import admin
@@ -34,9 +31,6 @@ class CityAdmin(admin.ModelAdmin):
     search_fields = ("name", "province__name")
     list_filter = ("province",)
     ordering = ("province", "name")
-
-
-
 
 
 # =========================================================
@@ -175,11 +169,7 @@ class AddressAdmin(admin.ModelAdmin):
     fieldsets = (
         (
             "اطلاعات کاربر",
-            {
-                "fields": (
-                    "user",
-                )
-            },
+            {"fields": ("user",)},
         ),
         (
             "اطلاعات گیرنده",
@@ -189,7 +179,6 @@ class AddressAdmin(admin.ModelAdmin):
                     "last_name",
                     "mobile_number",
                     "phone_number",
-
                 )
             },
         ),
@@ -206,11 +195,7 @@ class AddressAdmin(admin.ModelAdmin):
         ),
         (
             "تنظیمات",
-            {
-                "fields": (
-                    "is_default",
-                )
-            },
+            {"fields": ("is_default",)},
         ),
         (
             "اطلاعات سیستم",
@@ -219,9 +204,7 @@ class AddressAdmin(admin.ModelAdmin):
                     "created_at",
                     "updated_at",
                 ),
-                "classes": (
-                    "collapse",
-                ),
+                "classes": ("collapse",),
             },
         ),
     )
@@ -248,10 +231,7 @@ class AddressAdmin(admin.ModelAdmin):
         ordering="first_name",
     )
     def full_name(self, obj):
-        full_name = (
-            f"{obj.first_name or ''} "
-            f"{obj.last_name or ''}"
-        ).strip()
+        full_name = (f"{obj.first_name or ''} " f"{obj.last_name or ''}").strip()
 
         return full_name or "-"
 

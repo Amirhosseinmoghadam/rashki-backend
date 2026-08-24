@@ -18,9 +18,7 @@ class SMSSender:
         )
 
         if not sender:
-            raise SMSValidationError(
-                "MELIPAYAMAK['DEFAULT_FROM'] is not configured."
-            )
+            raise SMSValidationError("MELIPAYAMAK['DEFAULT_FROM'] is not configured.")
 
         return sender
 
@@ -29,9 +27,7 @@ class SMSSender:
         phone = str(phone).strip()
 
         if not phone:
-            raise SMSValidationError(
-                "Recipient phone number is required."
-            )
+            raise SMSValidationError("Recipient phone number is required.")
 
         return phone
 
@@ -65,14 +61,9 @@ class SMSSender:
         to = cls._validate_phone(to)
 
         if not text:
-            raise SMSValidationError(
-                "SMS text is required."
-            )
+            raise SMSValidationError("SMS text is required.")
 
-        from_number = (
-            from_number
-            or cls._get_default_from()
-        )
+        from_number = from_number or cls._get_default_from()
 
         client = MeliPayamakClient()
 
@@ -96,24 +87,14 @@ class SMSSender:
         """
 
         if not to:
-            raise SMSValidationError(
-                "Recipients are required."
-            )
+            raise SMSValidationError("Recipients are required.")
 
-        recipients = [
-            cls._validate_phone(phone)
-            for phone in to
-        ]
+        recipients = [cls._validate_phone(phone) for phone in to]
 
         if not text:
-            raise SMSValidationError(
-                "SMS text is required."
-            )
+            raise SMSValidationError("SMS text is required.")
 
-        from_number = (
-            from_number
-            or cls._get_default_from()
-        )
+        from_number = from_number or cls._get_default_from()
 
         client = MeliPayamakClient()
 
@@ -139,9 +120,7 @@ class SMSSender:
         to = cls._validate_phone(to)
 
         if not body_id:
-            raise SMSValidationError(
-                "body_id is required."
-            )
+            raise SMSValidationError("body_id is required.")
 
         client = MeliPayamakClient()
 
@@ -165,29 +144,17 @@ class SMSSender:
         """
 
         if not to:
-            raise SMSValidationError(
-                "Recipients are required."
-            )
+            raise SMSValidationError("Recipients are required.")
 
         if not text:
-            raise SMSValidationError(
-                "Texts are required."
-            )
+            raise SMSValidationError("Texts are required.")
 
         if len(to) != len(text):
-            raise SMSValidationError(
-                "Recipients and texts must have the same length."
-            )
+            raise SMSValidationError("Recipients and texts must have the same length.")
 
-        recipients = [
-            cls._validate_phone(phone)
-            for phone in to
-        ]
+        recipients = [cls._validate_phone(phone) for phone in to]
 
-        from_number = (
-            from_number
-            or cls._get_default_from()
-        )
+        from_number = from_number or cls._get_default_from()
 
         client = MeliPayamakClient()
 
@@ -215,19 +182,12 @@ class SMSSender:
         to = cls._validate_phone(to)
 
         if not message:
-            raise SMSValidationError(
-                "Message is required."
-            )
+            raise SMSValidationError("Message is required.")
 
         if not date:
-            raise SMSValidationError(
-                "Date is required."
-            )
+            raise SMSValidationError("Date is required.")
 
-        from_number = (
-            from_number
-            or cls._get_default_from()
-        )
+        from_number = from_number or cls._get_default_from()
 
         client = MeliPayamakClient()
 

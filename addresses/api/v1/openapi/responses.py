@@ -15,7 +15,6 @@ AddressListAPIViewSuccess = {
             "province_name": "تهران",
             "city": 1,
             "city_name": "تهران",
-
             "postal_code": "1234567890",
             "postal_address": "تهران، خیابان ولیعصر، پلاک ۱۲۳",
             "is_default": True,
@@ -161,37 +160,27 @@ AddressNotFound = {
 
 
 AddressValidationError = {
-    "postal_code": [
-        "کد پستی باید 10 رقم باشد."
-    ],
+    "postal_code": ["کد پستی باید 10 رقم باشد."],
 }
 
 
 AddressInvalidMobileNumber = {
-    "mobile_number": [
-        "شماره موبایل نامعتبر است."
-    ],
+    "mobile_number": ["شماره موبایل نامعتبر است."],
 }
 
 
 AddressInvalidPhoneNumber = {
-    "phone_number": [
-        "شماره تلفن باید 11 رقم باشد."
-    ],
+    "phone_number": ["شماره تلفن باید 11 رقم باشد."],
 }
 
 
 AddressCityProvinceMismatch = {
-    "city": [
-        "شهر انتخاب‌شده متعلق به استان انتخاب‌شده نیست."
-    ],
+    "city": ["شهر انتخاب‌شده متعلق به استان انتخاب‌شده نیست."],
 }
 
 
 AddressCannotUnsetDefault = {
-    "is_default": [
-        "نمی‌توانید آدرس پیش‌فرض را بدون انتخاب آدرس جدید حذف کنید."
-    ],
+    "is_default": ["نمی‌توانید آدرس پیش‌فرض را بدون انتخاب آدرس جدید حذف کنید."],
 }
 
 

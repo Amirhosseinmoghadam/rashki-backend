@@ -6,9 +6,6 @@ from rest_framework import serializers
 
 from accounts.models import User
 
-
-
-
 # =========================================================
 # Settings
 # =========================================================
@@ -136,5 +133,3 @@ class CompleteProfileSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("نام خانوادگی الزامی است.")
 
         return value
-
-

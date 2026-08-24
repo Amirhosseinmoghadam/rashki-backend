@@ -41,9 +41,7 @@ class MeliPayamakClient:
         MELIPAYAMAK_DEFAULT_FROM
     """
 
-    BASE_URL = (
-        "https://console.melipayamak.com/api"
-    )
+    BASE_URL = "https://console.melipayamak.com/api"
 
     DEFAULT_TIMEOUT = 30
 
@@ -57,11 +55,7 @@ class MeliPayamakClient:
         self.api_token = config["API_TOKEN"]
         self.default_from = config["DEFAULT_FROM"]
 
-        self.timeout = (
-            timeout
-            if timeout is not None
-            else self.DEFAULT_TIMEOUT
-        )
+        self.timeout = timeout if timeout is not None else self.DEFAULT_TIMEOUT
 
         self.session = requests.Session()
 
@@ -86,11 +80,7 @@ class MeliPayamakClient:
 
         path = path.strip("/")
 
-        return (
-            f"{self.BASE_URL}/"
-            f"{path}/"
-            f"{self.api_token}"
-        )
+        return f"{self.BASE_URL}/" f"{path}/" f"{self.api_token}"
 
     def _request(
         self,
@@ -124,9 +114,7 @@ class MeliPayamakClient:
 
         except Timeout as exc:
 
-            raise MeliPayamakTimeoutError(
-                "MeliPayamak request timed out."
-            ) from exc
+            raise MeliPayamakTimeoutError("MeliPayamak request timed out.") from exc
 
         except ConnectionError as exc:
 
@@ -159,9 +147,7 @@ class MeliPayamakClient:
 
         except ValueError as exc:
 
-            raise MeliPayamakAPIError(
-                "MeliPayamak returned invalid JSON."
-            ) from exc
+            raise MeliPayamakAPIError("MeliPayamak returned invalid JSON.") from exc
 
         if not response.ok:
 
@@ -195,10 +181,7 @@ class MeliPayamakClient:
                 if value:
                     return str(value)
 
-        return (
-            "MeliPayamak request failed "
-            f"with HTTP {status_code}."
-        )
+        return "MeliPayamak request failed " f"with HTTP {status_code}."
 
     # =========================================================
     # SEND - OTP
@@ -256,10 +239,7 @@ class MeliPayamakClient:
         }
         """
 
-        sender = (
-            from_number
-            or self.default_from
-        )
+        sender = from_number or self.default_from
 
         return self._request(
             "POST",
@@ -291,10 +271,7 @@ class MeliPayamakClient:
         /api/send/schedule/{API_TOKEN}
         """
 
-        sender = (
-            from_number
-            or self.default_from
-        )
+        sender = from_number or self.default_from
 
         data: dict[str, Any] = {
             "message": message,
@@ -331,10 +308,7 @@ class MeliPayamakClient:
         /api/send/advanced/{API_TOKEN}
         """
 
-        sender = (
-            from_number
-            or self.default_from
-        )
+        sender = from_number or self.default_from
 
         return self._request(
             "POST",
@@ -394,10 +368,7 @@ class MeliPayamakClient:
         /api/send/multiple/{API_TOKEN}
         """
 
-        sender = (
-            from_number
-            or self.default_from
-        )
+        sender = from_number or self.default_from
 
         return self._request(
             "POST",
@@ -516,10 +487,7 @@ class MeliPayamakClient:
         Calculate SMS price.
         """
 
-        sender = (
-            from_number
-            or self.default_from
-        )
+        sender = from_number or self.default_from
 
         return self._request(
             "POST",

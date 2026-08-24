@@ -10,6 +10,7 @@ class ProductAdmin(admin.ModelAdmin):
         "slug",
     )
 
+
 @admin.register(ProductVariant)
 class ProductVariantAdmin(admin.ModelAdmin):
     search_fields = (

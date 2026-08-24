@@ -1,5 +1,7 @@
 from django.db import models
 from django.utils.text import slugify
+
+
 class MotorcycleBrand(models.Model):
     name = models.CharField(
         max_length=150,
@@ -40,8 +42,6 @@ class MotorcycleBrand(models.Model):
 
     def __str__(self):
         return self.name
-
-
 
 
 class MotorcycleModel(models.Model):

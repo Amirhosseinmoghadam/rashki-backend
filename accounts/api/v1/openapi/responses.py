@@ -118,4 +118,3 @@ UserLogoutAPIViewMissingRefreshToken = {
 UserLogoutAPIViewInvalidRefreshToken = {
     "detail": "Refresh token is invalid or already blacklisted.",
 }
-

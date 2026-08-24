@@ -5,10 +5,10 @@ from django.contrib import admin
 
 from .models import MotorcycleBrand, MotorcycleModel
 
-
 # =========================================================
 # Motorcycle Model Inline
 # =========================================================
+
 
 class MotorcycleModelInline(admin.TabularInline):
     model = MotorcycleModel
@@ -30,6 +30,7 @@ class MotorcycleModelInline(admin.TabularInline):
 # Motorcycle Brand Admin
 # =========================================================
 
+
 @admin.register(MotorcycleBrand)
 class MotorcycleBrandAdmin(admin.ModelAdmin):
 
@@ -41,9 +42,7 @@ class MotorcycleBrandAdmin(admin.ModelAdmin):
         "updated_at",
     )
 
-    list_filter = (
-        "is_active",
-    )
+    list_filter = ("is_active",)
 
     search_fields = (
         "name",
@@ -54,29 +53,24 @@ class MotorcycleBrandAdmin(admin.ModelAdmin):
         "slug": ("name",),
     }
 
-    list_editable = (
-        "is_active",
-    )
+    list_editable = ("is_active",)
 
     readonly_fields = (
         "created_at",
         "updated_at",
     )
 
-    ordering = (
-        "name",
-    )
+    ordering = ("name",)
 
     list_per_page = 25
 
-    inlines = (
-        MotorcycleModelInline,
-    )
+    inlines = (MotorcycleModelInline,)
 
 
 # =========================================================
 # Motorcycle Model Admin
 # =========================================================
+
 
 @admin.register(MotorcycleModel)
 class MotorcycleModelAdmin(admin.ModelAdmin):
@@ -104,9 +98,7 @@ class MotorcycleModelAdmin(admin.ModelAdmin):
         "brand__name",
     )
 
-    autocomplete_fields = (
-        "brand",
-    )
+    autocomplete_fields = ("brand",)
 
     prepopulated_fields = {
         "slug": ("name",),
@@ -117,9 +109,7 @@ class MotorcycleModelAdmin(admin.ModelAdmin):
         "updated_at",
     )
 
-    list_editable = (
-        "is_active",
-    )
+    list_editable = ("is_active",)
 
     ordering = (
         "brand__name",
@@ -153,11 +143,7 @@ class MotorcycleModelAdmin(admin.ModelAdmin):
         ),
         (
             "وضعیت",
-            {
-                "fields": (
-                    "is_active",
-                )
-            },
+            {"fields": ("is_active",)},
         ),
         (
             "اطلاعات سیستم",
@@ -166,9 +152,7 @@ class MotorcycleModelAdmin(admin.ModelAdmin):
                     "created_at",
                     "updated_at",
                 ),
-                "classes": (
-                    "collapse",
-                ),
+                "classes": ("collapse",),
             },
         ),
     )

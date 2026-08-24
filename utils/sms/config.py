@@ -11,16 +11,10 @@ class SMSConfig:
         try:
             token = settings.MELIPAYAMAK["API_TOKEN"]
         except (AttributeError, KeyError):
-            raise RuntimeError(
-                "MELIPAYAMAK['API_TOKEN'] "
-                "is not configured."
-            )
+            raise RuntimeError("MELIPAYAMAK['API_TOKEN'] " "is not configured.")
 
         if not token:
-            raise RuntimeError(
-                "MELIPAYAMAK['API_TOKEN'] "
-                "is not configured."
-            )
+            raise RuntimeError("MELIPAYAMAK['API_TOKEN'] " "is not configured.")
 
         return token
 
@@ -29,16 +23,10 @@ class SMSConfig:
         try:
             sender = settings.MELIPAYAMAK["DEFAULT_FROM"]
         except (AttributeError, KeyError):
-            raise RuntimeError(
-                "MELIPAYAMAK['DEFAULT_FROM'] "
-                "is not configured."
-            )
+            raise RuntimeError("MELIPAYAMAK['DEFAULT_FROM'] " "is not configured.")
 
         if not sender:
-            raise RuntimeError(
-                "MELIPAYAMAK['DEFAULT_FROM'] "
-                "is not configured."
-            )
+            raise RuntimeError("MELIPAYAMAK['DEFAULT_FROM'] " "is not configured.")
 
         return str(sender)
 

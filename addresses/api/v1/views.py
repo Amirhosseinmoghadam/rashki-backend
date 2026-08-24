@@ -8,7 +8,6 @@ from addresses.api.v1.serializers import ProvinceSerializer, CitySerializer
 from drf_spectacular.utils import extend_schema
 
 from .serializers import (
-
     AddressCreateSerializer,
     AddressSerializer,
     AddressUpdateSerializer,
@@ -29,6 +28,7 @@ from addresses.api.v1.openapi.schema import (
 from django.db import transaction
 from rest_framework.response import Response
 from rest_framework import status
+
 
 @extend_schema(tags=["Locations"])
 class ProvinceListView(ListAPIView):
@@ -68,8 +68,6 @@ class CityListView(ListAPIView):
         return City.objects.none()
 
 
-
-
 # =========================================================
 # AddressListCreateAPIView
 # =========================================================
@@ -80,8 +78,7 @@ class AddressListCreateAPIView(APIView):
 
     def get_queryset(self, user):
         return (
-            Address.objects
-            .filter(user=user)
+            Address.objects.filter(user=user)
             .select_related(
                 "province",
                 "city",
@@ -94,9 +91,7 @@ class AddressListCreateAPIView(APIView):
 
     @address_list_view_schema
     def get(self, request):
-        addresses = self.get_queryset(
-            request.user
-        )
+        addresses = self.get_queryset(request.user)
 
         serializer = AddressSerializer(
             addresses,
@@ -109,9 +104,7 @@ class AddressListCreateAPIView(APIView):
         return Response(
             {
                 "success": True,
-                "message": (
-                    "لیست آدرس‌ها با موفقیت دریافت شد."
-                ),
+                "message": ("لیست آدرس‌ها با موفقیت دریافت شد."),
                 "data": serializer.data,
             },
             status=status.HTTP_200_OK,
@@ -126,9 +119,7 @@ class AddressListCreateAPIView(APIView):
             },
         )
 
-        serializer.is_valid(
-            raise_exception=True
-        )
+        serializer.is_valid(raise_exception=True)
 
         address = serializer.save()
 
@@ -142,9 +133,7 @@ class AddressListCreateAPIView(APIView):
         return Response(
             {
                 "success": True,
-                "message": (
-                    "آدرس با موفقیت ایجاد شد."
-                ),
+                "message": ("آدرس با موفقیت ایجاد شد."),
                 "data": response_serializer.data,
             },
             status=status.HTTP_201_CREATED,
@@ -161,8 +150,7 @@ class AddressDetailAPIView(APIView):
 
     def get_object(self, request, pk):
         return (
-            Address.objects
-            .filter(
+            Address.objects.filter(
                 pk=pk,
                 user=request.user,
             )
@@ -200,9 +188,7 @@ class AddressDetailAPIView(APIView):
         return Response(
             {
                 "success": True,
-                "message": (
-                    "آدرس با موفقیت دریافت شد."
-                ),
+                "message": ("آدرس با موفقیت دریافت شد."),
                 "data": serializer.data,
             },
             status=status.HTTP_200_OK,
@@ -256,9 +242,7 @@ class AddressDetailAPIView(APIView):
             },
         )
 
-        serializer.is_valid(
-            raise_exception=True
-        )
+        serializer.is_valid(raise_exception=True)
 
         address = serializer.save()
 
@@ -272,9 +256,7 @@ class AddressDetailAPIView(APIView):
         return Response(
             {
                 "success": True,
-                "message": (
-                    "آدرس با موفقیت بروزرسانی شد."
-                ),
+                "message": ("آدرس با موفقیت بروزرسانی شد."),
                 "data": response_serializer.data,
             },
             status=status.HTTP_200_OK,
@@ -306,13 +288,8 @@ class AddressDetailAPIView(APIView):
         # یک آدرس دیگر را پیش‌فرض کن.
         if was_default:
             new_default = (
-                Address.objects
-                .filter(
-                    user=request.user
-                )
-                .order_by(
-                    "-created_at"
-                )
+                Address.objects.filter(user=request.user)
+                .order_by("-created_at")
                 .first()
             )
 
@@ -322,9 +299,7 @@ class AddressDetailAPIView(APIView):
         return Response(
             {
                 "success": True,
-                "message": (
-                    "آدرس با موفقیت حذف شد."
-                ),
+                "message": ("آدرس با موفقیت حذف شد."),
                 "data": None,
             },
             status=status.HTTP_200_OK,
@@ -343,8 +318,7 @@ class AddressSetDefaultAPIView(APIView):
     @transaction.atomic
     def post(self, request, pk):
         address = (
-            Address.objects
-            .select_for_update()
+            Address.objects.select_for_update()
             .filter(
                 pk=pk,
                 user=request.user,
@@ -364,17 +338,12 @@ class AddressSetDefaultAPIView(APIView):
 
         # همه آدرس‌های قبلی غیرپیش‌فرض شوند
         (
-            Address.objects
-            .filter(
+            Address.objects.filter(
                 user=request.user,
                 is_default=True,
             )
-            .exclude(
-                pk=address.pk
-            )
-            .update(
-                is_default=False
-            )
+            .exclude(pk=address.pk)
+            .update(is_default=False)
         )
 
         address.is_default = True
@@ -396,11 +365,8 @@ class AddressSetDefaultAPIView(APIView):
         return Response(
             {
                 "success": True,
-                "message": (
-                    "آدرس پیش‌فرض با موفقیت تغییر کرد."
-                ),
+                "message": ("آدرس پیش‌فرض با موفقیت تغییر کرد."),
                 "data": serializer.data,
             },
             status=status.HTTP_200_OK,
         )
-

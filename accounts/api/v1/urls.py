@@ -9,7 +9,6 @@ from .views import (
     OTPVerifyView,
     CompleteProfileView,
     UserLogoutAPIView,
-
 )
 
 from accounts.api.v1.openapi.schema import DecoratedTokenRefreshView
@@ -47,9 +46,7 @@ urlpatterns = [
         TokenRefreshView.as_view(),
         name="token-refresh",
     ),
-    path(
-        "token/refresh/", DecoratedTokenRefreshView.as_view(), name="token_refresh"
-    ),
+    path("token/refresh/", DecoratedTokenRefreshView.as_view(), name="token_refresh"),
     # =====================================================
     # Logout
     # =====================================================
@@ -61,8 +58,4 @@ urlpatterns = [
     # =====================================================
     # Address
     # =====================================================
-
-
-
-
 ]

@@ -20,6 +20,7 @@ class Cart(models.Model):
     def __str__(self):
         return f"Cart - {self.user}"
 
+
 class CartItem(models.Model):
     cart = models.ForeignKey(
         Cart,

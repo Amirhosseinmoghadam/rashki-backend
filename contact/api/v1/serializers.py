@@ -34,9 +34,7 @@ def normalize_text(value: str) -> str:
     return value
 
 
-class ContactRequestCreateSerializer(
-    serializers.ModelSerializer
-):
+class ContactRequestCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = ContactRequest
 
@@ -67,14 +65,10 @@ class ContactRequestCreateSerializer(
         value = normalize_text(value)
 
         if not value:
-            raise serializers.ValidationError(
-                "وارد کردن نام الزامی است."
-            )
+            raise serializers.ValidationError("وارد کردن نام الزامی است.")
 
         if len(value) < 2:
-            raise serializers.ValidationError(
-                "نام وارد شده معتبر نیست."
-            )
+            raise serializers.ValidationError("نام وارد شده معتبر نیست.")
 
         return value
 
@@ -82,14 +76,10 @@ class ContactRequestCreateSerializer(
         value = normalize_text(value)
 
         if not value:
-            raise serializers.ValidationError(
-                "وارد کردن نام خانوادگی الزامی است."
-            )
+            raise serializers.ValidationError("وارد کردن نام خانوادگی الزامی است.")
 
         if len(value) < 2:
-            raise serializers.ValidationError(
-                "نام خانوادگی وارد شده معتبر نیست."
-            )
+            raise serializers.ValidationError("نام خانوادگی وارد شده معتبر نیست.")
 
         return value
 
@@ -107,14 +97,10 @@ class ContactRequestCreateSerializer(
         value = value.strip()
 
         if not value:
-            raise serializers.ValidationError(
-                "وارد کردن توضیحات الزامی است."
-            )
+            raise serializers.ValidationError("وارد کردن توضیحات الزامی است.")
 
         if len(value) < 5:
-            raise serializers.ValidationError(
-                "توضیحات باید حداقل ۵ کاراکتر باشد."
-            )
+            raise serializers.ValidationError("توضیحات باید حداقل ۵ کاراکتر باشد.")
 
         if len(value) > 3000:
             raise serializers.ValidationError(
@@ -154,9 +140,7 @@ class ContactRequestCreateSerializer(
         return attrs
 
 
-class ContactRequestAdminSerializer(
-    serializers.ModelSerializer
-):
+class ContactRequestAdminSerializer(serializers.ModelSerializer):
     subject_display = serializers.CharField(
         source="get_subject_display",
         read_only=True,

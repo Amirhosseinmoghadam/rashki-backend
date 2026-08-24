@@ -100,7 +100,5 @@ class ContactRequest(models.Model):
 
     def __str__(self):
         return (
-            f"{self.first_name} "
-            f"{self.last_name} - "
-            f"{self.get_subject_display()}"
+            f"{self.first_name} " f"{self.last_name} - " f"{self.get_subject_display()}"
         )

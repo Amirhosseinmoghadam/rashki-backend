@@ -35,9 +35,7 @@ class CategoryAdmin(admin.ModelAdmin):
         "updated_at",
     )
 
-    autocomplete_fields = (
-        "parent",
-    )
+    autocomplete_fields = ("parent",)
 
     readonly_fields = (
         "created_at",
@@ -49,9 +47,7 @@ class CategoryAdmin(admin.ModelAdmin):
         "slug": ("name",),
     }
 
-    ordering = (
-        "name",
-    )
+    ordering = ("name",)
 
     list_per_page = 50
 
@@ -84,9 +80,7 @@ class CategoryAdmin(admin.ModelAdmin):
                     "created_at",
                     "updated_at",
                 ),
-                "classes": (
-                    "collapse",
-                ),
+                "classes": ("collapse",),
             },
         ),
     )

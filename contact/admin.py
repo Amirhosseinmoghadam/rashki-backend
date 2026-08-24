@@ -34,13 +34,9 @@ class ContactRequestAdmin(admin.ModelAdmin):
         "updated_at",
     )
 
-    list_editable = (
-        "is_read",
-    )
+    list_editable = ("is_read",)
 
-    ordering = (
-        "-created_at",
-    )
+    ordering = ("-created_at",)
 
     date_hierarchy = "created_at"
 
@@ -69,9 +65,7 @@ class ContactRequestAdmin(admin.ModelAdmin):
         (
             "وضعیت",
             {
-                "fields": (
-                    "is_read",
-                ),
+                "fields": ("is_read",),
             },
         ),
         (

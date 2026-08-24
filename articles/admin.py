@@ -2,10 +2,10 @@ from django.contrib import admin
 
 from .models import Article, ArticleCategory
 
-
 # =========================================================
 # Article Category
 # =========================================================
+
 
 @admin.register(ArticleCategory)
 class ArticleCategoryAdmin(admin.ModelAdmin):
@@ -15,9 +15,7 @@ class ArticleCategoryAdmin(admin.ModelAdmin):
         "is_active",
     )
 
-    list_filter = (
-        "is_active",
-    )
+    list_filter = ("is_active",)
 
     search_fields = (
         "name",
@@ -29,18 +27,15 @@ class ArticleCategoryAdmin(admin.ModelAdmin):
         "slug": ("name",),
     }
 
-    list_editable = (
-        "is_active",
-    )
+    list_editable = ("is_active",)
 
-    ordering = (
-        "name",
-    )
+    ordering = ("name",)
 
 
 # =========================================================
 # Article
 # =========================================================
+
 
 @admin.register(Article)
 class ArticleAdmin(admin.ModelAdmin):

@@ -6,7 +6,6 @@ from django.contrib.auth.admin import (
 from .models import (
     User,
     OTPCode,
-
 )
 
 # =========================================================
@@ -156,5 +155,3 @@ class OTPCodeAdmin(admin.ModelAdmin):
     )
 
     ordering = ("-created_at",)
-
-

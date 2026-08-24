@@ -1,6 +1,5 @@
 from rest_framework import serializers
 
-
 # ============================================================
 # SEND OTP
 # ============================================================
@@ -97,19 +96,14 @@ class ScheduleSMSSerializer(serializers.Serializer):
     )
 
     date = serializers.CharField(
-        help_text=(
-            "Scheduled date/time. "
-            "Example: 1/20/2023 15:22"
-        ),
+        help_text=("Scheduled date/time. " "Example: 1/20/2023 15:22"),
     )
 
     period = serializers.IntegerField(
         required=False,
         allow_null=True,
         min_value=1,
-        help_text=(
-            "Optional repeat period in days."
-        ),
+        help_text=("Optional repeat period in days."),
     )
 
 
@@ -148,9 +142,7 @@ class AdvancedSMSSerializer(serializers.Serializer):
             max_length=20,
         ),
         min_length=1,
-        help_text=(
-            "One or more recipient numbers."
-        ),
+        help_text=("One or more recipient numbers."),
     )
 
     text = serializers.CharField(
@@ -161,9 +153,7 @@ class AdvancedSMSSerializer(serializers.Serializer):
         required=False,
         allow_blank=True,
         default="",
-        help_text=(
-            "Optional UDH for port-specific SMS."
-        ),
+        help_text=("Optional UDH for port-specific SMS."),
     )
 
 
@@ -203,10 +193,7 @@ class SharedSMSSerializer(serializers.Serializer):
         child=serializers.CharField(),
         required=False,
         default=list,
-        help_text=(
-            "Variables used in the approved "
-            "shared message body."
-        ),
+        help_text=("Variables used in the approved " "shared message body."),
     )
 
 
@@ -258,8 +245,7 @@ class MultipleSMSSerializer(serializers.Serializer):
         child=serializers.CharField(),
         min_length=1,
         help_text=(
-            "SMS texts. Each text corresponds "
-            "to the recipient at the same index."
+            "SMS texts. Each text corresponds " "to the recipient at the same index."
         ),
     )
 
@@ -267,9 +253,7 @@ class MultipleSMSSerializer(serializers.Serializer):
         required=False,
         allow_blank=True,
         default="",
-        help_text=(
-            "Optional UDH for port-specific SMS."
-        ),
+        help_text=("Optional UDH for port-specific SMS."),
     )
 
     def validate(self, attrs):
@@ -281,8 +265,7 @@ class MultipleSMSSerializer(serializers.Serializer):
             raise serializers.ValidationError(
                 {
                     "text": (
-                        "The number of texts must "
-                        "match the number of recipients."
+                        "The number of texts must " "match the number of recipients."
                     )
                 }
             )
@@ -315,9 +298,7 @@ class DeliveryStatusSerializer(
         source="recIds",
         child=serializers.IntegerField(),
         min_length=1,
-        help_text=(
-            "SMS record IDs returned after sending."
-        ),
+        help_text=("SMS record IDs returned after sending."),
     )
 
 
@@ -352,9 +333,7 @@ class MessagesSerializer(serializers.Serializer):
             ("out", "Outgoing"),
             ("all", "All"),
         ],
-        help_text=(
-            "Message type: in, out or all."
-        ),
+        help_text=("Message type: in, out or all."),
     )
 
     number = serializers.CharField(
@@ -394,10 +373,7 @@ class InboxCountSerializer(serializers.Serializer):
     is_read = serializers.BooleanField(
         source="isRead",
         default=False,
-        help_text=(
-            "true for read messages, "
-            "false for unread messages."
-        ),
+        help_text=("true for read messages, " "false for unread messages."),
     )
 
 
@@ -423,17 +399,13 @@ class PriceSerializer(serializers.Serializer):
     mtn_count = serializers.IntegerField(
         source="mtnCount",
         min_value=0,
-        help_text=(
-            "Number of MCI recipients."
-        ),
+        help_text=("Number of MCI recipients."),
     )
 
     irancell_count = serializers.IntegerField(
         source="irancellCount",
         min_value=0,
-        help_text=(
-            "Number of Irancell recipients."
-        ),
+        help_text=("Number of Irancell recipients."),
     )
 
     from_number = serializers.CharField(

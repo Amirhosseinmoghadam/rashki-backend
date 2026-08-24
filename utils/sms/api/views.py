@@ -60,17 +60,13 @@ class SMSAPIView(APIView):
             exc,
             MeliPayamakTimeoutError,
         ):
-            http_status = (
-                status.HTTP_504_GATEWAY_TIMEOUT
-            )
+            http_status = status.HTTP_504_GATEWAY_TIMEOUT
 
         elif isinstance(
             exc,
             MeliPayamakConnectionError,
         ):
-            http_status = (
-                status.HTTP_503_SERVICE_UNAVAILABLE
-            )
+            http_status = status.HTTP_503_SERVICE_UNAVAILABLE
 
         elif isinstance(
             exc,
@@ -79,14 +75,10 @@ class SMSAPIView(APIView):
                 MeliPayamakError,
             ),
         ):
-            http_status = (
-                status.HTTP_400_BAD_REQUEST
-            )
+            http_status = status.HTTP_400_BAD_REQUEST
 
         else:
-            http_status = (
-                status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            http_status = status.HTTP_500_INTERNAL_SERVER_ERROR
 
         return Response(
             {
@@ -136,9 +128,7 @@ class SendOTPAPIView(SMSAPIView):
         try:
             with MeliPayamakClient() as client:
 
-                result = client.send_otp(
-                    to=serializer.validated_data["to"]
-                )
+                result = client.send_otp(to=serializer.validated_data["to"])
 
             return self.success(result)
 
@@ -159,10 +149,7 @@ class SendSimpleAPIView(SMSAPIView):
         request=SimpleSMSSerializer,
         responses={
             200: OpenApiResponse(
-                description=(
-                    "MeliPayamak response containing "
-                    "recId and status."
-                ),
+                description=("MeliPayamak response containing " "recId and status."),
             ),
             400: OpenApiResponse(
                 description="Invalid request or API error.",
@@ -191,9 +178,7 @@ class SendSimpleAPIView(SMSAPIView):
                 result = client.send_simple(
                     to=serializer.validated_data["to"],
                     text=serializer.validated_data["text"],
-                    from_number=serializer.validated_data.get(
-                        "from"
-                    ),
+                    from_number=serializer.validated_data.get("from"),
                 )
 
             return self.success(result)
@@ -242,21 +227,11 @@ class SendScheduleAPIView(SMSAPIView):
             with MeliPayamakClient() as client:
 
                 result = client.send_schedule(
-                    message=serializer.validated_data[
-                        "message"
-                    ],
-                    to=serializer.validated_data[
-                        "to"
-                    ],
-                    date=serializer.validated_data[
-                        "date"
-                    ],
-                    from_number=serializer.validated_data.get(
-                        "from"
-                    ),
-                    period=serializer.validated_data.get(
-                        "period"
-                    ),
+                    message=serializer.validated_data["message"],
+                    to=serializer.validated_data["to"],
+                    date=serializer.validated_data["date"],
+                    from_number=serializer.validated_data.get("from"),
+                    period=serializer.validated_data.get("period"),
                 )
 
             return self.success(result)
@@ -305,15 +280,9 @@ class SendAdvancedAPIView(SMSAPIView):
             with MeliPayamakClient() as client:
 
                 result = client.send_advanced(
-                    to=serializer.validated_data[
-                        "to"
-                    ],
-                    text=serializer.validated_data[
-                        "text"
-                    ],
-                    from_number=serializer.validated_data.get(
-                        "from"
-                    ),
+                    to=serializer.validated_data["to"],
+                    text=serializer.validated_data["text"],
+                    from_number=serializer.validated_data.get("from"),
                     udh=serializer.validated_data.get(
                         "udh",
                         "",
@@ -366,12 +335,8 @@ class SendSharedAPIView(SMSAPIView):
             with MeliPayamakClient() as client:
 
                 result = client.send_shared(
-                    body_id=serializer.validated_data[
-                        "bodyId"
-                    ],
-                    to=serializer.validated_data[
-                        "to"
-                    ],
+                    body_id=serializer.validated_data["bodyId"],
+                    to=serializer.validated_data["to"],
                     args=serializer.validated_data.get(
                         "args",
                         [],
@@ -424,15 +389,9 @@ class SendMultipleAPIView(SMSAPIView):
             with MeliPayamakClient() as client:
 
                 result = client.send_multiple(
-                    to=serializer.validated_data[
-                        "to"
-                    ],
-                    text=serializer.validated_data[
-                        "text"
-                    ],
-                    from_number=serializer.validated_data.get(
-                        "from"
-                    ),
+                    to=serializer.validated_data["to"],
+                    text=serializer.validated_data["text"],
+                    from_number=serializer.validated_data.get("from"),
                     udh=serializer.validated_data.get(
                         "udh",
                         "",
@@ -485,9 +444,7 @@ class DeliveryStatusAPIView(SMSAPIView):
             with MeliPayamakClient() as client:
 
                 result = client.delivery_status(
-                    rec_ids=serializer.validated_data[
-                        "recIds"
-                    ],
+                    rec_ids=serializer.validated_data["recIds"],
                 )
 
             return self.success(result)
@@ -536,18 +493,10 @@ class MessagesAPIView(SMSAPIView):
             with MeliPayamakClient() as client:
 
                 result = client.messages(
-                    message_type=serializer.validated_data[
-                        "type"
-                    ],
-                    number=serializer.validated_data[
-                        "number"
-                    ],
-                    index=serializer.validated_data[
-                        "index"
-                    ],
-                    count=serializer.validated_data[
-                        "count"
-                    ],
+                    message_type=serializer.validated_data["type"],
+                    number=serializer.validated_data["number"],
+                    index=serializer.validated_data["index"],
+                    count=serializer.validated_data["count"],
                 )
 
             return self.success(result)
@@ -596,9 +545,7 @@ class InboxCountAPIView(SMSAPIView):
             with MeliPayamakClient() as client:
 
                 result = client.inbox_count(
-                    is_read=serializer.validated_data[
-                        "isRead"
-                    ],
+                    is_read=serializer.validated_data["isRead"],
                 )
 
             return self.success(result)
@@ -686,18 +633,10 @@ class PriceAPIView(SMSAPIView):
             with MeliPayamakClient() as client:
 
                 result = client.price(
-                    mtn_count=serializer.validated_data[
-                        "mtnCount"
-                    ],
-                    irancell_count=serializer.validated_data[
-                        "irancellCount"
-                    ],
-                    text=serializer.validated_data[
-                        "text"
-                    ],
-                    from_number=serializer.validated_data.get(
-                        "from"
-                    ),
+                    mtn_count=serializer.validated_data["mtnCount"],
+                    irancell_count=serializer.validated_data["irancellCount"],
+                    text=serializer.validated_data["text"],
+                    from_number=serializer.validated_data.get("from"),
                 )
 
             return self.success(result)

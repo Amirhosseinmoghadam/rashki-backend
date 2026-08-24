@@ -2,10 +2,10 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.text import slugify
 
-
 # =========================================================
 # Product
 # =========================================================
+
 
 class Product(models.Model):
     name = models.CharField(
@@ -86,6 +86,7 @@ class Product(models.Model):
 # Product Images
 # =========================================================
 
+
 class ProductImage(models.Model):
     product = models.ForeignKey(
         Product,
@@ -152,6 +153,7 @@ class ProductImage(models.Model):
 # Attribute Group
 # =========================================================
 
+
 class AttributeGroup(models.Model):
     name = models.CharField(
         max_length=150,
@@ -197,6 +199,7 @@ class AttributeGroup(models.Model):
 # =========================================================
 # Attribute
 # =========================================================
+
 
 class Attribute(models.Model):
 
@@ -281,6 +284,7 @@ class Attribute(models.Model):
 # Attribute Value
 # =========================================================
 
+
 class AttributeValue(models.Model):
     attribute = models.ForeignKey(
         Attribute,
@@ -339,6 +343,7 @@ class AttributeValue(models.Model):
 # Product Attribute Value
 # =========================================================
 
+
 class ProductAttributeValue(models.Model):
     """
     ویژگی‌هایی که به خود Product تعلق دارند
@@ -375,16 +380,13 @@ class ProductAttributeValue(models.Model):
         ]
 
     def __str__(self):
-        return (
-            f"{self.product.name} - "
-            f"{self.attribute.name}: "
-            f"{self.value}"
-        )
+        return f"{self.product.name} - " f"{self.attribute.name}: " f"{self.value}"
 
 
 # =========================================================
 # Product Variant
 # =========================================================
+
 
 class ProductVariant(models.Model):
     """
@@ -461,6 +463,7 @@ class ProductVariant(models.Model):
 # Variant Attribute Value
 # =========================================================
 
+
 class VariantAttributeValue(models.Model):
     """
     ویژگی‌هایی که مختص یک Variant هستند.
@@ -511,12 +514,7 @@ class VariantAttributeValue(models.Model):
         if self.value_id and self.attribute_id:
             if self.value.attribute_id != self.attribute_id:
                 raise ValidationError(
-                    {
-                        "value": (
-                            "مقدار انتخاب شده "
-                            "متعلق به این ویژگی نیست."
-                        )
-                    }
+                    {"value": ("مقدار انتخاب شده " "متعلق به این ویژگی نیست.")}
                 )
 
     def save(self, *args, **kwargs):
@@ -524,16 +522,13 @@ class VariantAttributeValue(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return (
-            f"{self.variant} - "
-            f"{self.attribute.name}: "
-            f"{self.value.value}"
-        )
+        return f"{self.variant} - " f"{self.attribute.name}: " f"{self.value.value}"
 
 
 # =========================================================
 # Product Motorcycle Compatibility
 # =========================================================
+
 
 class ProductMotorcycleCompatibility(models.Model):
     product = models.ForeignKey(

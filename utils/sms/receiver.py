@@ -13,9 +13,7 @@ class SMSReceiver:
         Get delivery status for SMS records.
         """
 
-        return MeliPayamakClient().delivery_status(
-            rec_ids
-        )
+        return MeliPayamakClient().delivery_status(rec_ids)
 
     @staticmethod
     def messages(
@@ -34,9 +32,7 @@ class SMSReceiver:
             "out",
             "all",
         }:
-            raise ValueError(
-                "message_type must be 'in', 'out' or 'all'."
-            )
+            raise ValueError("message_type must be 'in', 'out' or 'all'.")
 
         return MeliPayamakClient().messages(
             message_type=message_type,
@@ -53,6 +49,4 @@ class SMSReceiver:
         Get SMS inbox count.
         """
 
-        return MeliPayamakClient().inbox_count(
-            is_read=is_read
-        )
+        return MeliPayamakClient().inbox_count(is_read=is_read)

@@ -34,5 +34,3 @@ class ArticlePagination(DefaultPagination):
     """
 
     page_size = 12
-
-

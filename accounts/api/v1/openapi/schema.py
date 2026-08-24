@@ -15,9 +15,6 @@ from accounts.api.v1.serializers import (
     CompleteProfileSerializer,
 )
 
-
-
-
 # Define the decorated view object here
 DecoratedTokenRefreshView = extend_schema_view(
     post=extend_schema(

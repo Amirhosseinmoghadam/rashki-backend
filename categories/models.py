@@ -57,5 +57,3 @@ class Category(models.Model):
             return f"{self.parent} → {self.name}"
 
         return self.name
-
-

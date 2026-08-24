@@ -30,18 +30,14 @@ class BrandAdmin(admin.ModelAdmin):
         "slug": ("name",),
     }
 
-    list_editable = (
-        "is_active",
-    )
+    list_editable = ("is_active",)
 
     readonly_fields = (
         "created_at",
         "updated_at",
     )
 
-    ordering = (
-        "name",
-    )
+    ordering = ("name",)
 
     fieldsets = (
         (
@@ -58,11 +54,7 @@ class BrandAdmin(admin.ModelAdmin):
         ),
         (
             "وضعیت",
-            {
-                "fields": (
-                    "is_active",
-                )
-            },
+            {"fields": ("is_active",)},
         ),
         (
             "اطلاعات سیستم",

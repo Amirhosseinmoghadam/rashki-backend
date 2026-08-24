@@ -64,6 +64,7 @@ class Discount(models.Model):
     def __str__(self):
         return self.name
 
+
 class Coupon(models.Model):
 
     code = models.CharField(

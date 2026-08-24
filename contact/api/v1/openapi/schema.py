@@ -13,7 +13,6 @@ from contact.api.v1.serializers import (
     ContactRequestAdminSerializer,
 )
 
-
 # =========================================================
 # Contact Create
 # =========================================================
@@ -41,9 +40,7 @@ contact_create_view_schema = extend_schema(
     responses={
         201: OpenApiResponse(
             response=OpenApiTypes.OBJECT,
-            description=(
-                "Contact request created successfully."
-            ),
+            description=("Contact request created successfully."),
             examples=[
                 OpenApiExample(
                     name="Contact Request Created Successfully",
@@ -131,9 +128,7 @@ contact_admin_list_view_schema = extend_schema(
     responses={
         200: OpenApiResponse(
             response=OpenApiTypes.OBJECT,
-            description=(
-                "Contact requests retrieved successfully."
-            ),
+            description=("Contact requests retrieved successfully."),
             examples=[
                 OpenApiExample(
                     name="Contact Requests Retrieved Successfully",
@@ -146,8 +141,7 @@ contact_admin_list_view_schema = extend_schema(
         401: OpenApiResponse(
             response=OpenApiTypes.OBJECT,
             description=(
-                "Authentication credentials were not provided "
-                "or are invalid."
+                "Authentication credentials were not provided " "or are invalid."
             ),
             examples=[
                 OpenApiExample(
@@ -161,8 +155,7 @@ contact_admin_list_view_schema = extend_schema(
         403: OpenApiResponse(
             response=OpenApiTypes.OBJECT,
             description=(
-                "Authenticated user does not have "
-                "admin/staff permissions."
+                "Authenticated user does not have " "admin/staff permissions."
             ),
             examples=[
                 OpenApiExample(
@@ -193,9 +186,7 @@ contact_admin_detail_view_schema = extend_schema(
     responses={
         200: OpenApiResponse(
             response=OpenApiTypes.OBJECT,
-            description=(
-                "Contact request retrieved successfully."
-            ),
+            description=("Contact request retrieved successfully."),
             examples=[
                 OpenApiExample(
                     name="Contact Request Retrieved Successfully",
@@ -270,15 +261,11 @@ contact_admin_partial_update_view_schema = extend_schema(
     responses={
         200: OpenApiResponse(
             response=OpenApiTypes.OBJECT,
-            description=(
-                "Contact request updated successfully."
-            ),
+            description=("Contact request updated successfully."),
             examples=[
                 OpenApiExample(
                     name="Contact Request Updated Successfully",
-                    value=(
-                        responses.ContactAdminPartialUpdateAPIViewSuccess
-                    ),
+                    value=(responses.ContactAdminPartialUpdateAPIViewSuccess),
                     media_type="application/json",
                     response_only=True,
                 ),

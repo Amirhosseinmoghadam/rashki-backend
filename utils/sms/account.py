@@ -24,9 +24,7 @@ class SMSAccount:
         Get current inbox count.
         """
 
-        return MeliPayamakClient().inbox_count(
-            is_read=is_read
-        )
+        return MeliPayamakClient().inbox_count(is_read=is_read)
 
     @staticmethod
     def price(
@@ -46,15 +44,10 @@ class SMSAccount:
             {},
         )
 
-        from_number = (
-            from_number
-            or config.get("DEFAULT_FROM")
-        )
+        from_number = from_number or config.get("DEFAULT_FROM")
 
         if not from_number:
-            raise SMSValidationError(
-                "MELIPAYAMAK['DEFAULT_FROM'] is not configured."
-            )
+            raise SMSValidationError("MELIPAYAMAK['DEFAULT_FROM'] is not configured.")
 
         return MeliPayamakClient().price(
             mtn_count=mtn_count,
@@ -73,9 +66,7 @@ class SMSAccount:
 
         credit = cls.credit()
 
-        unread = cls.inbox_count(
-            is_read=False
-        )
+        unread = cls.inbox_count(is_read=False)
 
         return {
             "ok": True,

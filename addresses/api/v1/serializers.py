@@ -2,6 +2,7 @@ from rest_framework import serializers
 from addresses.models import Province, City, Address
 from django.db import transaction
 
+
 class ProvinceSerializer(serializers.ModelSerializer):
     """
     Serializer for the Province model.
@@ -23,8 +24,6 @@ class CitySerializer(serializers.ModelSerializer):
     class Meta:
         model = City
         fields = ["id", "name"]
-
-
 
 
 class AddressSerializer(serializers.ModelSerializer):
@@ -90,12 +89,7 @@ class AddressCreateSerializer(serializers.ModelSerializer):
         if province and city:
             if city.province_id != province.id:
                 raise serializers.ValidationError(
-                    {
-                        "city": (
-                            "شهر انتخاب‌شده متعلق به "
-                            "استان انتخاب‌شده نیست."
-                        )
-                    }
+                    {"city": ("شهر انتخاب‌شده متعلق به " "استان انتخاب‌شده نیست.")}
                 )
 
         return attrs
@@ -104,11 +98,7 @@ class AddressCreateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         user = self.context["request"].user
 
-        addresses = (
-            Address.objects
-            .select_for_update()
-            .filter(user=user)
-        )
+        addresses = Address.objects.select_for_update().filter(user=user)
 
         has_addresses = addresses.exists()
 
@@ -117,11 +107,7 @@ class AddressCreateSerializer(serializers.ModelSerializer):
             validated_data["is_default"] = True
 
         if validated_data.get("is_default") is True:
-            addresses.filter(
-                is_default=True
-            ).update(
-                is_default=False
-            )
+            addresses.filter(is_default=True).update(is_default=False)
 
         return Address.objects.create(
             user=user,
@@ -161,12 +147,7 @@ class AddressUpdateSerializer(serializers.ModelSerializer):
         if province and city:
             if city.province_id != province.id:
                 raise serializers.ValidationError(
-                    {
-                        "city": (
-                            "شهر انتخاب‌شده متعلق به "
-                            "استان انتخاب‌شده نیست."
-                        )
-                    }
+                    {"city": ("شهر انتخاب‌شده متعلق به " "استان انتخاب‌شده نیست.")}
                 )
 
         return attrs
@@ -178,31 +159,22 @@ class AddressUpdateSerializer(serializers.ModelSerializer):
         # آدرس پیش‌فرض دیگری انتخاب شده
         if validated_data.get("is_default") is True:
             (
-                Address.objects
-                .select_for_update()
+                Address.objects.select_for_update()
                 .filter(
                     user=user,
                     is_default=True,
                 )
-                .exclude(
-                    pk=instance.pk
-                )
-                .update(
-                    is_default=False
-                )
+                .exclude(pk=instance.pk)
+                .update(is_default=False)
             )
 
         # اجازه نمی‌دهیم کاربر تنها آدرس پیش‌فرض
         # خودش را unset کند.
-        if (
-            validated_data.get("is_default") is False
-            and instance.is_default
-        ):
+        if validated_data.get("is_default") is False and instance.is_default:
             raise serializers.ValidationError(
                 {
                     "is_default": (
-                        "نمی‌توانید آدرس پیش‌فرض را "
-                        "بدون انتخاب آدرس جدید حذف کنید."
+                        "نمی‌توانید آدرس پیش‌فرض را " "بدون انتخاب آدرس جدید حذف کنید."
                     )
                 }
             )

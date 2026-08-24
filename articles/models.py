@@ -25,6 +25,7 @@ class ArticleCategory(models.Model):
     def __str__(self):
         return self.name
 
+
 class Article(models.Model):
 
     class Status(models.TextChoices):

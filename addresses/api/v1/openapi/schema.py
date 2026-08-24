@@ -44,8 +44,7 @@ address_list_view_schema = extend_schema(
         401: OpenApiResponse(
             response=OpenApiTypes.OBJECT,
             description=(
-                "Authentication credentials were not provided "
-                "or are invalid."
+                "Authentication credentials were not provided " "or are invalid."
             ),
             examples=[
                 OpenApiExample(

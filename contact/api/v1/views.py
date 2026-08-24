@@ -1,7 +1,8 @@
 from drf_spectacular.utils import (
     OpenApiExample,
     OpenApiResponse,
-    extend_schema, extend_schema_view,
+    extend_schema,
+    extend_schema_view,
 )
 
 from rest_framework import generics
@@ -17,9 +18,6 @@ from .serializers import (
 from contact.throttles import ContactRequestThrottle
 
 
-
-
-
 from contact.api.v1.openapi.schema import (
     contact_create_view_schema,
     contact_admin_list_view_schema,
@@ -27,12 +25,11 @@ from contact.api.v1.openapi.schema import (
     contact_admin_partial_update_view_schema,
 )
 
+
 @extend_schema_view(
     post=contact_create_view_schema,
 )
-class ContactRequestCreateAPIView(
-    generics.CreateAPIView
-):
+class ContactRequestCreateAPIView(generics.CreateAPIView):
     """
     ثبت درخواست تماس توسط کاربر.
     """
@@ -60,17 +57,9 @@ class ContactRequestCreateAPIView(
         ),
         request=ContactRequestCreateSerializer,
         responses={
-            201: OpenApiResponse(
-                description="درخواست با موفقیت ثبت شد."
-            ),
-            400: OpenApiResponse(
-                description="اطلاعات ارسال شده معتبر نیست."
-            ),
-            429: OpenApiResponse(
-                description=(
-                    "تعداد درخواست‌ها بیش از حد مجاز است."
-                )
-            ),
+            201: OpenApiResponse(description="درخواست با موفقیت ثبت شد."),
+            400: OpenApiResponse(description="اطلاعات ارسال شده معتبر نیست."),
+            429: OpenApiResponse(description=("تعداد درخواست‌ها بیش از حد مجاز است.")),
         },
         examples=[
             OpenApiExample(
@@ -81,8 +70,7 @@ class ContactRequestCreateAPIView(
                     "phone_number": "09123456789",
                     "subject": "price_inquiry",
                     "description": (
-                        "سلام، لطفاً قیمت عمده این محصول "
-                        "را اعلام کنید."
+                        "سلام، لطفاً قیمت عمده این محصول " "را اعلام کنید."
                     ),
                 },
                 request_only=True,
@@ -104,13 +92,9 @@ class ContactRequestCreateAPIView(
         ],
     )
     def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(
-            data=request.data
-        )
+        serializer = self.get_serializer(data=request.data)
 
-        serializer.is_valid(
-            raise_exception=True
-        )
+        serializer.is_valid(raise_exception=True)
 
         contact_request = serializer.save()
 
@@ -124,12 +108,11 @@ class ContactRequestCreateAPIView(
             status=status.HTTP_201_CREATED,
         )
 
+
 @extend_schema_view(
     get=contact_admin_list_view_schema,
 )
-class ContactRequestListAPIView(
-    generics.ListAPIView
-):
+class ContactRequestListAPIView(generics.ListAPIView):
     """
     مشاهده درخواست‌های تماس توسط ادمین.
     """
@@ -146,12 +129,9 @@ class ContactRequestListAPIView(
         tags=["Contact"],
         summary="لیست درخواست‌های تماس",
         description=(
-            "فقط کاربران Staff/Admin می‌توانند "
-            "درخواست‌های تماس را مشاهده کنند."
+            "فقط کاربران Staff/Admin می‌توانند " "درخواست‌های تماس را مشاهده کنند."
         ),
-        responses=ContactRequestAdminSerializer(
-            many=True
-        ),
+        responses=ContactRequestAdminSerializer(many=True),
     )
     def get(self, request, *args, **kwargs):
         return super().get(
@@ -160,13 +140,12 @@ class ContactRequestListAPIView(
             **kwargs,
         )
 
+
 @extend_schema_view(
     get=contact_admin_detail_view_schema,
     patch=contact_admin_partial_update_view_schema,
 )
-class ContactRequestDetailAPIView(
-    generics.RetrieveUpdateAPIView
-):
+class ContactRequestDetailAPIView(generics.RetrieveUpdateAPIView):
     """
     مشاهده و تغییر وضعیت درخواست توسط ادمین.
     """
@@ -182,9 +161,7 @@ class ContactRequestDetailAPIView(
     @extend_schema(
         tags=["Contact"],
         summary="مشاهده جزئیات درخواست تماس",
-        description=(
-            "مشاهده یک درخواست تماس توسط ادمین."
-        ),
+        description=("مشاهده یک درخواست تماس توسط ادمین."),
     )
     def get(self, request, *args, **kwargs):
         return super().get(
@@ -196,10 +173,7 @@ class ContactRequestDetailAPIView(
     @extend_schema(
         tags=["Contact"],
         summary="تغییر وضعیت درخواست",
-        description=(
-            "ادمین می‌تواند وضعیت خوانده شدن "
-            "درخواست را تغییر دهد."
-        ),
+        description=("ادمین می‌تواند وضعیت خوانده شدن " "درخواست را تغییر دهد."),
     )
     def patch(self, request, *args, **kwargs):
         return super().patch(

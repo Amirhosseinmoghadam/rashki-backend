@@ -14,14 +14,12 @@ urlpatterns = [
         ContactRequestCreateAPIView.as_view(),
         name="contact-create",
     ),
-
     # Admin
     path(
         "admin/",
         ContactRequestListAPIView.as_view(),
         name="contact-admin-list",
     ),
-
     path(
         "admin/<int:pk>/",
         ContactRequestDetailAPIView.as_view(),

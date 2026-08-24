@@ -60,7 +60,6 @@ class City(models.Model):
         return f"{self.name} ({self.province.name})"
 
 
-
 # =========================================================
 # Address
 # =========================================================
@@ -126,7 +125,6 @@ class Address(models.Model):
         on_delete=models.PROTECT,
         verbose_name="شهر",
     )
-
 
     postal_code = models.CharField(
         max_length=10,

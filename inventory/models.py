@@ -34,6 +34,7 @@ class Supplier(models.Model):
     def __str__(self):
         return self.name
 
+
 class Purchase(models.Model):
 
     class Status(models.TextChoices):
@@ -87,7 +88,6 @@ class Purchase(models.Model):
         return self.invoice_number or f"Purchase #{self.pk}"
 
 
-
 class PurchaseItem(models.Model):
     purchase = models.ForeignKey(
         Purchase,
@@ -127,6 +127,7 @@ class PurchaseItem(models.Model):
 
     def __str__(self):
         return f"{self.variant} × {self.quantity}"
+
 
 class StockMovement(models.Model):
 

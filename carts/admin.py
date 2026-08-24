@@ -2,18 +2,16 @@ from django.contrib import admin
 
 from .models import Cart, CartItem
 
-
 # =========================================================
 # Cart Item Inline
 # =========================================================
+
 
 class CartItemInline(admin.TabularInline):
     model = CartItem
     extra = 0
 
-    autocomplete_fields = (
-        "variant",
-    )
+    autocomplete_fields = ("variant",)
 
     readonly_fields = (
         "created_at",
@@ -31,6 +29,7 @@ class CartItemInline(admin.TabularInline):
 # =========================================================
 # Cart
 # =========================================================
+
 
 @admin.register(Cart)
 class CartAdmin(admin.ModelAdmin):
@@ -54,26 +53,16 @@ class CartAdmin(admin.ModelAdmin):
         "updated_at",
     )
 
-    autocomplete_fields = (
-        "user",
-    )
+    autocomplete_fields = ("user",)
 
-    ordering = (
-        "-updated_at",
-    )
+    ordering = ("-updated_at",)
 
-    inlines = (
-        CartItemInline,
-    )
+    inlines = (CartItemInline,)
 
     fieldsets = (
         (
             "اطلاعات سبد خرید",
-            {
-                "fields": (
-                    "user",
-                )
-            },
+            {"fields": ("user",)},
         ),
         (
             "اطلاعات سیستم",
@@ -96,6 +85,7 @@ class CartAdmin(admin.ModelAdmin):
 # =========================================================
 # Cart Item
 # =========================================================
+
 
 @admin.register(CartItem)
 class CartItemAdmin(admin.ModelAdmin):
@@ -131,6 +121,4 @@ class CartItemAdmin(admin.ModelAdmin):
         "updated_at",
     )
 
-    ordering = (
-        "-updated_at",
-    )
+    ordering = ("-updated_at",)

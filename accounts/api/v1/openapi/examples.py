@@ -34,8 +34,6 @@ CompleteProfileViewExample = {
 UserLogoutAPIViewExample = {"refresh": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."}
 
 
-
-
 # =========================================================
 # Set Default Address
 # =========================================================
