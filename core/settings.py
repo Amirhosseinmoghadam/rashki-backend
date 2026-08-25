@@ -265,6 +265,19 @@ AUTH_OTP_MAX_SENDS_PER_IP_WINDOW = 30
 AUTH_OTP_IP_WINDOW_SECONDS = 10 * 60
 
 
+
+# ============================================================
+# ZarinPal
+# ============================================================
+
+# ZARINPAL_MERCHANT_ID = "YOUR-MERCHANT-ID"
+#
+# # برای عملیات‌هایی مثل Refund و Transactions
+# ZARINPAL_ACCESS_TOKEN = "YOUR-ACCESS-TOKEN"
+#
+# # در زمان توسعه:
+# ZARINPAL_SANDBOX = True
+
 # ---------------------------------------------------------
 # Verify OTP
 # ---------------------------------------------------------
