@@ -27,7 +27,6 @@
     - Wages / Split Settlement
 """
 
-
 from __future__ import annotations
 
 from typing import Any
@@ -35,8 +34,6 @@ from typing import Any
 from django.conf import settings
 
 from zarinpal import ZarinPal
-
-
 
 # ============================================================
 # ثابت‌های عمومی زرین‌پال
@@ -68,6 +65,7 @@ CURRENCY_IRT = "IRT"
 # Exception اختصاصی
 # ============================================================
 
+
 class ZarinPalServiceError(Exception):
     """
     خطای عمومی سرویس زرین‌پال.
@@ -83,6 +81,7 @@ class ZarinPalServiceError(Exception):
 # ============================================================
 # کلاس اصلی سرویس
 # ============================================================
+
 
 class ZarinPalService:
     """
@@ -103,8 +102,8 @@ class ZarinPalService:
     """
 
     def __init__(
-            self,
-            merchant_id: str | None = None,
+        self,
+        merchant_id: str | None = None,
     ) -> None:
 
         self.merchant_id = (
@@ -118,13 +117,9 @@ class ZarinPalService:
         )
 
         if not self.merchant_id:
-            raise ZarinPalServiceError(
-                "ZARINPAL_MERCHANT_ID تنظیم نشده است."
-            )
+            raise ZarinPalServiceError("ZARINPAL_MERCHANT_ID تنظیم نشده است.")
 
-        self.client = ZarinPal(
-            self.merchant_id
-        )
+        self.client = ZarinPal(self.merchant_id)
 
     # ========================================================
     # Payment Request
@@ -182,32 +177,24 @@ class ZarinPalService:
         # ----------------------------------------------------
 
         if not isinstance(amount, int):
-            raise ZarinPalServiceError(
-                "amount باید از نوع integer باشد."
-            )
+            raise ZarinPalServiceError("amount باید از نوع integer باشد.")
 
         if amount <= 0:
-            raise ZarinPalServiceError(
-                "amount باید بزرگ‌تر از صفر باشد."
-            )
+            raise ZarinPalServiceError("amount باید بزرگ‌تر از صفر باشد.")
 
         # ----------------------------------------------------
         # اعتبارسنجی توضیحات
         # ----------------------------------------------------
 
         if not description:
-            raise ZarinPalServiceError(
-                "description الزامی است."
-            )
+            raise ZarinPalServiceError("description الزامی است.")
 
         # ----------------------------------------------------
         # اعتبارسنجی Callback
         # ----------------------------------------------------
 
         if not callback_url:
-            raise ZarinPalServiceError(
-                "callback_url الزامی است."
-            )
+            raise ZarinPalServiceError("callback_url الزامی است.")
 
         # ----------------------------------------------------
         # ساخت Payload
@@ -298,9 +285,7 @@ class ZarinPalService:
 
         if not authority:
 
-            raise ZarinPalServiceError(
-                "authority دریافتی خالی است."
-            )
+            raise ZarinPalServiceError("authority دریافتی خالی است.")
 
         return authority
 
@@ -322,21 +307,15 @@ class ZarinPalService:
         """
 
         if not authority:
-            raise ZarinPalServiceError(
-                "authority الزامی است."
-            )
+            raise ZarinPalServiceError("authority الزامی است.")
 
         try:
 
-            return self.client.payments.generate_payment_url(
-                authority
-            )
+            return self.client.payments.generate_payment_url(authority)
 
         except Exception as exc:
 
-            raise ZarinPalServiceError(
-                f"خطا در ساخت URL پرداخت: {exc}"
-            ) from exc
+            raise ZarinPalServiceError(f"خطا در ساخت URL پرداخت: {exc}") from exc
 
     # ========================================================
     # ایجاد پرداخت + گرفتن URL در یک متد
@@ -432,19 +411,13 @@ class ZarinPalService:
         """
 
         if not authority:
-            raise ZarinPalServiceError(
-                "authority الزامی است."
-            )
+            raise ZarinPalServiceError("authority الزامی است.")
 
         if not isinstance(amount, int):
-            raise ZarinPalServiceError(
-                "amount باید integer باشد."
-            )
+            raise ZarinPalServiceError("amount باید integer باشد.")
 
         if amount <= 0:
-            raise ZarinPalServiceError(
-                "amount باید بزرگ‌تر از صفر باشد."
-            )
+            raise ZarinPalServiceError("amount باید بزرگ‌تر از صفر باشد.")
 
         try:
 
@@ -457,9 +430,7 @@ class ZarinPalService:
 
         except Exception as exc:
 
-            raise ZarinPalServiceError(
-                f"خطا در Verify پرداخت: {exc}"
-            ) from exc
+            raise ZarinPalServiceError(f"خطا در Verify پرداخت: {exc}") from exc
 
         return response
 
@@ -539,23 +510,15 @@ class ZarinPalService:
         """
 
         if not authority:
-            raise ZarinPalServiceError(
-                "authority الزامی است."
-            )
+            raise ZarinPalServiceError("authority الزامی است.")
 
         try:
 
-            response = self.client.inquiries.inquire(
-                {
-                    "authority": authority
-                }
-            )
+            response = self.client.inquiries.inquire({"authority": authority})
 
         except Exception as exc:
 
-            raise ZarinPalServiceError(
-                f"خطا در Inquiry تراکنش: {exc}"
-            ) from exc
+            raise ZarinPalServiceError(f"خطا در Inquiry تراکنش: {exc}") from exc
 
         return response
 
@@ -606,23 +569,15 @@ class ZarinPalService:
         """
 
         if not authority:
-            raise ZarinPalServiceError(
-                "authority الزامی است."
-            )
+            raise ZarinPalServiceError("authority الزامی است.")
 
         try:
 
-            response = self.client.reversals.reverse(
-                {
-                    "authority": authority
-                }
-            )
+            response = self.client.reversals.reverse({"authority": authority})
 
         except Exception as exc:
 
-            raise ZarinPalServiceError(
-                f"خطا در Reverse تراکنش: {exc}"
-            ) from exc
+            raise ZarinPalServiceError(f"خطا در Reverse تراکنش: {exc}") from exc
 
         return response
 
@@ -657,34 +612,22 @@ class ZarinPalService:
         """
 
         if not session_id:
-            raise ZarinPalServiceError(
-                "session_id الزامی است."
-            )
+            raise ZarinPalServiceError("session_id الزامی است.")
 
         if not isinstance(amount, int):
-            raise ZarinPalServiceError(
-                "amount باید integer باشد."
-            )
+            raise ZarinPalServiceError("amount باید integer باشد.")
 
         if amount <= 0:
-            raise ZarinPalServiceError(
-                "amount باید بزرگ‌تر از صفر باشد."
-            )
+            raise ZarinPalServiceError("amount باید بزرگ‌تر از صفر باشد.")
 
         if not description:
-            raise ZarinPalServiceError(
-                "description الزامی است."
-            )
+            raise ZarinPalServiceError("description الزامی است.")
 
         if method not in ("CARD", "PAYA"):
-            raise ZarinPalServiceError(
-                "method باید CARD یا PAYA باشد."
-            )
+            raise ZarinPalServiceError("method باید CARD یا PAYA باشد.")
 
         if not reason:
-            raise ZarinPalServiceError(
-                "reason الزامی است."
-            )
+            raise ZarinPalServiceError("reason الزامی است.")
 
         try:
 
@@ -700,9 +643,7 @@ class ZarinPalService:
 
         except Exception as exc:
 
-            raise ZarinPalServiceError(
-                f"خطا در Refund تراکنش: {exc}"
-            ) from exc
+            raise ZarinPalServiceError(f"خطا در Refund تراکنش: {exc}") from exc
 
         return response
 
@@ -738,13 +679,9 @@ class ZarinPalService:
         """
 
         if not terminal_id:
-            raise ZarinPalServiceError(
-                "terminal_id الزامی است."
-            )
+            raise ZarinPalServiceError("terminal_id الزامی است.")
 
-        payload: dict[str, Any] = {
-            "terminal_id": terminal_id
-        }
+        payload: dict[str, Any] = {"terminal_id": terminal_id}
 
         if filter_status:
 
@@ -757,41 +694,31 @@ class ZarinPalService:
             }
 
             if filter_status not in allowed_filters:
-                raise ZarinPalServiceError(
-                    "filter_status نامعتبر است."
-                )
+                raise ZarinPalServiceError("filter_status نامعتبر است.")
 
             payload["filter"] = filter_status
 
         if offset is not None:
 
             if offset < 0:
-                raise ZarinPalServiceError(
-                    "offset نمی‌تواند منفی باشد."
-                )
+                raise ZarinPalServiceError("offset نمی‌تواند منفی باشد.")
 
             payload["offset"] = offset
 
         if limit is not None:
 
             if limit <= 0:
-                raise ZarinPalServiceError(
-                    "limit باید بزرگ‌تر از صفر باشد."
-                )
+                raise ZarinPalServiceError("limit باید بزرگ‌تر از صفر باشد.")
 
             payload["limit"] = limit
 
         try:
 
-            return self.client.transactions.list(
-                payload
-            )
+            return self.client.transactions.list(payload)
 
         except Exception as exc:
 
-            raise ZarinPalServiceError(
-                f"خطا در دریافت لیست تراکنش‌ها: {exc}"
-            ) from exc
+            raise ZarinPalServiceError(f"خطا در دریافت لیست تراکنش‌ها: {exc}") from exc
 
     # ========================================================
     # Fee Calculation
@@ -818,9 +745,7 @@ class ZarinPalService:
         """
 
         if not isinstance(amount, int):
-            raise ZarinPalServiceError(
-                "amount باید integer باشد."
-            )
+            raise ZarinPalServiceError("amount باید integer باشد.")
 
         if amount <= 1000:
             raise ZarinPalServiceError(
@@ -840,9 +765,7 @@ class ZarinPalService:
 
         except Exception as exc:
 
-            raise ZarinPalServiceError(
-                f"خطا در محاسبه کارمزد: {exc}"
-            ) from exc
+            raise ZarinPalServiceError(f"خطا در محاسبه کارمزد: {exc}") from exc
 
     # ========================================================
     # Validation Currency
@@ -866,9 +789,7 @@ class ZarinPalService:
             CURRENCY_IRT,
         ):
 
-            raise ZarinPalServiceError(
-                "currency باید IRR یا IRT باشد."
-            )
+            raise ZarinPalServiceError("currency باید IRR یا IRT باشد.")
 
     # ========================================================
     # بررسی Status بازگشتی

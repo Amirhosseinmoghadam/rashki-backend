@@ -29,6 +29,7 @@ class ArticleCategoryListView(APIView):
     """
     List all article categories or create a new category.
     """
+
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     @extend_schema(
@@ -38,7 +39,7 @@ class ArticleCategoryListView(APIView):
             200: article_category_list_response,
             401: common_error_response,
         },
-        tags=['Articles - Categories']
+        tags=["Articles - Categories"],
     )
     def get(self, request):
         categories = ArticleCategory.objects.filter(is_active=True)
@@ -54,13 +55,13 @@ class ArticleCategoryListView(APIView):
             400: validation_error_response,
             401: common_error_response,
         },
-        tags=['Articles - Categories']
+        tags=["Articles - Categories"],
     )
     def post(self, request):
         if not request.user.is_staff:
             return Response(
                 {"detail": "You do not have permission to create categories."},
-                status=status.HTTP_403_FORBIDDEN
+                status=status.HTTP_403_FORBIDDEN,
             )
 
         serializer = ArticleCategorySerializer(data=request.data)
@@ -74,6 +75,7 @@ class ArticleCategoryDetailView(APIView):
     """
     Retrieve, update or delete an article category.
     """
+
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     @extend_schema(
@@ -83,7 +85,7 @@ class ArticleCategoryDetailView(APIView):
             200: article_category_detail_response,
             404: common_error_response,
         },
-        tags=['Articles - Categories']
+        tags=["Articles - Categories"],
     )
     def get(self, request, pk):
         category = get_object_or_404(ArticleCategory, pk=pk)
@@ -99,13 +101,13 @@ class ArticleCategoryDetailView(APIView):
             400: validation_error_response,
             404: common_error_response,
         },
-        tags=['Articles - Categories']
+        tags=["Articles - Categories"],
     )
     def put(self, request, pk):
         if not request.user.is_staff:
             return Response(
                 {"detail": "You do not have permission to update categories."},
-                status=status.HTTP_403_FORBIDDEN
+                status=status.HTTP_403_FORBIDDEN,
             )
 
         category = get_object_or_404(ArticleCategory, pk=pk)
@@ -122,13 +124,13 @@ class ArticleCategoryDetailView(APIView):
             204: None,
             404: common_error_response,
         },
-        tags=['Articles - Categories']
+        tags=["Articles - Categories"],
     )
     def delete(self, request, pk):
         if not request.user.is_staff:
             return Response(
                 {"detail": "You do not have permission to delete categories."},
-                status=status.HTTP_403_FORBIDDEN
+                status=status.HTTP_403_FORBIDDEN,
             )
 
         category = get_object_or_404(ArticleCategory, pk=pk)
@@ -140,6 +142,7 @@ class ArticleListView(APIView):
     """
     List all articles or create a new article.
     """
+
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     @extend_schema(
@@ -147,59 +150,59 @@ class ArticleListView(APIView):
         description="Get a list of all published articles with optional filtering",
         parameters=[
             OpenApiParameter(
-                name='category',
+                name="category",
                 type=str,
                 location=OpenApiParameter.QUERY,
-                description='Filter by category slug'
+                description="Filter by category slug",
             ),
             OpenApiParameter(
-                name='author',
+                name="author",
                 type=int,
                 location=OpenApiParameter.QUERY,
-                description='Filter by author ID'
+                description="Filter by author ID",
             ),
             OpenApiParameter(
-                name='is_featured',
+                name="is_featured",
                 type=bool,
                 location=OpenApiParameter.QUERY,
-                description='Filter featured articles'
+                description="Filter featured articles",
             ),
             OpenApiParameter(
-                name='search',
+                name="search",
                 type=str,
                 location=OpenApiParameter.QUERY,
-                description='Search in title, content, and excerpt'
+                description="Search in title, content, and excerpt",
             ),
         ],
         responses={
             200: article_list_response,
         },
-        tags=['Articles']
+        tags=["Articles"],
     )
     def get(self, request):
-        articles = Article.objects.select_related('category', 'author').filter(
+        articles = Article.objects.select_related("category", "author").filter(
             status=Article.Status.PUBLISHED
         )
 
         # Optional filtering
-        category_slug = request.query_params.get('category')
+        category_slug = request.query_params.get("category")
         if category_slug:
             articles = articles.filter(category__slug=category_slug)
 
-        author_id = request.query_params.get('author')
+        author_id = request.query_params.get("author")
         if author_id:
             articles = articles.filter(author_id=author_id)
 
-        is_featured = request.query_params.get('is_featured')
+        is_featured = request.query_params.get("is_featured")
         if is_featured:
             articles = articles.filter(is_featured=True)
 
-        search = request.query_params.get('search')
+        search = request.query_params.get("search")
         if search:
             articles = articles.filter(
-                Q(title__icontains=search) |
-                Q(content__icontains=search) |
-                Q(excerpt__icontains=search)
+                Q(title__icontains=search)
+                | Q(content__icontains=search)
+                | Q(excerpt__icontains=search)
             )
 
         serializer = ArticleListSerializer(articles, many=True)
@@ -214,24 +217,24 @@ class ArticleListView(APIView):
             400: validation_error_response,
             401: common_error_response,
         },
-        tags=['Articles']
+        tags=["Articles"],
     )
     def post(self, request):
         if not request.user.is_authenticated:
             return Response(
                 {"detail": "Authentication required."},
-                status=status.HTTP_401_UNAUTHORIZED
+                status=status.HTTP_401_UNAUTHORIZED,
             )
 
         serializer = ArticleCreateUpdateSerializer(data=request.data)
         if serializer.is_valid():
             # Set author from request user if not provided
-            if 'author' not in request.data:
-                serializer.validated_data['author'] = request.user
+            if "author" not in request.data:
+                serializer.validated_data["author"] = request.user
 
             # Handle products and motorcycles
-            products_data = request.data.get('products', [])
-            motorcycles_data = request.data.get('motorcycles', [])
+            products_data = request.data.get("products", [])
+            motorcycles_data = request.data.get("motorcycles", [])
 
             article = serializer.save()
 
@@ -241,8 +244,7 @@ class ArticleListView(APIView):
                 article.motorcycles.set(motorcycles_data)
 
             return Response(
-                ArticleDetailSerializer(article).data,
-                status=status.HTTP_201_CREATED
+                ArticleDetailSerializer(article).data, status=status.HTTP_201_CREATED
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -251,6 +253,7 @@ class ArticleDetailView(APIView):
     """
     Retrieve, update or delete an article.
     """
+
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     @extend_schema(
@@ -260,26 +263,25 @@ class ArticleDetailView(APIView):
             200: article_detail_response,
             404: common_error_response,
         },
-        tags=['Articles']
+        tags=["Articles"],
     )
     def get(self, request, identifier):
         # Try to get by ID first, then by slug
         try:
-            article = Article.objects.select_related(
-                'category', 'author'
-            ).prefetch_related(
-                'products', 'motorcycles'
-            ).get(Q(id=identifier) | Q(slug=identifier))
+            article = (
+                Article.objects.select_related("category", "author")
+                .prefetch_related("products", "motorcycles")
+                .get(Q(id=identifier) | Q(slug=identifier))
+            )
         except Article.DoesNotExist:
             return Response(
-                {"detail": "Article not found."},
-                status=status.HTTP_404_NOT_FOUND
+                {"detail": "Article not found."}, status=status.HTTP_404_NOT_FOUND
             )
 
         # Increment view count for published articles
         if article.status == Article.Status.PUBLISHED:
             article.view_count += 1
-            article.save(update_fields=['view_count'])
+            article.save(update_fields=["view_count"])
 
         serializer = ArticleDetailSerializer(article)
         return Response(serializer.data)
@@ -293,28 +295,27 @@ class ArticleDetailView(APIView):
             400: validation_error_response,
             404: common_error_response,
         },
-        tags=['Articles']
+        tags=["Articles"],
     )
     def put(self, request, identifier):
         if not request.user.is_authenticated:
             return Response(
                 {"detail": "Authentication required."},
-                status=status.HTTP_401_UNAUTHORIZED
+                status=status.HTTP_401_UNAUTHORIZED,
             )
 
         try:
             article = Article.objects.get(Q(id=identifier) | Q(slug=identifier))
         except Article.DoesNotExist:
             return Response(
-                {"detail": "Article not found."},
-                status=status.HTTP_404_NOT_FOUND
+                {"detail": "Article not found."}, status=status.HTTP_404_NOT_FOUND
             )
 
         # Check permissions
         if article.author != request.user and not request.user.is_staff:
             return Response(
                 {"detail": "You do not have permission to update this article."},
-                status=status.HTTP_403_FORBIDDEN
+                status=status.HTTP_403_FORBIDDEN,
             )
 
         serializer = ArticleCreateUpdateSerializer(article, data=request.data)
@@ -322,8 +323,8 @@ class ArticleDetailView(APIView):
             article = serializer.save()
 
             # Handle products and motorcycles
-            products_data = request.data.get('products', [])
-            motorcycles_data = request.data.get('motorcycles', [])
+            products_data = request.data.get("products", [])
+            motorcycles_data = request.data.get("motorcycles", [])
 
             if products_data:
                 article.products.set(products_data)
@@ -340,28 +341,27 @@ class ArticleDetailView(APIView):
             204: None,
             404: common_error_response,
         },
-        tags=['Articles']
+        tags=["Articles"],
     )
     def delete(self, request, identifier):
         if not request.user.is_authenticated:
             return Response(
                 {"detail": "Authentication required."},
-                status=status.HTTP_401_UNAUTHORIZED
+                status=status.HTTP_401_UNAUTHORIZED,
             )
 
         try:
             article = Article.objects.get(Q(id=identifier) | Q(slug=identifier))
         except Article.DoesNotExist:
             return Response(
-                {"detail": "Article not found."},
-                status=status.HTTP_404_NOT_FOUND
+                {"detail": "Article not found."}, status=status.HTTP_404_NOT_FOUND
             )
 
         # Check permissions
         if article.author != request.user and not request.user.is_staff:
             return Response(
                 {"detail": "You do not have permission to delete this article."},
-                status=status.HTTP_403_FORBIDDEN
+                status=status.HTTP_403_FORBIDDEN,
             )
 
         article.delete()
@@ -372,6 +372,7 @@ class FeaturedArticleListView(APIView):
     """
     List featured articles.
     """
+
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     @extend_schema(
@@ -380,14 +381,11 @@ class FeaturedArticleListView(APIView):
         responses={
             200: article_list_response,
         },
-        tags=['Articles']
+        tags=["Articles"],
     )
     def get(self, request):
-        articles = Article.objects.select_related(
-            'category', 'author'
-        ).filter(
-            status=Article.Status.PUBLISHED,
-            is_featured=True
+        articles = Article.objects.select_related("category", "author").filter(
+            status=Article.Status.PUBLISHED, is_featured=True
         )
         serializer = ArticleListSerializer(articles, many=True)
         return Response(serializer.data)

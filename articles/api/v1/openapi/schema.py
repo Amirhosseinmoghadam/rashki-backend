@@ -1,6 +1,7 @@
 """
 OpenAPI Schema definitions for Articles API
 """
+
 from drf_spectacular.utils import extend_schema_field
 from drf_spectacular.openapi import AutoSchema
 from rest_framework import serializers
@@ -31,7 +32,14 @@ class ArticleListSerializer(serializers.Serializer):
     category_name = serializers.CharField(read_only=True)
     author = serializers.IntegerField()
     author_name = serializers.CharField(read_only=True)
-    status = serializers.ChoiceField(choices=[("draft", "draft"), ("published", "published"), ("archived", "archived")], default="draft")
+    status = serializers.ChoiceField(
+        choices=[
+            ("draft", "draft"),
+            ("published", "published"),
+            ("archived", "archived"),
+        ],
+        default="draft",
+    )
     is_featured = serializers.BooleanField(default=False)
     reading_time = serializers.IntegerField(default=1)
     view_count = serializers.IntegerField(read_only=True, default=0)
@@ -51,8 +59,17 @@ class ArticleDetailSerializer(serializers.Serializer):
     author = serializers.IntegerField()
     author_name = serializers.CharField(read_only=True)
     products = serializers.ListField(child=serializers.IntegerField(), required=False)
-    motorcycles = serializers.ListField(child=serializers.IntegerField(), required=False)
-    status = serializers.ChoiceField(choices=[("draft", "draft"), ("published", "published"), ("archived", "archived")], default="draft")
+    motorcycles = serializers.ListField(
+        child=serializers.IntegerField(), required=False
+    )
+    status = serializers.ChoiceField(
+        choices=[
+            ("draft", "draft"),
+            ("published", "published"),
+            ("archived", "archived"),
+        ],
+        default="draft",
+    )
     is_featured = serializers.BooleanField(default=False)
     reading_time = serializers.IntegerField(default=1)
     view_count = serializers.IntegerField(read_only=True, default=0)
@@ -72,8 +89,17 @@ class ArticleCreateUpdateSerializer(serializers.Serializer):
     category = serializers.IntegerField()
     author = serializers.IntegerField(required=False)
     products = serializers.ListField(child=serializers.IntegerField(), required=False)
-    motorcycles = serializers.ListField(child=serializers.IntegerField(), required=False)
-    status = serializers.ChoiceField(choices=[("draft", "draft"), ("published", "published"), ("archived", "archived")], default="draft")
+    motorcycles = serializers.ListField(
+        child=serializers.IntegerField(), required=False
+    )
+    status = serializers.ChoiceField(
+        choices=[
+            ("draft", "draft"),
+            ("published", "published"),
+            ("archived", "archived"),
+        ],
+        default="draft",
+    )
     is_featured = serializers.BooleanField(default=False, required=False)
     reading_time = serializers.IntegerField(default=1, required=False)
     seo_title = serializers.CharField(max_length=255, required=False)

@@ -1,6 +1,7 @@
 """
 OpenAPI Response definitions for Articles API
 """
+
 from rest_framework import status
 from articles.api.v1.openapi.schema import (
     ArticleCategoryListSerializer,
@@ -10,23 +11,19 @@ from articles.api.v1.openapi.schema import (
     ArticleCreateUpdateSerializer,
 )
 
-
 # Common responses
 common_error_response = {
     "type": "object",
     "properties": {
         "detail": {"type": "string"},
     },
-    "example": {"detail": "Not found."}
+    "example": {"detail": "Not found."},
 }
 
 validation_error_response = {
     "type": "object",
-    "additionalProperties": {
-        "type": "array",
-        "items": {"type": "string"}
-    },
-    "example": {"title": ["This field is required."]}
+    "additionalProperties": {"type": "array", "items": {"type": "string"}},
+    "example": {"title": ["This field is required."]},
 }
 
 

@@ -2,14 +2,13 @@
 OpenAPI Examples for Articles API
 """
 
-
 # Article Category Examples
 article_category_example = {
     "id": 1,
     "name": "تکنولوژی",
     "slug": "technology",
     "description": "مقالات مربوط به تکنولوژی و نوآوری‌های روز دنیا",
-    "is_active": True
+    "is_active": True,
 }
 
 article_category_list_example = [
@@ -19,15 +18,15 @@ article_category_list_example = [
         "name": "آموزش",
         "slug": "education",
         "description": "مقالات آموزشی و راهنماها",
-        "is_active": True
+        "is_active": True,
     },
     {
         "id": 3,
         "name": "اخبار",
         "slug": "news",
         "description": "آخرین اخبار و رویدادها",
-        "is_active": True
-    }
+        "is_active": True,
+    },
 ]
 
 
@@ -48,7 +47,7 @@ article_list_example = [
         "reading_time": 10,
         "view_count": 1500,
         "published_at": "2024-01-15T10:00:00Z",
-        "created_at": "2024-01-14T08:00:00Z"
+        "created_at": "2024-01-14T08:00:00Z",
     },
     {
         "id": 2,
@@ -65,8 +64,8 @@ article_list_example = [
         "reading_time": 8,
         "view_count": 890,
         "published_at": "2024-01-10T14:00:00Z",
-        "created_at": "2024-01-09T12:00:00Z"
-    }
+        "created_at": "2024-01-09T12:00:00Z",
+    },
 ]
 
 article_detail_example = {
@@ -98,7 +97,7 @@ article_detail_example = {
     "meta_description": "آموزش کامل خرید موتورسیکلت با بررسی تمام نکات فنی و قانونی",
     "published_at": "2024-01-15T10:00:00Z",
     "created_at": "2024-01-14T08:00:00Z",
-    "updated_at": "2024-01-16T09:00:00Z"
+    "updated_at": "2024-01-16T09:00:00Z",
 }
 
 article_create_example = {
@@ -113,5 +112,5 @@ article_create_example = {
     "is_featured": False,
     "reading_time": 5,
     "seo_title": "عنوان سئو",
-    "meta_description": "توضیحات متا برای سئو"
+    "meta_description": "توضیحات متا برای سئو",
 }

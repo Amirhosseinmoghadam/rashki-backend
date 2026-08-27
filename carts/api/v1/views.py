@@ -18,7 +18,6 @@ from .serializers import (
 
 from .openapi.schema import (
     cart_list_view_schema,
-
     add_to_cart_view_schema,
     update_cart_item_view_schema,
     remove_cart_item_view_schema,
@@ -220,4 +219,3 @@ class ClearCartView(APIView):
             },
             status=status.HTTP_200_OK,
         )
-

@@ -26,7 +26,6 @@ import os
 import pprint
 import django
 
-
 # ============================================================
 # تنظیم Django
 # ============================================================
@@ -63,7 +62,6 @@ from utils.zarinpal import (
     ZarinPalServiceError,
 )
 
-
 # ============================================================
 # ساخت Client
 # ============================================================
@@ -83,6 +81,7 @@ except Exception as exc:
 # ============================================================
 # تابع نمایش خروجی
 # ============================================================
+
 
 def print_result(result):
     """
@@ -107,6 +106,7 @@ def print_result(result):
 # 1. ایجاد درخواست پرداخت
 # ============================================================
 
+
 def test_create_payment():
     """
     تست ایجاد Payment.
@@ -118,31 +118,17 @@ def test_create_payment():
     print("\n")
     print("🔵 ایجاد درخواست پرداخت")
 
-    amount = int(
-        input(
-            "مبلغ را وارد کنید: "
-        )
-    )
+    amount = int(input("مبلغ را وارد کنید: "))
 
-    description = input(
-        "توضیحات پرداخت: "
-    )
+    description = input("توضیحات پرداخت: ")
 
-    callback_url = input(
-        "Callback URL: "
-    )
+    callback_url = input("Callback URL: ")
 
-    mobile = input(
-        "شماره موبایل (اختیاری): "
-    ).strip()
+    mobile = input("شماره موبایل (اختیاری): ").strip()
 
-    email = input(
-        "ایمیل (اختیاری): "
-    ).strip()
+    email = input("ایمیل (اختیاری): ").strip()
 
-    currency = input(
-        "Currency [IRR/IRT] (اختیاری): "
-    ).strip().upper()
+    currency = input("Currency [IRR/IRT] (اختیاری): ").strip().upper()
 
     if not currency:
         currency = None
@@ -172,9 +158,7 @@ def test_create_payment():
         print("\n🌐 Payment URL:")
         print(result["payment_url"])
 
-        print(
-            "\n⚠️ این URL را می‌توانی در مرورگر باز کنی."
-        )
+        print("\n⚠️ این URL را می‌توانی در مرورگر باز کنی.")
 
     except ZarinPalServiceError as exc:
 
@@ -186,6 +170,7 @@ def test_create_payment():
 # 2. ساخت Payment URL
 # ============================================================
 
+
 def test_payment_url():
     """
     اگر Authority قبلاً داری،
@@ -195,15 +180,11 @@ def test_payment_url():
     print("\n")
     print("🔵 ساخت Payment URL")
 
-    authority = input(
-        "Authority: "
-    ).strip()
+    authority = input("Authority: ").strip()
 
     try:
 
-        url = zarinpal.get_payment_url(
-            authority
-        )
+        url = zarinpal.get_payment_url(authority)
 
         print("\n🌐 Payment URL:")
         print(url)
@@ -217,6 +198,7 @@ def test_payment_url():
 # ============================================================
 # 3. Verify
 # ============================================================
+
 
 def test_verify():
     """
@@ -232,15 +214,9 @@ def test_verify():
     print("\n")
     print("🟢 Verify Payment")
 
-    authority = input(
-        "Authority: "
-    ).strip()
+    authority = input("Authority: ").strip()
 
-    amount = int(
-        input(
-            "مبلغ تراکنش: "
-        )
-    )
+    amount = int(input("مبلغ تراکنش: "))
 
     try:
 
@@ -259,9 +235,7 @@ def test_verify():
 
             print("\nRef ID:")
 
-            print(
-                zarinpal.get_ref_id(result)
-            )
+            print(zarinpal.get_ref_id(result))
 
         else:
 
@@ -277,6 +251,7 @@ def test_verify():
 # 4. Inquiry
 # ============================================================
 
+
 def test_inquiry():
     """
     استعلام تراکنش.
@@ -285,15 +260,11 @@ def test_inquiry():
     print("\n")
     print("🔎 Inquiry Payment")
 
-    authority = input(
-        "Authority: "
-    ).strip()
+    authority = input("Authority: ").strip()
 
     try:
 
-        result = zarinpal.inquire_payment(
-            authority
-        )
+        result = zarinpal.inquire_payment(authority)
 
         print_result(result)
 
@@ -306,6 +277,7 @@ def test_inquiry():
 # ============================================================
 # 5. Unverified
 # ============================================================
+
 
 def test_unverified():
     """
@@ -331,6 +303,7 @@ def test_unverified():
 # 6. Reverse
 # ============================================================
 
+
 def test_reverse():
     """
     Reverse تراکنش.
@@ -339,13 +312,9 @@ def test_reverse():
     print("\n")
     print("🔴 Reverse Payment")
 
-    authority = input(
-        "Authority: "
-    ).strip()
+    authority = input("Authority: ").strip()
 
-    confirmation = input(
-        "آیا مطمئن هستید؟ [y/N]: "
-    ).strip().lower()
+    confirmation = input("آیا مطمئن هستید؟ [y/N]: ").strip().lower()
 
     if confirmation != "y":
 
@@ -355,9 +324,7 @@ def test_reverse():
 
     try:
 
-        result = zarinpal.reverse_payment(
-            authority
-        )
+        result = zarinpal.reverse_payment(authority)
 
         print_result(result)
 
@@ -371,6 +338,7 @@ def test_reverse():
 # 7. Refund
 # ============================================================
 
+
 def test_refund():
     """
     Refund تراکنش.
@@ -379,31 +347,17 @@ def test_refund():
     print("\n")
     print("💰 Refund Payment")
 
-    session_id = input(
-        "Session ID: "
-    ).strip()
+    session_id = input("Session ID: ").strip()
 
-    amount = int(
-        input(
-            "مبلغ Refund: "
-        )
-    )
+    amount = int(input("مبلغ Refund: "))
 
-    description = input(
-        "توضیحات: "
-    ).strip()
+    description = input("توضیحات: ").strip()
 
-    method = input(
-        "Method [CARD/PAYA]: "
-    ).strip().upper()
+    method = input("Method [CARD/PAYA]: ").strip().upper()
 
-    reason = input(
-        "Reason: "
-    ).strip()
+    reason = input("Reason: ").strip()
 
-    confirmation = input(
-        "\n⚠️ آیا مطمئن هستید؟ [y/N]: "
-    ).strip().lower()
+    confirmation = input("\n⚠️ آیا مطمئن هستید؟ [y/N]: ").strip().lower()
 
     if confirmation != "y":
 
@@ -433,6 +387,7 @@ def test_refund():
 # 8. Transactions List
 # ============================================================
 
+
 def test_transactions():
     """
     دریافت لیست تراکنش‌ها.
@@ -441,40 +396,23 @@ def test_transactions():
     print("\n")
     print("📋 Transactions List")
 
-    terminal_id = input(
-        "Terminal ID: "
-    ).strip()
-
-    filter_status = input(
-        "Filter [PAID/VERIFIED/TRASH/ACTIVE/REFUNDED] "
-        "(اختیاری): "
-    ).strip().upper()
-
-    offset_input = input(
-        "Offset (خالی = بدون مقدار): "
-    ).strip()
-
-    limit_input = input(
-        "Limit (خالی = بدون مقدار): "
-    ).strip()
+    terminal_id = input("Terminal ID: ").strip()
 
     filter_status = (
-        filter_status
-        if filter_status
-        else None
+        input("Filter [PAID/VERIFIED/TRASH/ACTIVE/REFUNDED] " "(اختیاری): ")
+        .strip()
+        .upper()
     )
 
-    offset = (
-        int(offset_input)
-        if offset_input
-        else None
-    )
+    offset_input = input("Offset (خالی = بدون مقدار): ").strip()
 
-    limit = (
-        int(limit_input)
-        if limit_input
-        else None
-    )
+    limit_input = input("Limit (خالی = بدون مقدار): ").strip()
+
+    filter_status = filter_status if filter_status else None
+
+    offset = int(offset_input) if offset_input else None
+
+    limit = int(limit_input) if limit_input else None
 
     try:
 
@@ -497,6 +435,7 @@ def test_transactions():
 # 9. Fee Calculation
 # ============================================================
 
+
 def test_fee():
     """
     محاسبه کارمزد.
@@ -505,15 +444,9 @@ def test_fee():
     print("\n")
     print("🧮 محاسبه کارمزد")
 
-    amount = int(
-        input(
-            "مبلغ: "
-        )
-    )
+    amount = int(input("مبلغ: "))
 
-    currency = input(
-        "Currency [IRR/IRT]: "
-    ).strip().upper()
+    currency = input("Currency [IRR/IRT]: ").strip().upper()
 
     try:
 
@@ -534,6 +467,7 @@ def test_fee():
 # نمایش منو
 # ============================================================
 
+
 def show_menu():
     """
     نمایش منوی اصلی.
@@ -543,51 +477,29 @@ def show_menu():
 
     print("=" * 70)
 
-    print(
-        "        ZARINPAL SERVICE TEST CONSOLE"
-    )
+    print("        ZARINPAL SERVICE TEST CONSOLE")
 
     print("=" * 70)
 
-    print(
-        "1. ایجاد درخواست پرداخت"
-    )
+    print("1. ایجاد درخواست پرداخت")
 
-    print(
-        "2. ساخت Payment URL از Authority"
-    )
+    print("2. ساخت Payment URL از Authority")
 
-    print(
-        "3. Verify Payment"
-    )
+    print("3. Verify Payment")
 
-    print(
-        "4. Inquiry Payment"
-    )
+    print("4. Inquiry Payment")
 
-    print(
-        "5. دریافت Unverified Payments"
-    )
+    print("5. دریافت Unverified Payments")
 
-    print(
-        "6. Reverse Payment"
-    )
+    print("6. Reverse Payment")
 
-    print(
-        "7. Refund Payment"
-    )
+    print("7. Refund Payment")
 
-    print(
-        "8. دریافت لیست تراکنش‌ها"
-    )
+    print("8. دریافت لیست تراکنش‌ها")
 
-    print(
-        "9. محاسبه کارمزد"
-    )
+    print("9. محاسبه کارمزد")
 
-    print(
-        "0. خروج"
-    )
+    print("0. خروج")
 
     print("=" * 70)
 
@@ -596,15 +508,14 @@ def show_menu():
 # Main
 # ============================================================
 
+
 def main():
 
     while True:
 
         show_menu()
 
-        choice = input(
-            "\nانتخاب شما: "
-        ).strip()
+        choice = input("\nانتخاب شما: ").strip()
 
         try:
 
@@ -646,37 +557,27 @@ def main():
 
             elif choice == "0":
 
-                print(
-                    "\n👋 خروج از برنامه..."
-                )
+                print("\n👋 خروج از برنامه...")
 
                 break
 
             else:
 
-                print(
-                    "\n❌ گزینه نامعتبر است."
-                )
+                print("\n❌ گزینه نامعتبر است.")
 
         except ValueError:
 
-            print(
-                "\n❌ مقدار عددی نامعتبر است."
-            )
+            print("\n❌ مقدار عددی نامعتبر است.")
 
         except KeyboardInterrupt:
 
-            print(
-                "\n\n👋 برنامه متوقف شد."
-            )
+            print("\n\n👋 برنامه متوقف شد.")
 
             break
 
         except Exception as exc:
 
-            print(
-                "\n❌ خطای غیرمنتظره:"
-            )
+            print("\n❌ خطای غیرمنتظره:")
 
             print(exc)
 

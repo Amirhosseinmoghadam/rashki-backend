@@ -12,7 +12,6 @@ from .models import (
     ProductMotorcycleCompatibility,
 )
 
-
 # =========================================================
 # Product Admin
 # =========================================================
@@ -128,9 +127,7 @@ class ProductImageAdmin(admin.ModelAdmin):
         "caption",
     )
 
-    readonly_fields = (
-        "created_at",
-    )
+    readonly_fields = ("created_at",)
 
     ordering = (
         "product",
@@ -162,9 +159,7 @@ class AttributeGroupAdmin(admin.ModelAdmin):
         "is_active",
     )
 
-    list_filter = (
-        "is_active",
-    )
+    list_filter = ("is_active",)
 
     search_fields = (
         "name",
@@ -304,9 +299,7 @@ class ProductAttributeValueAdmin(admin.ModelAdmin):
         "value",
     )
 
-    list_filter = (
-        "attribute",
-    )
+    list_filter = ("attribute",)
 
     search_fields = (
         "product__name",
@@ -363,9 +356,7 @@ class ProductVariantAdmin(admin.ModelAdmin):
         "is_available",
     )
 
-    autocomplete_fields = (
-        "product",
-    )
+    autocomplete_fields = ("product",)
 
     fieldsets = (
         (
@@ -389,11 +380,7 @@ class ProductVariantAdmin(admin.ModelAdmin):
         ),
         (
             "وضعیت",
-            {
-                "fields": (
-                    "is_active",
-                )
-            },
+            {"fields": ("is_active",)},
         ),
         (
             "اطلاعات اضافی",
@@ -404,9 +391,7 @@ class ProductVariantAdmin(admin.ModelAdmin):
                     "created_at",
                     "updated_at",
                 ),
-                "classes": (
-                    "collapse",
-                ),
+                "classes": ("collapse",),
             },
         ),
     )
@@ -444,9 +429,7 @@ class VariantAttributeValueAdmin(admin.ModelAdmin):
         "value",
     )
 
-    list_filter = (
-        "attribute",
-    )
+    list_filter = ("attribute",)
 
     search_fields = (
         "variant__sku",
@@ -487,9 +470,7 @@ class ProductMotorcycleCompatibilityAdmin(admin.ModelAdmin):
         "note",
     )
 
-    list_filter = (
-        "motorcycle",
-    )
+    list_filter = ("motorcycle",)
 
     search_fields = (
         "product__name",

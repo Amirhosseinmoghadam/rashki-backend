@@ -4,10 +4,10 @@ from brands.api.v1.views import (
     BrandDetailView,
 )
 
-app_name = 'brands'
+app_name = "brands"
 
 urlpatterns = [
     # Brand URLs
-    path('brands/', BrandListView.as_view(), name='brand-list'),
-    path('brands/<str:identifier>/', BrandDetailView.as_view(), name='brand-detail'),
+    path("brands/", BrandListView.as_view(), name="brand-list"),
+    path("brands/<str:identifier>/", BrandDetailView.as_view(), name="brand-detail"),
 ]

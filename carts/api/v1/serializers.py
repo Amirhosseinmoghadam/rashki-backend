@@ -2,7 +2,6 @@ from rest_framework import serializers
 
 from carts.models import Cart, CartItem
 
-
 # =========================================================
 # Cart Item Serializer
 # =========================================================
@@ -20,7 +19,9 @@ class CartItemSerializer(serializers.ModelSerializer):
         decimal_places=0,
         read_only=True,
     )
-    variant_is_active = serializers.BooleanField(source="variant.is_active", read_only=True)
+    variant_is_active = serializers.BooleanField(
+        source="variant.is_active", read_only=True
+    )
     total_price = serializers.SerializerMethodField()
 
     class Meta:

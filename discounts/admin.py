@@ -2,7 +2,6 @@ from django.contrib import admin
 
 from .models import Discount, Coupon
 
-
 # =========================================================
 # Discount Admin
 # =========================================================
@@ -38,9 +37,7 @@ class DiscountAdmin(admin.ModelAdmin):
         "categories",
     )
 
-    readonly_fields = (
-        "created_at",
-    )
+    readonly_fields = ("created_at",)
 
     ordering = (
         "-starts_at",
@@ -78,9 +75,7 @@ class DiscountAdmin(admin.ModelAdmin):
         ),
         (
             "وضعیت",
-            {
-                "fields": ("is_active",)
-            },
+            {"fields": ("is_active",)},
         ),
         (
             "اطلاعات سیستم",
@@ -119,13 +114,9 @@ class CouponAdmin(admin.ModelAdmin):
         "ends_at",
     )
 
-    search_fields = (
-        "code",
-    )
+    search_fields = ("code",)
 
-    readonly_fields = (
-        "created_at",
-    )
+    readonly_fields = ("created_at",)
 
     ordering = (
         "-starts_at",
@@ -165,9 +156,7 @@ class CouponAdmin(admin.ModelAdmin):
         ),
         (
             "وضعیت",
-            {
-                "fields": ("is_active",)
-            },
+            {"fields": ("is_active",)},
         ),
         (
             "اطلاعات سیستم",

@@ -2,7 +2,6 @@ from django.contrib import admin
 
 from .models import Order, OrderItem
 
-
 # =========================================================
 # Order Item Inline
 # =========================================================
@@ -157,8 +156,6 @@ class OrderItemAdmin(admin.ModelAdmin):
         "variant",
     )
 
-    readonly_fields = (
-        "total_amount",
-    )
+    readonly_fields = ("total_amount",)
 
     ordering = ("-order__created_at",)

@@ -7,7 +7,6 @@ from drf_spectacular.utils import (
 
 from . import examples
 
-
 # =========================================================
 # Cart List View Schema
 # =========================================================

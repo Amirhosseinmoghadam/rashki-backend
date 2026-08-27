@@ -24,6 +24,7 @@ class BrandListView(APIView):
     """
     List all brands or create a new brand.
     """
+
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     @extend_schema(
@@ -32,7 +33,7 @@ class BrandListView(APIView):
         responses={
             200: brand_list_response,
         },
-        tags=['Brands']
+        tags=["Brands"],
     )
     def get(self, request):
         brands = Brand.objects.filter(is_active=True)
@@ -49,13 +50,13 @@ class BrandListView(APIView):
             401: common_error_response,
             403: common_error_response,
         },
-        tags=['Brands']
+        tags=["Brands"],
     )
     def post(self, request):
         if not request.user.is_staff:
             return Response(
                 {"detail": "You do not have permission to create brands."},
-                status=status.HTTP_403_FORBIDDEN
+                status=status.HTTP_403_FORBIDDEN,
             )
 
         serializer = BrandCreateUpdateSerializer(data=request.data)
@@ -69,6 +70,7 @@ class BrandDetailView(APIView):
     """
     Retrieve, update or delete a brand.
     """
+
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     @extend_schema(
@@ -78,7 +80,7 @@ class BrandDetailView(APIView):
             200: brand_detail_response,
             404: common_error_response,
         },
-        tags=['Brands']
+        tags=["Brands"],
     )
     def get(self, request, identifier):
         # Try to get by ID first, then by slug
@@ -99,13 +101,13 @@ class BrandDetailView(APIView):
             400: validation_error_response,
             404: common_error_response,
         },
-        tags=['Brands']
+        tags=["Brands"],
     )
     def put(self, request, identifier):
         if not request.user.is_staff:
             return Response(
                 {"detail": "You do not have permission to update brands."},
-                status=status.HTTP_403_FORBIDDEN
+                status=status.HTTP_403_FORBIDDEN,
             )
 
         try:
@@ -126,13 +128,13 @@ class BrandDetailView(APIView):
             204: None,
             404: common_error_response,
         },
-        tags=['Brands']
+        tags=["Brands"],
     )
     def delete(self, request, identifier):
         if not request.user.is_staff:
             return Response(
                 {"detail": "You do not have permission to delete brands."},
-                status=status.HTTP_403_FORBIDDEN
+                status=status.HTTP_403_FORBIDDEN,
             )
 
         try:
