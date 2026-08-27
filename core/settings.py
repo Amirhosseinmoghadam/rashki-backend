@@ -60,7 +60,6 @@ INSTALLED_APPS = [
     "accounts",
     "addresses",
     "articles",
-    "base",
     "brands",
     "carts",
     "categories",
