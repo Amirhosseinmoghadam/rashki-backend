@@ -1,32 +1,54 @@
-from rest_framework import serializers
-from addresses.models import Province, City, Address
 from django.db import transaction
+from rest_framework import serializers
+
+from addresses.models import Province, City, Address
+
+# =========================================================
+# Province Serializer
+# =========================================================
 
 
 class ProvinceSerializer(serializers.ModelSerializer):
     """
     Serializer for the Province model.
-    Outputs only the 'id' and 'name' fields.
     """
 
     class Meta:
         model = Province
-        fields = ["id", "name"]
+        fields = [
+            "id",
+            "name",
+        ]
+
+
+# =========================================================
+# City Serializer
+# =========================================================
 
 
 class CitySerializer(serializers.ModelSerializer):
     """
     Serializer for the City model.
-    Outputs only the 'id' and 'name' fields.
-    The relationship to the province is handled via URL filtering in the view.
     """
 
     class Meta:
         model = City
-        fields = ["id", "name"]
+        fields = [
+            "id",
+            "name",
+        ]
+
+
+# =========================================================
+# Address Serializer
+# =========================================================
 
 
 class AddressSerializer(serializers.ModelSerializer):
+    """
+    Serializer for displaying an address.
+    """
+
     province_name = serializers.CharField(
         source="province.name",
         read_only=True,
@@ -66,7 +88,16 @@ class AddressSerializer(serializers.ModelSerializer):
         ]
 
 
+# =========================================================
+# Address Create Serializer
+# =========================================================
+
+
 class AddressCreateSerializer(serializers.ModelSerializer):
+    """
+    Serializer for creating a new address.
+    """
+
     class Meta:
         model = Address
 
@@ -102,10 +133,12 @@ class AddressCreateSerializer(serializers.ModelSerializer):
 
         has_addresses = addresses.exists()
 
-        # اولین آدرس کاربر پیش‌فرض باشد
+        # اولین آدرس کاربر به صورت خودکار پیش‌فرض شود
         if not has_addresses:
             validated_data["is_default"] = True
 
+        # اگر این آدرس قرار است پیش‌فرض باشد،
+        # تمام آدرس‌های قبلی غیرپیش‌فرض شوند.
         if validated_data.get("is_default") is True:
             addresses.filter(is_default=True).update(is_default=False)
 
@@ -115,7 +148,16 @@ class AddressCreateSerializer(serializers.ModelSerializer):
         )
 
 
+# =========================================================
+# Address Update Serializer
+# =========================================================
+
+
 class AddressUpdateSerializer(serializers.ModelSerializer):
+    """
+    Serializer for updating an existing address.
+    """
+
     class Meta:
         model = Address
 
@@ -156,7 +198,8 @@ class AddressUpdateSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         user = instance.user
 
-        # آدرس پیش‌فرض دیگری انتخاب شده
+        # اگر آدرس دیگری پیش‌فرض شود،
+        # آدرس پیش‌فرض قبلی غیرپیش‌فرض شود.
         if validated_data.get("is_default") is True:
             (
                 Address.objects.select_for_update()

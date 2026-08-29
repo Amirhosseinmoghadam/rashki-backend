@@ -1,19 +1,34 @@
+from rest_framework import serializers
+
 from drf_spectacular.utils import (
     extend_schema,
     OpenApiExample,
     OpenApiResponse,
     OpenApiTypes,
-    extend_schema_view,
+    inline_serializer,
 )
-
-
-from . import examples, responses
 
 from addresses.api.v1.serializers import (
     AddressSerializer,
     AddressCreateSerializer,
     AddressUpdateSerializer,
 )
+
+from . import examples, responses
+
+# =========================================================
+# Reusable Response Schemas
+# =========================================================
+
+address_set_default_response = inline_serializer(
+    name="AddressSetDefaultResponse",
+    fields={
+        "success": serializers.BooleanField(),
+        "message": serializers.CharField(),
+        "data": AddressSerializer(),
+    },
+)
+
 
 # =========================================================
 # Address List
@@ -432,9 +447,11 @@ address_set_default_view_schema = extend_schema(
         "Any previously selected default address "
         "will automatically be unset."
     ),
+    # این endpoint هیچ Request Body ندارد.
+    request=None,
     responses={
         200: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
+            response=address_set_default_response,
             description="Default address changed successfully.",
             examples=[
                 OpenApiExample(

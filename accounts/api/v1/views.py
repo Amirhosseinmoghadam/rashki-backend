@@ -1,8 +1,8 @@
 from datetime import timedelta
+
 from django.conf import settings
 from django.db import transaction
 from django.utils import timezone
-from django.core.cache import cache
 
 from rest_framework import status
 from rest_framework.permissions import (
@@ -12,14 +12,11 @@ from rest_framework.permissions import (
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from rest_framework_simplejwt.tokens import (
-    RefreshToken,
-)
-from rest_framework_simplejwt.exceptions import (
-    TokenError,
-)
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.exceptions import TokenError
 
 from accounts.models import User, OTPCode
+
 from .openapi.schema import (
     send_otp_view_schema,
     otp_verify_view_schema,
@@ -48,7 +45,7 @@ from accounts.api.v1.otp import (
 
 def create_tokens(user):
     """
-    Create JWT access + refresh tokens.
+    ایجاد JWT access و refresh token برای کاربر.
     """
 
     refresh = RefreshToken.for_user(user)
@@ -60,34 +57,38 @@ def create_tokens(user):
 
 
 def get_user_data(user):
+    """
+    اطلاعات عمومی کاربر برای Response.
+    """
+
     return {
         "id": user.id,
         "phone_number": user.phone_number,
         "first_name": user.first_name,
         "last_name": user.last_name,
-        "is_phone_verified": (user.is_phone_verified),
+        "is_phone_verified": user.is_phone_verified,
     }
 
 
 # =========================================================
 # Send OTP
 # =========================================================
-@send_otp_view_schema
+
+
 class SendOTPView(APIView):
     """
     Unified authentication endpoint.
 
-    It does NOT distinguish Login from Signup.
-
     Existing user:
-        -> authenticate
+        -> Authenticate
 
     New user:
-        -> create after OTP verification
+        -> Create after OTP verification
     """
 
     permission_classes = [AllowAny]
 
+    @send_otp_view_schema
     def post(self, request):
 
         serializer = SendOTPSerializer(data=request.data)
@@ -106,13 +107,12 @@ class SendOTPView(APIView):
         )
 
         if not rate_limit["allowed"]:
-
             return Response(
                 {
-                    "detail": ("تعداد درخواست‌ها " "بیش از حد مجاز است."),
-                    "retry_after": (rate_limit["retry_after"]),
+                    "detail": "تعداد درخواست‌ها بیش از حد مجاز است.",
+                    "retry_after": rate_limit["retry_after"],
                 },
-                status=(status.HTTP_429_TOO_MANY_REQUESTS),
+                status=status.HTTP_429_TOO_MANY_REQUESTS,
             )
 
         # -------------------------------------------------
@@ -131,16 +131,18 @@ class SendOTPView(APIView):
         # -------------------------------------------------
 
         otp_code = generate_otp()
-        print("otp_code : ", otp_code)
+
+        # فقط برای Development
+        print("otp_code:", otp_code)
+
         otp_hash = hash_otp(otp_code)
-        print("otp_hash : ", otp_hash)
 
         # -------------------------------------------------
         # Expiration
         # -------------------------------------------------
 
         expires_at = timezone.now() + timedelta(
-            seconds=(settings.AUTH_OTP_EXPIRE_SECONDS)
+            seconds=settings.AUTH_OTP_EXPIRE_SECONDS
         )
 
         # -------------------------------------------------
@@ -150,29 +152,24 @@ class SendOTPView(APIView):
         OTPCode.objects.create(
             phone_number=phone_number,
             code_hash=otp_hash,
-            purpose=(OTPCode.OTPPurpose.AUTH),
+            purpose=OTPCode.OTPPurpose.AUTH,
             expires_at=expires_at,
-            max_attempts=(settings.AUTH_OTP_MAX_ATTEMPTS),
+            max_attempts=settings.AUTH_OTP_MAX_ATTEMPTS,
         )
 
         # -------------------------------------------------
         # SMS Provider
         # -------------------------------------------------
-        #
+
         # send_sms(
         #     phone_number=phone_number,
         #     code=otp_code,
         # )
-        #
-        # IMPORTANT:
-        # Never return otp_code in production.
-        #
-        # -------------------------------------------------
 
         return Response(
             {
-                "message": ("کد تایید با موفقیت ارسال شد."),
-                "expires_in": (settings.AUTH_OTP_EXPIRE_SECONDS),
+                "message": "کد تایید با موفقیت ارسال شد.",
+                "expires_in": settings.AUTH_OTP_EXPIRE_SECONDS,
             },
             status=status.HTTP_200_OK,
         )
@@ -181,7 +178,8 @@ class SendOTPView(APIView):
 # =========================================================
 # Verify OTP
 # =========================================================
-@otp_verify_view_schema
+
+
 class OTPVerifyView(APIView):
     """
     Unified Login + Signup.
@@ -192,15 +190,11 @@ class OTPVerifyView(APIView):
     New User:
         -> Create User
         -> Login
-
-    Frontend should use `next`:
-
-        home
-        complete_profile
     """
 
     permission_classes = [AllowAny]
 
+    @otp_verify_view_schema
     @transaction.atomic
     def post(self, request):
 
@@ -209,7 +203,6 @@ class OTPVerifyView(APIView):
         serializer.is_valid(raise_exception=True)
 
         phone_number = serializer.validated_data["phone_number"]
-
         otp_code = serializer.validated_data["otp_code"]
 
         # -------------------------------------------------
@@ -222,13 +215,12 @@ class OTPVerifyView(APIView):
         )
 
         if not rate_limit["allowed"]:
-
             return Response(
                 {
-                    "detail": ("تعداد تلاش‌های تایید " "بیش از حد مجاز است."),
-                    "retry_after": (rate_limit["retry_after"]),
+                    "detail": "تعداد تلاش‌های تایید بیش از حد مجاز است.",
+                    "retry_after": rate_limit["retry_after"],
                 },
-                status=(status.HTTP_429_TOO_MANY_REQUESTS),
+                status=status.HTTP_429_TOO_MANY_REQUESTS,
             )
 
         # -------------------------------------------------
@@ -246,10 +238,11 @@ class OTPVerifyView(APIView):
         )
 
         if otp is None:
-
             return Response(
-                {"detail": ("کد تایید معتبر نیست.")},
-                status=(status.HTTP_400_BAD_REQUEST),
+                {
+                    "detail": "کد تایید معتبر نیست.",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         # -------------------------------------------------
@@ -263,8 +256,10 @@ class OTPVerifyView(APIView):
             otp.save(update_fields=["is_used"])
 
             return Response(
-                {"detail": ("کد تایید منقضی شده است.")},
-                status=(status.HTTP_400_BAD_REQUEST),
+                {
+                    "detail": "کد تایید منقضی شده است.",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         # -------------------------------------------------
@@ -278,8 +273,10 @@ class OTPVerifyView(APIView):
             otp.save(update_fields=["is_used"])
 
             return Response(
-                {"detail": ("تعداد تلاش‌های مجاز " "به پایان رسیده است.")},
-                status=(status.HTTP_429_TOO_MANY_REQUESTS),
+                {
+                    "detail": "تعداد تلاش‌های مجاز به پایان رسیده است.",
+                },
+                status=status.HTTP_429_TOO_MANY_REQUESTS,
             )
 
         # -------------------------------------------------
@@ -297,11 +294,8 @@ class OTPVerifyView(APIView):
 
             update_fields = ["attempts"]
 
-            # ---------------------------------------------
-            # Last attempt
-            # ---------------------------------------------
-
             if otp.attempts >= otp.max_attempts:
+
                 otp.is_used = True
 
                 update_fields.append("is_used")
@@ -315,10 +309,10 @@ class OTPVerifyView(APIView):
 
             return Response(
                 {
-                    "detail": ("کد تایید اشتباه است."),
-                    "remaining_attempts": (remaining_attempts),
+                    "detail": "کد تایید اشتباه است.",
+                    "remaining_attempts": remaining_attempts,
                 },
-                status=(status.HTTP_400_BAD_REQUEST),
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         # -------------------------------------------------
@@ -377,9 +371,9 @@ class OTPVerifyView(APIView):
 
         return Response(
             {
-                "message": ("احراز هویت با موفقیت انجام شد."),
-                "is_new_user": (is_new_user),
-                "is_profile_completed": (is_profile_completed),
+                "message": "احراز هویت با موفقیت انجام شد.",
+                "is_new_user": is_new_user,
+                "is_profile_completed": is_profile_completed,
                 "next": next_page,
                 "user": get_user_data(user),
                 "tokens": tokens,
@@ -391,7 +385,8 @@ class OTPVerifyView(APIView):
 # =========================================================
 # Complete Profile
 # =========================================================
-@complete_profile_view_schema
+
+
 class CompleteProfileView(APIView):
     """
     Complete basic user profile.
@@ -401,6 +396,7 @@ class CompleteProfileView(APIView):
 
     permission_classes = [IsAuthenticated]
 
+    @complete_profile_view_schema
     def patch(self, request):
 
         serializer = CompleteProfileSerializer(
@@ -415,8 +411,8 @@ class CompleteProfileView(APIView):
 
         return Response(
             {
-                "message": ("اطلاعات کاربر " "با موفقیت تکمیل شد."),
-                "is_profile_completed": (user.is_profile_completed),
+                "message": "اطلاعات کاربر با موفقیت تکمیل شد.",
+                "is_profile_completed": user.is_profile_completed,
                 "next": ("home" if user.is_profile_completed else "complete_profile"),
                 "user": get_user_data(user),
             },
@@ -427,7 +423,8 @@ class CompleteProfileView(APIView):
 # =========================================================
 # Logout
 # =========================================================
-@user_logout_api_view_schema
+
+
 class UserLogoutAPIView(APIView):
     """
     Logout authenticated user.
@@ -437,15 +434,17 @@ class UserLogoutAPIView(APIView):
 
     permission_classes = [IsAuthenticated]
 
+    @user_logout_api_view_schema
     def post(self, request):
 
         refresh_token = request.data.get("refresh")
 
         if not refresh_token:
-
             return Response(
-                {"detail": ("Refresh token is required.")},
-                status=(status.HTTP_400_BAD_REQUEST),
+                {
+                    "detail": "Refresh token is required.",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         try:
@@ -455,13 +454,17 @@ class UserLogoutAPIView(APIView):
             token.blacklist()
 
             return Response(
-                {"message": ("Logout successful.")},
+                {
+                    "message": "Logout successful.",
+                },
                 status=status.HTTP_200_OK,
             )
 
         except TokenError:
 
             return Response(
-                {"detail": ("Refresh token is invalid " "or already blacklisted.")},
-                status=(status.HTTP_401_UNAUTHORIZED),
+                {
+                    "detail": ("Refresh token is invalid " "or already blacklisted."),
+                },
+                status=status.HTTP_401_UNAUTHORIZED,
             )
