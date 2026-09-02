@@ -1,150 +1,20 @@
-# from rest_framework import serializers
-#
-# from categories.models import Category
-#
-#
-# class CategorySerializer(serializers.ModelSerializer):
-#     """Serializer for Category model with nested parent/children support."""
-#
-#     parent = serializers.PrimaryKeyRelatedField(
-#         queryset=Category.objects.filter(is_active=True),
-#         required=False,
-#         allow_null=True,
-#         help_text="Parent category ID",
-#     )
-#     children = serializers.SerializerMethodField(
-#         help_text="List of child category IDs",
-#     )
-#
-#     class Meta:
-#         model = Category
-#         fields = [
-#             "id",
-#             "name",
-#             "slug",
-#             "parent",
-#             "children",
-#             "image",
-#             "description",
-#             "is_active",
-#             "created_at",
-#             "updated_at",
-#         ]
-#         read_only_fields = [
-#             "id",
-#             "created_at",
-#             "updated_at",
-#         ]
-#
-#     def get_children(self, obj):
-#         """Return list of active child category IDs."""
-#         if hasattr(obj, "children"):
-#             return obj.children.filter(is_active=True).values_list("id", flat=True)
-#         return []
-#
-#
-# class CategoryDetailSerializer(serializers.ModelSerializer):
-#     """Detailed serializer for Category with full nested information."""
-#
-#     parent = serializers.SerializerMethodField(
-#         help_text="Parent category details",
-#     )
-#     children = serializers.SerializerMethodField(
-#         help_text="List of child category details",
-#     )
-#
-#     class Meta:
-#         model = Category
-#         fields = [
-#             "id",
-#             "name",
-#             "slug",
-#             "parent",
-#             "children",
-#             "image",
-#             "description",
-#             "is_active",
-#             "created_at",
-#             "updated_at",
-#         ]
-#         read_only_fields = [
-#             "id",
-#             "created_at",
-#             "updated_at",
-#         ]
-#
-#     def get_parent(self, obj):
-#         """Return parent category details if exists."""
-#         if obj.parent and obj.parent.is_active:
-#             return {
-#                 "id": obj.parent.id,
-#                 "name": obj.parent.name,
-#                 "slug": obj.parent.slug,
-#             }
-#         return None
-#
-#     def get_children(self, obj):
-#         """Return list of active child category details."""
-#         children = obj.children.filter(is_active=True) if hasattr(obj, "children") else []
-#         return [
-#             {
-#                 "id": child.id,
-#                 "name": child.name,
-#                 "slug": child.slug,
-#             }
-#             for child in children
-#         ]
-#
-#
-# class CategoryCreateUpdateSerializer(serializers.ModelSerializer):
-#     """Serializer for creating and updating categories."""
-#
-#     class Meta:
-#         model = Category
-#         fields = [
-#             "name",
-#             "slug",
-#             "parent",
-#             "image",
-#             "description",
-#             "is_active",
-#         ]
-#
-#     def validate_slug(self, value):
-#         """Ensure slug is unique."""
-#         queryset = Category.objects.all()
-#         if self.instance:
-#             queryset = queryset.exclude(pk=self.instance.pk)
-#         if queryset.filter(slug=value).exists():
-#             raise serializers.ValidationError("A category with this slug already exists.")
-#         return value
-#
-#     def validate_parent(self, value):
-#         """Prevent circular references in parent-child relationship."""
-#         if value and self.instance:
-#             # Check if the parent is the instance itself
-#             if value == self.instance:
-#                 raise serializers.ValidationError(
-#                     "A category cannot be its own parent."
-#                 )
-#         return value
 from drf_spectacular.utils import extend_schema_field
+
 from rest_framework import serializers
 
 from categories.models import Category
+from drf_spectacular.helpers import lazy_serializer
 
 # =========================================================
-# Category Child Serializer
+# Category Child
 # =========================================================
 
 
 class CategoryChildSerializer(serializers.ModelSerializer):
-    """
-    Lightweight serializer used for nested category information.
-    """
 
     class Meta:
         model = Category
+
         fields = [
             "id",
             "name",
@@ -153,31 +23,22 @@ class CategoryChildSerializer(serializers.ModelSerializer):
 
 
 # =========================================================
-# Category Serializer
+# Category List
 # =========================================================
 
 
 class CategorySerializer(serializers.ModelSerializer):
-    """
-    Serializer for Category model.
 
-    Parent is represented by its ID.
-    Children are represented by a list of child category IDs.
-    """
-
-    parent = serializers.PrimaryKeyRelatedField(
-        queryset=Category.objects.filter(is_active=True),
-        required=False,
-        allow_null=True,
-        help_text="Parent category ID",
+    parent = serializers.IntegerField(
+        source="parent_id",
+        read_only=True,
     )
 
-    children = serializers.SerializerMethodField(
-        help_text="List of child category IDs",
-    )
+    children = serializers.SerializerMethodField()
 
     class Meta:
         model = Category
+
         fields = [
             "id",
             "name",
@@ -193,118 +54,129 @@ class CategorySerializer(serializers.ModelSerializer):
 
         read_only_fields = [
             "id",
-            "created_at",
-            "updated_at",
-        ]
-
-    @extend_schema_field(serializers.ListField(child=serializers.IntegerField()))
-    def get_children(self, obj):
-        """
-        Return active child category IDs.
-        """
-
-        return list(obj.children.filter(is_active=True).values_list("id", flat=True))
-
-
-# =========================================================
-# Category Detail Serializer
-# =========================================================
-
-
-class CategoryDetailSerializer(serializers.ModelSerializer):
-    """
-    Detailed serializer for Category.
-
-    Parent contains basic category information.
-    Children contain basic information for each child category.
-    """
-
-    parent = serializers.SerializerMethodField(
-        help_text="Parent category details",
-    )
-
-    children = serializers.SerializerMethodField(
-        help_text="List of child category details",
-    )
-
-    class Meta:
-        model = Category
-        fields = [
-            "id",
-            "name",
             "slug",
-            "parent",
-            "children",
-            "image",
-            "description",
-            "is_active",
-            "created_at",
-            "updated_at",
-        ]
-
-        read_only_fields = [
-            "id",
             "created_at",
             "updated_at",
         ]
 
     @extend_schema_field(
-        {
-            "oneOf": [
-                {
-                    "type": "object",
-                    "properties": {
-                        "id": {"type": "integer"},
-                        "name": {"type": "string"},
-                        "slug": {"type": "string"},
-                    },
-                    "required": [
-                        "id",
-                        "name",
-                        "slug",
-                    ],
-                },
-                {"type": "null"},
-            ]
-        }
+        serializers.ListField(
+            child=serializers.IntegerField()
+        )
     )
-    def get_parent(self, obj):
-        """
-        Return parent category details if active.
-        """
-
-        if obj.parent and obj.parent.is_active:
-            return {
-                "id": obj.parent.id,
-                "name": obj.parent.name,
-                "slug": obj.parent.slug,
-            }
-
-        return None
-
-    @extend_schema_field(CategoryChildSerializer(many=True))
     def get_children(self, obj):
-        """
-        Return active child category details.
-        """
 
-        children = obj.children.filter(is_active=True)
+        children = getattr(
+            obj,
+            "active_children",
+            None,
+        )
 
-        return CategoryChildSerializer(children, many=True).data
+        if children is None:
+            children = obj.children.filter(
+                is_active=True
+            )
+
+        return [
+            child.id
+            for child in children
+        ]
 
 
 # =========================================================
-# Category Create / Update Serializer
+# Category Detail
 # =========================================================
 
 
-class CategoryCreateUpdateSerializer(serializers.ModelSerializer):
-    """
-    Serializer for creating and updating categories.
-    """
+class CategoryDetailSerializer(serializers.ModelSerializer):
+
+    parent = serializers.SerializerMethodField()
+
+    children = serializers.SerializerMethodField()
 
     class Meta:
         model = Category
+
+        fields = [
+            "id",
+            "name",
+            "slug",
+            "parent",
+            "children",
+            "image",
+            "description",
+            "is_active",
+            "created_at",
+            "updated_at",
+        ]
+
+        read_only_fields = fields
+
+    @extend_schema_field(
+        CategoryChildSerializer(
+            allow_null=True
+        )
+    )
+    def get_parent(self, obj):
+
+        if (
+            obj.parent
+            and obj.parent.is_active
+        ):
+            return CategoryChildSerializer(
+                obj.parent
+            ).data
+
+        return None
+
+    @extend_schema_field(
+        CategoryChildSerializer(
+            many=True
+        )
+    )
+    def get_children(self, obj):
+
+        children = getattr(
+            obj,
+            "active_children",
+            None,
+        )
+
+        if children is None:
+            children = obj.children.filter(
+                is_active=True
+            )
+
+        return CategoryChildSerializer(
+            children,
+            many=True,
+        ).data
+
+
+# =========================================================
+# Category Create / Update
+# =========================================================
+
+
+class CategoryCreateUpdateSerializer(
+    serializers.ModelSerializer
+):
+
+    slug = serializers.CharField(
+        read_only=True,
+    )
+
+    parent = serializers.PrimaryKeyRelatedField(
+        queryset=Category.objects.filter(
+            is_active=True
+        ),
+        required=False,
+        allow_null=True,
+    )
+
+    class Meta:
+        model = Category
+
         fields = [
             "name",
             "slug",
@@ -314,34 +186,139 @@ class CategoryCreateUpdateSerializer(serializers.ModelSerializer):
             "is_active",
         ]
 
-    def validate_slug(self, value):
-        """
-        Ensure slug is unique.
-        """
+        read_only_fields = [
+            "slug",
+        ]
 
-        queryset = Category.objects.all()
+    # =====================================================
+    # Name
+    # =====================================================
 
-        if self.instance:
-            queryset = queryset.exclude(pk=self.instance.pk)
+    def validate_name(self, value):
 
-        if queryset.filter(slug=value).exists():
+        value = value.strip()
+
+        if not value:
             raise serializers.ValidationError(
-                "A category with this slug already exists."
+                "نام دسته‌بندی الزامی است."
             )
 
         return value
 
+    # =====================================================
+    # Parent
+    # =====================================================
+
     def validate_parent(self, value):
         """
-        Prevent circular references in parent-child relationship.
+        Prevent circular hierarchy.
+
+        Examples rejected:
+
+            A -> A
+
+            A -> B -> C -> A
         """
 
-        if value and self.instance:
+        if value is None:
+            return value
 
-            # Prevent category from being its own parent
-            if value == self.instance:
+        instance = self.instance
+
+        if instance is None:
+            return value
+
+        # Direct self-reference
+        if value.pk == instance.pk:
+            raise serializers.ValidationError(
+                "یک دسته‌بندی نمی‌تواند "
+                "والد خودش باشد."
+            )
+
+        # Check ancestors
+        parent = value
+
+        visited = set()
+
+        while parent is not None:
+
+            if parent.pk in visited:
                 raise serializers.ValidationError(
-                    "A category cannot be its own parent."
+                    "ساختار دسته‌بندی دارای حلقه است."
                 )
 
+            visited.add(parent.pk)
+
+            if parent.pk == instance.pk:
+                raise serializers.ValidationError(
+                    "انتخاب این دسته والد "
+                    "باعث ایجاد حلقه می‌شود."
+                )
+
+            parent = parent.parent
+
         return value
+
+# =========================================================
+# Category Tree Serializer
+# =========================================================
+
+
+class CategoryTreeSerializer(serializers.Serializer):
+    """
+    Recursive serializer for category tree.
+
+    Used for:
+
+        GET /categories/tree/
+    """
+
+    id = serializers.IntegerField(
+        read_only=True,
+    )
+
+    name = serializers.CharField(
+        read_only=True,
+    )
+
+    slug = serializers.CharField(
+        read_only=True,
+    )
+
+    image = serializers.URLField(
+        allow_null=True,
+        read_only=True,
+    )
+
+    children = serializers.SerializerMethodField()
+
+    @extend_schema_field(
+        lazy_serializer(
+            "categories.api.v1.serializers.CategoryTreeSerializer"
+        )(
+            many=True
+        )
+    )
+    def get_children(self, obj):
+        """
+        Recursively serialize child categories.
+        """
+
+        if isinstance(obj, dict):
+            children = obj.get(
+                "children",
+                [],
+            )
+
+        else:
+            children = getattr(
+                obj,
+                "children",
+                [],
+            )
+
+        return CategoryTreeSerializer(
+            children,
+            many=True,
+            context=self.context,
+        ).data

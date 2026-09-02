@@ -1,206 +1,36 @@
-# from drf_spectacular.utils import (
-#     OpenApiExample,
-#     OpenApiResponse,
-#     extend_schema,
-#     extend_schema_view,
-# )
-#
-# from rest_framework import generics
-# from rest_framework.permissions import AllowAny, IsAdminUser
-# from rest_framework.response import Response
-# from rest_framework import status
-#
-# from contact.models import ContactRequest
-# from .serializers import (
-#     ContactRequestAdminSerializer,
-#     ContactRequestCreateSerializer,
-# )
-# from contact.throttles import ContactRequestThrottle
-#
-#
-# from contact.api.v1.openapi.schema import (
-#     contact_create_view_schema,
-#     contact_admin_list_view_schema,
-#     contact_admin_detail_view_schema,
-#     contact_admin_partial_update_view_schema,
-# )
-#
-#
-# @extend_schema_view(
-#     post=contact_create_view_schema,
-# )
-# class ContactRequestCreateAPIView(generics.CreateAPIView):
-#     """
-#     ثبت درخواست تماس توسط کاربر.
-#     """
-#
-#     queryset = ContactRequest.objects.all()
-#
-#     serializer_class = ContactRequestCreateSerializer
-#
-#     permission_classes = [
-#         AllowAny,
-#     ]
-#
-#     authentication_classes = []
-#
-#     throttle_classes = [
-#         ContactRequestThrottle,
-#     ]
-#
-#     @extend_schema(
-#         tags=["Contact"],
-#         summary="ثبت درخواست تماس با ما",
-#         description=(
-#             "ثبت درخواست تماس توسط کاربران. "
-#             "برای ثبت درخواست نیازی به ورود به حساب کاربری نیست."
-#         ),
-#         request=ContactRequestCreateSerializer,
-#         responses={
-#             201: OpenApiResponse(description="درخواست با موفقیت ثبت شد."),
-#             400: OpenApiResponse(description="اطلاعات ارسال شده معتبر نیست."),
-#             429: OpenApiResponse(description=("تعداد درخواست‌ها بیش از حد مجاز است.")),
-#         },
-#         examples=[
-#             OpenApiExample(
-#                 "استعلام قیمت",
-#                 value={
-#                     "first_name": "امیرحسین",
-#                     "last_name": "مقدم",
-#                     "phone_number": "09123456789",
-#                     "subject": "price_inquiry",
-#                     "description": (
-#                         "سلام، لطفاً قیمت عمده این محصول " "را اعلام کنید."
-#                     ),
-#                 },
-#                 request_only=True,
-#             ),
-#             OpenApiExample(
-#                 "درخواست همکاری عمده",
-#                 value={
-#                     "first_name": "علی",
-#                     "last_name": "رضایی",
-#                     "phone_number": "09123456789",
-#                     "subject": "wholesale_cooperation",
-#                     "description": (
-#                         "برای همکاری در زمینه خرید عمده "
-#                         "لوازم یدکی موتور سیکلت تماس می‌گیرم."
-#                     ),
-#                 },
-#                 request_only=True,
-#             ),
-#         ],
-#     )
-#     def create(self, request, *args, **kwargs):
-#         serializer = self.get_serializer(data=request.data)
-#
-#         serializer.is_valid(raise_exception=True)
-#
-#         contact_request = serializer.save()
-#
-#         return Response(
-#             {
-#                 "message": "درخواست شما با موفقیت ثبت شد.",
-#                 "data": {
-#                     "id": contact_request.id,
-#                 },
-#             },
-#             status=status.HTTP_201_CREATED,
-#         )
-#
-#
-# @extend_schema_view(
-#     get=contact_admin_list_view_schema,
-# )
-# class ContactRequestListAPIView(generics.ListAPIView):
-#     """
-#     مشاهده درخواست‌های تماس توسط ادمین.
-#     """
-#
-#     queryset = ContactRequest.objects.all()
-#
-#     serializer_class = ContactRequestAdminSerializer
-#
-#     permission_classes = [
-#         IsAdminUser,
-#     ]
-#
-#     @extend_schema(
-#         tags=["Contact"],
-#         summary="لیست درخواست‌های تماس",
-#         description=(
-#             "فقط کاربران Staff/Admin می‌توانند " "درخواست‌های تماس را مشاهده کنند."
-#         ),
-#         responses=ContactRequestAdminSerializer(many=True),
-#     )
-#     def get(self, request, *args, **kwargs):
-#         return super().get(
-#             request,
-#             *args,
-#             **kwargs,
-#         )
-#
-#
-# @extend_schema_view(
-#     get=contact_admin_detail_view_schema,
-#     patch=contact_admin_partial_update_view_schema,
-# )
-# class ContactRequestDetailAPIView(generics.RetrieveUpdateAPIView):
-#     """
-#     مشاهده و تغییر وضعیت درخواست توسط ادمین.
-#     """
-#
-#     queryset = ContactRequest.objects.all()
-#
-#     serializer_class = ContactRequestAdminSerializer
-#
-#     permission_classes = [
-#         IsAdminUser,
-#     ]
-#
-#     @extend_schema(
-#         tags=["Contact"],
-#         summary="مشاهده جزئیات درخواست تماس",
-#         description=("مشاهده یک درخواست تماس توسط ادمین."),
-#     )
-#     def get(self, request, *args, **kwargs):
-#         return super().get(
-#             request,
-#             *args,
-#             **kwargs,
-#         )
-#
-#     @extend_schema(
-#         tags=["Contact"],
-#         summary="تغییر وضعیت درخواست",
-#         description=("ادمین می‌تواند وضعیت خوانده شدن " "درخواست را تغییر دهد."),
-#     )
-#     def patch(self, request, *args, **kwargs):
-#         return super().patch(
-#             request,
-#             *args,
-#             **kwargs,
-#         )
-from rest_framework import generics, status
-from rest_framework.permissions import AllowAny, IsAdminUser
+from drf_spectacular.utils import extend_schema_view
+
+from rest_framework import (
+    generics,
+    status,
+)
+from rest_framework.exceptions import NotFound
+from rest_framework.permissions import (
+    AllowAny,
+    IsAdminUser,
+)
 from rest_framework.response import Response
 
 from contact.models import ContactRequest
-from contact.throttles import ContactRequestThrottle
-
-from .serializers import (
-    ContactRequestAdminSerializer,
-    ContactRequestCreateSerializer,
+from contact.throttles import (
+    ContactRequestThrottle,
 )
 
-from contact.api.v1.openapi.schema import (
+from utils.pagination import DefaultPagination
+
+from .serializers import (
+    ContactRequestCreateSerializer,
+    ContactRequestAdminSerializer,
+    ContactRequestStatusSerializer,
+)
+
+from .openapi.schema import (
     contact_create_view_schema,
     contact_admin_list_view_schema,
     contact_admin_detail_view_schema,
     contact_admin_partial_update_view_schema,
 )
 
-from drf_spectacular.utils import extend_schema_view
 
 # =========================================================
 # Contact Create
@@ -210,40 +40,71 @@ from drf_spectacular.utils import extend_schema_view
 @extend_schema_view(
     post=contact_create_view_schema,
 )
-class ContactRequestCreateAPIView(generics.CreateAPIView):
+class ContactRequestCreateAPIView(
+    generics.CreateAPIView
+):
     """
-    ثبت درخواست تماس توسط کاربر.
+    Public endpoint for creating
+    a contact request.
     """
 
-    queryset = ContactRequest.objects.all()
+    queryset = (
+        ContactRequest.objects.all()
+    )
 
-    serializer_class = ContactRequestCreateSerializer
+    serializer_class = (
+        ContactRequestCreateSerializer
+    )
 
     permission_classes = [
         AllowAny,
     ]
 
+    # Public endpoint.
+    # Authentication is intentionally disabled here.
     authentication_classes = []
 
     throttle_classes = [
         ContactRequestThrottle,
     ]
 
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
+    # =====================================================
+    # CREATE
+    # =====================================================
 
-        serializer.is_valid(raise_exception=True)
+    def create(
+        self,
+        request,
+        *args,
+        **kwargs,
+    ):
 
-        contact_request = serializer.save()
+        serializer = self.get_serializer(
+            data=request.data
+        )
+
+        serializer.is_valid(
+            raise_exception=True
+        )
+
+        contact_request = (
+            serializer.save()
+        )
 
         return Response(
             {
-                "message": "درخواست شما با موفقیت ثبت شد.",
+                "success": True,
+                "message": (
+                    "درخواست شما با موفقیت "
+                    "ثبت شد."
+                ),
                 "data": {
                     "id": contact_request.id,
                 },
             },
-            status=status.HTTP_201_CREATED,
+            status=(
+                status.HTTP_201_CREATED
+            ),
         )
 
 
@@ -255,18 +116,107 @@ class ContactRequestCreateAPIView(generics.CreateAPIView):
 @extend_schema_view(
     get=contact_admin_list_view_schema,
 )
-class ContactRequestListAPIView(generics.ListAPIView):
+class ContactRequestListAPIView(
+    generics.ListAPIView
+):
     """
-    مشاهده درخواست‌های تماس توسط ادمین.
+    List contact requests.
+
+    Admin only.
     """
 
-    queryset = ContactRequest.objects.all()
+    queryset = (
+        ContactRequest.objects.all()
+        .order_by(
+            "-created_at"
+        )
+    )
 
-    serializer_class = ContactRequestAdminSerializer
+    serializer_class = (
+        ContactRequestAdminSerializer
+    )
 
     permission_classes = [
         IsAdminUser,
     ]
+
+    pagination_class = (
+        DefaultPagination
+    )
+
+    # =====================================================
+    # LIST
+    # =====================================================
+
+    def list(
+        self,
+        request,
+        *args,
+        **kwargs,
+    ):
+
+        queryset = (
+            self.filter_queryset(
+                self.get_queryset()
+            )
+        )
+
+        page = (
+            self.paginate_queryset(
+                queryset
+            )
+        )
+
+        if page is not None:
+
+            serializer = self.get_serializer(
+                page,
+                many=True,
+            )
+
+            paginated_response = (
+                self.get_paginated_response(
+                    serializer.data
+                )
+            )
+
+            return Response(
+                {
+                    "success": True,
+                    "message": (
+                        "لیست درخواست‌های تماس "
+                        "با موفقیت دریافت شد."
+                    ),
+                    "data": (
+                        paginated_response.data
+                    ),
+                },
+                status=status.HTTP_200_OK,
+            )
+
+        serializer = self.get_serializer(
+            queryset,
+            many=True,
+        )
+
+        return Response(
+            {
+                "success": True,
+                "message": (
+                    "لیست درخواست‌های تماس "
+                    "با موفقیت دریافت شد."
+                ),
+                "data": {
+                    "count": len(
+                        serializer.data
+                    ),
+                    "next": None,
+                    "previous": None,
+                    "results": serializer.data,
+                },
+            },
+            status=status.HTTP_200_OK,
+        )
 
 
 # =========================================================
@@ -274,19 +224,166 @@ class ContactRequestListAPIView(generics.ListAPIView):
 # =========================================================
 
 
-@extend_schema_view(
-    get=contact_admin_detail_view_schema,
-    patch=contact_admin_partial_update_view_schema,
-)
-class ContactRequestDetailAPIView(generics.RetrieveUpdateAPIView):
+class ContactRequestDetailAPIView(
+    generics.GenericAPIView
+):
     """
-    مشاهده و تغییر وضعیت درخواست توسط ادمین.
+    Admin contact request endpoint.
+
+    Supported:
+        GET
+        PATCH
+
+    PUT is intentionally not available.
     """
 
-    queryset = ContactRequest.objects.all()
-
-    serializer_class = ContactRequestAdminSerializer
+    queryset = (
+        ContactRequest.objects.all()
+    )
 
     permission_classes = [
         IsAdminUser,
     ]
+
+    # =====================================================
+    # Serializer
+    # =====================================================
+
+    def get_serializer_class(self):
+
+        if self.request.method == "PATCH":
+
+            return (
+                ContactRequestStatusSerializer
+            )
+
+        return (
+            ContactRequestAdminSerializer
+        )
+
+    # =====================================================
+    # Object
+    # =====================================================
+
+    def get_object(self):
+
+        pk = self.kwargs.get(
+            "pk"
+        )
+
+        contact_request = (
+            ContactRequest.objects
+            .filter(
+                pk=pk
+            )
+            .first()
+        )
+
+        if contact_request is None:
+
+            raise NotFound(
+                "درخواست تماس موردنظر "
+                "پیدا نشد."
+            )
+
+        self.check_object_permissions(
+            self.request,
+            contact_request,
+        )
+
+        return contact_request
+
+    # =====================================================
+    # GET
+    # =====================================================
+
+    @contact_admin_detail_view_schema
+    def get(
+        self,
+        request,
+        *args,
+        **kwargs,
+    ):
+
+        contact_request = (
+            self.get_object()
+        )
+
+        serializer = (
+            ContactRequestAdminSerializer(
+                contact_request,
+                context=(
+                    self.get_serializer_context()
+                ),
+            )
+        )
+
+        return Response(
+            {
+                "success": True,
+                "message": (
+                    "درخواست تماس با موفقیت "
+                    "دریافت شد."
+                ),
+                "data": serializer.data,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    # =====================================================
+    # PATCH
+    # =====================================================
+
+    @contact_admin_partial_update_view_schema
+    def patch(
+        self,
+        request,
+        *args,
+        **kwargs,
+    ):
+
+        contact_request = (
+            self.get_object()
+        )
+
+        serializer = (
+            ContactRequestStatusSerializer(
+                contact_request,
+                data=request.data,
+                partial=True,
+                context=(
+                    self.get_serializer_context()
+                ),
+            )
+        )
+
+        serializer.is_valid(
+            raise_exception=True
+        )
+
+        contact_request = (
+            serializer.save()
+        )
+
+        response_serializer = (
+            ContactRequestAdminSerializer(
+                contact_request,
+                context=(
+                    self.get_serializer_context()
+                ),
+            )
+        )
+
+        return Response(
+            {
+                "success": True,
+                "message": (
+                    "وضعیت درخواست تماس "
+                    "با موفقیت بروزرسانی شد."
+                ),
+                "data": (
+                    response_serializer.data
+                ),
+            },
+            status=status.HTTP_200_OK,
+        )

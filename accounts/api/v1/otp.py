@@ -35,7 +35,10 @@ def hash_otp(otp_code):
     The OTP itself is never stored.
     """
 
-    secret = settings.SECRET_KEY.encode("utf-8")
+    secret = (
+        settings.AUTH_OTP_HMAC_KEY
+        .encode("utf-8")
+    )
 
     message = otp_code.encode("utf-8")
 

@@ -2,9 +2,19 @@ from django.core.validators import RegexValidator
 from django.db import models
 
 
+# =========================================================
+# Contact Request
+# =========================================================
+
+
 class ContactRequest(models.Model):
 
+    # =====================================================
+    # Subject
+    # =====================================================
+
     class Subject(models.TextChoices):
+
         WHOLESALE_COOPERATION = (
             "wholesale_cooperation",
             "درخواست همکاری عمده",
@@ -30,10 +40,21 @@ class ContactRequest(models.Model):
             "سایر",
         )
 
+    # =====================================================
+    # Validators
+    # =====================================================
+
     phone_validator = RegexValidator(
         regex=r"^09\d{9}$",
-        message="شماره تماس باید به صورت 09123456789 باشد.",
+        message=(
+            "شماره تماس باید به صورت "
+            "09123456789 باشد."
+        ),
     )
+
+    # =====================================================
+    # Customer
+    # =====================================================
 
     first_name = models.CharField(
         max_length=100,
@@ -47,9 +68,15 @@ class ContactRequest(models.Model):
 
     phone_number = models.CharField(
         max_length=11,
-        validators=[phone_validator],
+        validators=[
+            phone_validator,
+        ],
         verbose_name="شماره تماس",
     )
+
+    # =====================================================
+    # Request
+    # =====================================================
 
     subject = models.CharField(
         max_length=50,
@@ -62,11 +89,18 @@ class ContactRequest(models.Model):
         verbose_name="توضیحات",
     )
 
+    # =====================================================
+    # Status
+    # =====================================================
+
     is_read = models.BooleanField(
         default=False,
-        db_index=True,
         verbose_name="خوانده شده",
     )
+
+    # =====================================================
+    # Dates
+    # =====================================================
 
     created_at = models.DateTimeField(
         auto_now_add=True,
@@ -79,9 +113,17 @@ class ContactRequest(models.Model):
         verbose_name="آخرین بروزرسانی",
     )
 
+    # =====================================================
+    # Meta
+    # =====================================================
+
     class Meta:
+
         verbose_name = "درخواست تماس"
-        verbose_name_plural = "درخواست‌های تماس"
+
+        verbose_name_plural = (
+            "درخواست‌های تماس"
+        )
 
         ordering = [
             "-created_at",
@@ -89,16 +131,42 @@ class ContactRequest(models.Model):
 
         indexes = [
             models.Index(
-                fields=["phone_number", "created_at"],
-                name="contact_phone_created_idx",
+                fields=[
+                    "phone_number",
+                    "-created_at",
+                ],
+                name=(
+                    "contact_phone_created_idx"
+                ),
             ),
             models.Index(
-                fields=["subject", "created_at"],
-                name="contact_subject_created_idx",
+                fields=[
+                    "subject",
+                    "-created_at",
+                ],
+                name=(
+                    "contact_subject_created_idx"
+                ),
+            ),
+            models.Index(
+                fields=[
+                    "is_read",
+                    "-created_at",
+                ],
+                name=(
+                    "contact_read_created_idx"
+                ),
             ),
         ]
 
+    # =====================================================
+    # String Representation
+    # =====================================================
+
     def __str__(self):
+
         return (
-            f"{self.first_name} " f"{self.last_name} - " f"{self.get_subject_display()}"
+            f"{self.first_name} "
+            f"{self.last_name} - "
+            f"{self.get_subject_display()}"
         )

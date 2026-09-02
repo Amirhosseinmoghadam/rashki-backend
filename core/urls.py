@@ -93,6 +93,28 @@ urlpatterns = [
         include("products.api.v1.urls"),
     ),
     # ---------------------------------------------------------
+    # orders
+    # ---------------------------------------------------------
+    path(
+        "api/v1/orders/",
+        include("orders.api.v1.urls", namespace="orders_api_v1"),
+    ),
+    # ---------------------------------------------------------
+    # payments
+    # ---------------------------------------------------------
+    path(
+        "api/v1/payments/",
+        include("payments.api.v1.urls", namespace="payments_api_v1"),
+    ),
+    # ---------------------------------------------------------
+    # motorcycles
+    # ---------------------------------------------------------
+
+    path(
+        "api/v1/motorcycles/",
+        include("motorcycles.api.v1.urls"),
+    ),
+    # ---------------------------------------------------------
     # swagger
     # ---------------------------------------------------------
     path("schema/", SpectacularAPIView.as_view(), name="schema"),

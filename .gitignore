@@ -1,124 +1,108 @@
---- .gitignore (原始)
+# =========================================================
 # Python
+# =========================================================
+
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
+.Python
 
-# Virtual Environment
+
+# =========================================================
+# Virtual Environments
+# =========================================================
+
 .venv/
 venv/
 env/
 ENV/
+env.bak/
 
+
+# =========================================================
 # Django
+# =========================================================
+
 *.log
-db.sqlite3
-db.sqlite3-journal
+
+# Local databases
+*.sqlite3
+*.sqlite3-journal
+
+# User uploaded media
 media/
+
+# collectstatic output
 staticfiles/
 
-# Environment variables
+
+# =========================================================
+# Environment Variables / Secrets
+# =========================================================
+
 .env
 .env.*
 !.env.example
 
-# IDEs
+
+# =========================================================
+# Redis
+# =========================================================
+
+dump.rdb
+*.rdb
+
+
+# =========================================================
+# IDE / Editors
+# =========================================================
+
 .vscode/
 .idea/
 *.swp
 *.swo
+
+
+# =========================================================
+# Operating Systems
+# =========================================================
 
 # macOS
 .DS_Store
 
-# Testing
+# Windows
+Thumbs.db
+ehthumbs.db
+Icon?
+
+
+# =========================================================
+# Testing / Coverage
+# =========================================================
+
 .pytest_cache/
+pytestdebug.log
+
 .coverage
-htmlcov/
-
-# Mypy
-.mypy_cache/
-
-# Ruff
-.ruff_cache/
-
-# Django migrations
-# اگر migrationها را باید commit کنی، این بخش را فعال نکن
-**/migrations/*
-!**/migrations/__init__.py
-
-# Build / distribution
-build/
-dist/
-*.egg-info/
-
-# Jupyter
-.ipynb_checkpoints/
-
-# Local development
-*.sqlite3
-*.sqlite3-journal
-
-#redis
-dump.rdb
-*.rdb
-
-+++ .gitignore (修改后)
-```
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-
-# Virtual environments
-venv/
-ENV/
-env.bak/
-.venv/
-env/
-ENV/
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# Logs
-*.log
-
-# Environment variables
-.env
-.env.local
-*.env.*
-
-# Coverage
-.coverage
-htmlcov/
 .coverage.*
 .coverage.xml
 *.cover
+htmlcov/
 
-# Distribution / packaging
-.Python
+
+# =========================================================
+# Type Checking / Linting
+# =========================================================
+
+.mypy_cache/
+.ruff_cache/
+
+
+# =========================================================
+# Build / Packaging
+# =========================================================
+
 build/
 develop-eggs/
 dist/
@@ -133,22 +117,26 @@ var/
 wheels/
 pip-wheel-metadata/
 share/python-wheels/
+
 *.egg-info/
 .installed.cfg
 *.egg
+
 MANIFEST
 
-# Pytest
-.pytest_cache/
-pytestdebug.log
 
-# MyPy
-.mypy_cache/
+# =========================================================
+# Jupyter
+# =========================================================
 
-# Mac
-.DS_Store
+.ipynb_checkpoints/
 
-# Windows
-Thumbs.db
-ehthumbs.db
-Icon?
+
+# =========================================================
+# Temporary / Backup Files
+# =========================================================
+
+*.bak
+*.tmp
+*.temp
+*~
