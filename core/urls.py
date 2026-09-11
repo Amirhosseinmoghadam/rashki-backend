@@ -17,11 +17,19 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
+
+
 from drf_spectacular.views import (
     SpectacularAPIView,
     SpectacularSwaggerView,
     SpectacularRedocView,
 )
+
+
+
+
 
 urlpatterns = [
     # ---------------------------------------------------------
@@ -75,8 +83,11 @@ urlpatterns = [
     # carts
     # ---------------------------------------------------------
     path(
-        "api/v1/carts/",
-        include("carts.api.v1.urls", namespace="carts_api_v1"),
+        "api/v1/",
+        include(
+            "carts.api.v1.urls",
+            namespace="carts_api_v1",
+        ),
     ),
     # ---------------------------------------------------------
     # categories
@@ -86,6 +97,16 @@ urlpatterns = [
         include("categories.api.v1.urls"),
     ),
     # ---------------------------------------------------------
+    # discounts
+    # ---------------------------------------------------------
+    path(
+    "api/v1/",
+    include(
+        "discounts.api.v1.urls",
+        namespace="discounts_api_v1",
+    ),
+),
+    # ---------------------------------------------------------
     # products
     # ---------------------------------------------------------
     path(
@@ -93,18 +114,24 @@ urlpatterns = [
         include("products.api.v1.urls"),
     ),
     # ---------------------------------------------------------
-    # orders
+    # shipping
     # ---------------------------------------------------------
     path(
-        "api/v1/orders/",
-        include("orders.api.v1.urls", namespace="orders_api_v1"),
+        "api/v1/",
+        include(
+            "shipping.api.v1.urls",
+            namespace="shipping_api_v1",
+        ),
     ),
     # ---------------------------------------------------------
     # payments
     # ---------------------------------------------------------
     path(
-        "api/v1/payments/",
-        include("payments.api.v1.urls", namespace="payments_api_v1"),
+        "api/v1/",
+        include(
+            "payments.api.v1.urls",
+            namespace="payments_api_v1",
+        ),
     ),
     # ---------------------------------------------------------
     # motorcycles
@@ -115,6 +142,25 @@ urlpatterns = [
         include("motorcycles.api.v1.urls"),
     ),
     # ---------------------------------------------------------
+    # wishlists
+    # ---------------------------------------------------------
+    path(
+    "api/v1/",
+    include(
+        "wishlists.api.v1.urls",
+        namespace="wishlists_api_v1",
+    ),
+    ),
+    # ---------------------------------------------------------
+    # orders
+    # ---------------------------------------------------------
+    path(
+        "api/v1/",
+        include(
+            "orders.api.v1.urls"
+        ),
+    ),
+    # ---------------------------------------------------------
     # swagger
     # ---------------------------------------------------------
     path("schema/", SpectacularAPIView.as_view(), name="schema"),
@@ -123,3 +169,8 @@ urlpatterns = [
     ),
     path("redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
 ]
+if settings.DEBUG:
+    urlpatterns += static(
+        settings.MEDIA_URL,
+        document_root=settings.MEDIA_ROOT,
+    )

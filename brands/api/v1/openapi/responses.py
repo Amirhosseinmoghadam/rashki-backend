@@ -1,90 +1,246 @@
-"""
-OpenAPI Response definitions for Brands API
-"""
+# =========================================================
+# Brand List
+# =========================================================
 
-from drf_yasg import openapi
-from .schema import brand_list_schema, brand_detail_schema, brand_create_schema
 
-# Common responses
-common_error_response = openapi.Response(
-    description="Error response",
-    schema=openapi.Schema(
-        type=openapi.TYPE_OBJECT,
-        properties={
-            "detail": openapi.Schema(type=openapi.TYPE_STRING),
-        },
+BrandListAPIViewSuccess = {
+    "success": True,
+    "message": (
+        "لیست برندها با موفقیت دریافت شد."
     ),
-    examples={"application/json": {"detail": "Not found."}},
-)
-
-validation_error_response = openapi.Response(
-    description="Validation error response",
-    schema=openapi.Schema(
-        type=openapi.TYPE_OBJECT,
-        properties={
-            "field_name": openapi.Schema(
-                type=openapi.TYPE_ARRAY, items=openapi.Items(type=openapi.TYPE_STRING)
+    "count": 3,
+    "data": [
+        {
+            "id": 1,
+            "name": "NGK",
+            "slug": "ngk",
+            "logo": (
+                "https://example.com/media/"
+                "brands/brand/2026/09/"
+                "ngk-a38c93f22018.webp"
+            ),
+            "description": (
+                "تولیدکننده شمع و قطعات "
+                "سیستم احتراق موتورسیکلت."
             ),
         },
+        {
+            "id": 2,
+            "name": "DID",
+            "slug": "did",
+            "logo": None,
+            "description": (
+                "تولیدکننده زنجیر و قطعات "
+                "انتقال قدرت موتورسیکلت."
+            ),
+        },
+        {
+            "id": 3,
+            "name": "BOSCH",
+            "slug": "bosch",
+            "logo": None,
+            "description": (
+                "تولیدکننده قطعات و تجهیزات "
+                "سیستم‌های الکتریکی و احتراق."
+            ),
+        },
+    ],
+}
+
+
+# =========================================================
+# Brand Detail
+# =========================================================
+
+
+BrandDetailAPIViewSuccess = {
+    "success": True,
+    "message": (
+        "برند با موفقیت دریافت شد."
     ),
-    examples={"application/json": {"name": ["This field is required."]}},
-)
-
-
-# Brand Responses
-brand_list_response = openapi.Response(
-    description="List of brands",
-    schema=openapi.Schema(type=openapi.TYPE_ARRAY, items=brand_list_schema),
-    examples={
-        "application/json": [
-            {
-                "id": 1,
-                "name": "هوندا",
-                "slug": "honda",
-                "logo": "https://example.com/media/brands/honda-logo.png",
-                "description": "شرکت هوندا - تولیدکننده موتورسیکلت و خودرو",
-                "is_active": True,
-            },
-            {
-                "id": 2,
-                "name": "یاماها",
-                "slug": "yamaha",
-                "logo": "https://example.com/media/brands/yamaha-logo.png",
-                "description": "شرکت یاماها - تولیدکننده موتورسیکلت",
-                "is_active": True,
-            },
-        ]
+    "data": {
+        "id": 1,
+        "name": "NGK",
+        "slug": "ngk",
+        "logo": (
+            "https://example.com/media/"
+            "brands/brand/2026/09/"
+            "ngk-a38c93f22018.webp"
+        ),
+        "description": (
+            "تولیدکننده شمع و قطعات "
+            "سیستم احتراق موتورسیکلت."
+        ),
+        "website": "https://www.ngk.com/",
+        "is_active": True,
+        "created_at": (
+            "2026-09-02T10:00:00Z"
+        ),
+        "updated_at": (
+            "2026-09-02T10:00:00Z"
+        ),
     },
-)
+}
 
-brand_detail_response = openapi.Response(
-    description="Brand detail",
-    schema=brand_detail_schema,
-    examples={
-        "application/json": {
-            "id": 1,
-            "name": "هوندا",
-            "slug": "honda",
-            "logo": "https://example.com/media/brands/honda-logo.png",
-            "description": "شرکت هوندا - تولیدکننده موتورسیکلت و خودرو",
-            "website": "https://www.honda.com",
-            "is_active": True,
-            "created_at": "2024-01-01T10:00:00Z",
-            "updated_at": "2024-01-15T14:00:00Z",
-        }
-    },
-)
 
-brand_create_response = openapi.Response(
-    description="Brand created successfully",
-    schema=brand_create_schema,
-    examples={
-        "application/json": {
-            "name": "کاوازاکی",
-            "slug": "kawasaki",
-            "description": "شرکت کاوازاکی - تولیدکننده موتورسیکلت‌های اسپرت",
-            "website": "https://www.kawasaki.com",
-            "is_active": True,
-        }
+# =========================================================
+# Brand Create
+# =========================================================
+
+
+BrandCreateAPIViewSuccess = {
+    "success": True,
+    "message": (
+        "برند با موفقیت ایجاد شد."
+    ),
+    "data": {
+        "id": 4,
+        "name": "DID",
+        "slug": "did",
+        "logo": None,
+        "description": (
+            "تولیدکننده زنجیر و قطعات "
+            "انتقال قدرت موتورسیکلت."
+        ),
+        "website": (
+            "https://www.didchain.com/"
+        ),
+        "is_active": True,
+        "created_at": (
+            "2026-09-02T12:00:00Z"
+        ),
+        "updated_at": (
+            "2026-09-02T12:00:00Z"
+        ),
     },
-)
+}
+
+
+# =========================================================
+# Brand Update
+# =========================================================
+
+
+BrandUpdateAPIViewSuccess = {
+    "success": True,
+    "message": (
+        "برند با موفقیت بروزرسانی شد."
+    ),
+    "data": {
+        "id": 4,
+        "name": "DID",
+
+        # Slug remains unchanged intentionally.
+        "slug": "did",
+
+        "logo": None,
+        "description": (
+            "تولیدکننده انواع زنجیر "
+            "موتورسیکلت."
+        ),
+        "website": (
+            "https://www.didchain.com/"
+        ),
+        "is_active": True,
+        "created_at": (
+            "2026-09-02T12:00:00Z"
+        ),
+        "updated_at": (
+            "2026-09-02T12:30:00Z"
+        ),
+    },
+}
+
+
+# =========================================================
+# Brand Delete
+# =========================================================
+
+
+BrandDeleteAPIViewSuccess = {
+    "success": True,
+    "message": (
+        "برند با موفقیت حذف شد."
+    ),
+    "data": None,
+}
+
+
+BrandDeleteProtected = {
+    "success": False,
+    "message": (
+        "این برند به اطلاعات دیگری "
+        "وابسته است و قابل حذف نیست."
+    ),
+    "errors": None,
+}
+
+
+# =========================================================
+# Validation Errors
+# =========================================================
+
+
+BrandValidationError = {
+    "name": [
+        "این فیلد الزامی است.",
+    ],
+}
+
+
+BrandDuplicateName = {
+    "name": [
+        "برندی با این نام قبلاً ثبت شده است."
+    ],
+}
+
+
+BrandInvalidImage = {
+    "logo": [
+        (
+            "فرمت تصویر مجاز نیست. "
+            "فرمت‌های مجاز: "
+            "JPEG, JPG, PNG, WEBP"
+        )
+    ],
+}
+
+
+BrandInvalidWebsite = {
+    "website": [
+        "Enter a valid URL."
+    ],
+}
+
+
+# =========================================================
+# Authentication / Permission
+# =========================================================
+
+
+BrandAuthenticationRequired = {
+    "detail": (
+        "Authentication credentials "
+        "were not provided."
+    ),
+}
+
+
+BrandPermissionDenied = {
+    "detail": (
+        "You do not have permission "
+        "to perform this action."
+    ),
+}
+
+
+# =========================================================
+# Not Found
+# =========================================================
+
+
+BrandNotFound = {
+    "detail": (
+        "No Brand matches the given query."
+    ),
+}

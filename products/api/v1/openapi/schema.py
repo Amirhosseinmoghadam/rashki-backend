@@ -1,1338 +1,810 @@
-# from drf_spectacular.utils import (
-#     extend_schema,
-#     OpenApiExample,
-#     OpenApiResponse,
-#     OpenApiTypes,
-#     extend_schema_view,
-# )
-#
-# from . import examples, responses
-# from ..serializers import ProductImageSerializer, AttributeGroupSerializer, AttributeSerializer, \
-#     AttributeValueSerializer, ProductVariantSerializer, ProductMotorcycleCompatibilitySerializer
-#
-# # =========================================================
-# # Product Schemas
-# # =========================================================
-#
-# product_list_create_schema = extend_schema(
-#     tags=["Products"],
-#     operation_id="product_list_create",
-#     summary="List or Create Products",
-#     description=(
-#         "GET: Returns a list of all active products.\n\n"
-#         "POST: Creates a new product (requires authentication)."
-#     ),
-#     responses={
-#         200: OpenApiResponse(
-#             response=OpenApiTypes.OBJECT,
-#             description="List of products retrieved successfully.",
-#             examples=[
-#                 OpenApiExample(
-#                     name="Product List Success",
-#                     value=responses.ProductListSuccess,
-#                     media_type="application/json",
-#                     response_only=True,
-#                 ),
-#             ],
-#         ),
-#         201: OpenApiResponse(
-#             response=OpenApiTypes.OBJECT,
-#             description="Product created successfully.",
-#             examples=[
-#                 OpenApiExample(
-#                     name="Product Create Success",
-#                     value=responses.ProductCreateSuccess,
-#                     media_type="application/json",
-#                     response_only=True,
-#                 ),
-#             ],
-#         ),
-#         400: OpenApiResponse(
-#             response=OpenApiTypes.OBJECT,
-#             description="Validation error.",
-#             examples=[
-#                 OpenApiExample(
-#                     name="Validation Error",
-#                     value=responses.ProductValidationError,
-#                     media_type="application/json",
-#                     response_only=True,
-#                 ),
-#             ],
-#         ),
-#     },
-# )
-#
-#
-# product_retrieve_update_destroy_schema = extend_schema(
-#     tags=["Products"],
-#     operation_id="product_retrieve_update_destroy",
-#     summary="Retrieve, Update, or Delete Product",
-#     description=(
-#         "GET: Returns a single product by slug.\n\n"
-#         "PUT/PATCH: Updates a product (requires authentication).\n\n"
-#         "DELETE: Deletes a product (requires authentication)."
-#     ),
-#     responses={
-#         200: OpenApiResponse(
-#             response=OpenApiTypes.OBJECT,
-#             description="Product retrieved/updated successfully.",
-#             examples=[
-#                 OpenApiExample(
-#                     name="Product Detail Success",
-#                     value=responses.ProductDetailSuccess,
-#                     media_type="application/json",
-#                     response_only=True,
-#                 ),
-#             ],
-#         ),
-#         404: OpenApiResponse(
-#             response=OpenApiTypes.OBJECT,
-#             description="Product not found.",
-#             examples=[
-#                 OpenApiExample(
-#                     name="Not Found",
-#                     value=responses.ProductNotFoundError,
-#                     media_type="application/json",
-#                     response_only=True,
-#                 ),
-#             ],
-#         ),
-#     },
-# )
-#
-#
-# # =========================================================
-# # Product Image Schemas
-# # =========================================================
-#
-# product_image_list_create_schema = extend_schema(
-#     tags=["Product Images"],
-#     operation_id="product_image_list_create",
-#     summary="List or Create Product Images",
-#     description=(
-#         "GET: Returns a list of all images for a product.\n\n"
-#         "POST: Creates a new product image (requires authentication)."
-#     ),
-#     responses={
-#         200: OpenApiResponse(
-#             response=ProductImageSerializer(many=True),
-#             description="List of product images retrieved successfully.",
-#         ),
-#         201: OpenApiResponse(
-#             response=ProductImageSerializer,
-#             description="Product image created successfully.",
-#             examples=[
-#                 OpenApiExample(
-#                     name="Product Image Create Success",
-#                     value=responses.ProductImageCreateSuccess,
-#                     media_type="application/json",
-#                     response_only=True,
-#                 ),
-#             ],
-#         ),
-#     },
-# )
-#
-# product_image_retrieve_update_destroy_schema = extend_schema(
-#     tags=["Product Images"],
-#     operation_id="product_image_retrieve_update_destroy",
-#     summary="Retrieve, Update, or Delete Product Image",
-#     responses={
-#         200: OpenApiResponse(
-#             description="Product image retrieved/updated successfully.",
-#         ),
-#         404: OpenApiResponse(
-#             description="Product image not found.",
-#         ),
-#     },
-# )
-#
-#
-# # =========================================================
-# # Attribute Group Schemas
-# # =========================================================
-#
-# attribute_group_list_create_schema = extend_schema(
-#     tags=["Attribute Groups"],
-#     operation_id="attribute_group_list_create",
-#     summary="List or Create Attribute Groups",
-#     responses={
-#         200: OpenApiResponse(
-#             response=AttributeGroupSerializer(many=True),
-#             description="List of attribute groups retrieved successfully.",
-#             examples=[
-#                 OpenApiExample(
-#                     name="Attribute Group List Success",
-#                     value=responses.AttributeGroupListSuccess,
-#                     media_type="application/json",
-#                     response_only=True,
-#                 ),
-#             ],
-#         ),
-#         201: OpenApiResponse(
-#             response=AttributeGroupSerializer,
-#             description="Attribute group created successfully.",
-#             examples=[
-#                 OpenApiExample(
-#                     name="Attribute Group Create Success",
-#                     value=responses.AttributeGroupCreateSuccess,
-#                     media_type="application/json",
-#                     response_only=True,
-#                 ),
-#             ],
-#         ),
-#     },
-# )
-#
-#
-# attribute_group_retrieve_update_destroy_schema = extend_schema(
-#     tags=["Attribute Groups"],
-#     operation_id="attribute_group_retrieve_update_destroy",
-#     summary="Retrieve, Update, or Delete Attribute Group",
-#     responses={
-#         200: OpenApiResponse(
-#             response=AttributeGroupSerializer,
-#             description="Attribute group retrieved/updated successfully.",
-#         ),
-#         404: OpenApiResponse(
-#             description="Attribute group not found.",
-#         ),
-#     },
-# )
-#
-# # =========================================================
-# # Attribute Schemas
-# # =========================================================
-#
-# attribute_list_create_schema = extend_schema(
-#     tags=["Attributes"],
-#     operation_id="attribute_list_create",
-#     summary="List or Create Attributes",
-#     responses={
-#         200: OpenApiResponse(
-#             response=AttributeSerializer(many=True),
-#             description="List of attributes retrieved successfully.",
-#             examples=[
-#                 OpenApiExample(
-#                     name="Attribute List Success",
-#                     value=responses.AttributeListSuccess,
-#                     media_type="application/json",
-#                     response_only=True,
-#                 ),
-#             ],
-#         ),
-#         201: OpenApiResponse(
-#             response=AttributeSerializer,
-#             description="Attribute created successfully.",
-#             examples=[
-#                 OpenApiExample(
-#                     name="Attribute Create Success",
-#                     value=responses.AttributeCreateSuccess,
-#                     media_type="application/json",
-#                     response_only=True,
-#                 ),
-#             ],
-#         ),
-#     },
-# )
-#
-#
-# attribute_retrieve_update_destroy_schema = extend_schema(
-#     tags=["Attributes"],
-#     operation_id="attribute_retrieve_update_destroy",
-#     summary="Retrieve, Update, or Delete Attribute",
-#     responses={
-#         200: OpenApiResponse(description="Attribute retrieved/updated successfully."),
-#         404: OpenApiResponse(description="Attribute not found."),
-#     },
-# )
-#
-#
-# # =========================================================
-# # Attribute Value Schemas
-# # =========================================================
-#
-# attribute_value_list_create_schema = extend_schema(
-#     tags=["Attribute Values"],
-#     operation_id="attribute_value_list_create",
-#     summary="List or Create Attribute Values",
-#     responses={
-#         200: OpenApiResponse(
-#             response=AttributeValueSerializer(many=True),
-#             description="List of attribute values retrieved successfully.",
-#         ),
-#         201: OpenApiResponse(
-#             response=AttributeValueSerializer,
-#             description="Attribute value created successfully.",
-#             examples=[
-#                 OpenApiExample(
-#                     name="Attribute Value Create Success",
-#                     value=responses.AttributeValueCreateSuccess,
-#                     media_type="application/json",
-#                     response_only=True,
-#                 ),
-#             ],
-#         ),
-#     },
-# )
-#
-#
-# attribute_value_retrieve_update_destroy_schema = extend_schema(
-#     tags=["Attribute Values"],
-#     operation_id="attribute_value_retrieve_update_destroy",
-#     summary="Retrieve, Update, or Delete Attribute Value",
-#     responses={
-#         200: OpenApiResponse(description="Attribute value retrieved/updated successfully."),
-#         404: OpenApiResponse(description="Attribute value not found."),
-#     },
-# )
-#
-#
-# # =========================================================
-# # Product Variant Schemas
-# # =========================================================
-#
-# product_variant_list_create_schema = extend_schema(
-#     tags=["Product Variants"],
-#     operation_id="product_variant_list_create",
-#     summary="List or Create Product Variants",
-#     responses={
-#         200: OpenApiResponse(
-#             response=ProductVariantSerializer(many=True),
-#             description="List of product variants retrieved successfully.",
-#             examples=[
-#                 OpenApiExample(
-#                     name="Product Variant List Success",
-#                     value=responses.ProductVariantListSuccess,
-#                     media_type="application/json",
-#                     response_only=True,
-#                 ),
-#             ],
-#         ),
-#         201: OpenApiResponse(
-#             response=ProductVariantSerializer,
-#             description="Product variant created successfully.",
-#             examples=[
-#                 OpenApiExample(
-#                     name="Product Variant Create Success",
-#                     value=responses.ProductVariantCreateSuccess,
-#                     media_type="application/json",
-#                     response_only=True,
-#                 ),
-#             ],
-#         ),
-#     },
-# )
-#
-#
-# product_variant_retrieve_update_destroy_schema = extend_schema(
-#     tags=["Product Variants"],
-#     operation_id="product_variant_retrieve_update_destroy",
-#     summary="Retrieve, Update, or Delete Product Variant",
-#     responses={
-#         200: OpenApiResponse(description="Product variant retrieved/updated successfully."),
-#         404: OpenApiResponse(description="Product variant not found."),
-#     },
-# )
-#
-#
-# # =========================================================
-# # Product Motorcycle Compatibility Schemas
-# # =========================================================
-#
-# product_motorcycle_compatibility_list_create_schema = extend_schema(
-#     tags=["Product Motorcycle Compatibility"],
-#     operation_id="product_motorcycle_compatibility_list_create",
-#     summary="List or Create Motorcycle Compatibilities",
-#     responses={
-#         200: OpenApiResponse(
-#             response=ProductMotorcycleCompatibilitySerializer(many=True),
-#             description="List of motorcycle compatibilities retrieved successfully.",
-#         ),
-#         201: OpenApiResponse(
-#             response=ProductMotorcycleCompatibilitySerializer,
-#             description="Motorcycle compatibility created successfully.",
-#             examples=[
-#                 OpenApiExample(
-#                     name="Motorcycle Compatibility Create Success",
-#                     value=responses.ProductMotorcycleCompatibilityCreateSuccess,
-#                     media_type="application/json",
-#                     response_only=True,
-#                 ),
-#             ],
-#         ),
-#     },
-# )
-#
-#
-# product_motorcycle_compatibility_retrieve_update_destroy_schema = extend_schema(
-#     tags=["Product Motorcycle Compatibility"],
-#     operation_id="product_motorcycle_compatibility_retrieve_update_destroy",
-#     summary="Retrieve, Update, or Delete Motorcycle Compatibility",
-#     responses={
-#         200: OpenApiResponse(description="Motorcycle compatibility retrieved/updated successfully."),
-#         404: OpenApiResponse(description="Motorcycle compatibility not found."),
-#     },
-# )
+from rest_framework import serializers
 
 from drf_spectacular.utils import (
     extend_schema,
+    inline_serializer,
     OpenApiExample,
+    OpenApiParameter,
     OpenApiResponse,
     OpenApiTypes,
 )
 
-from . import examples, responses
-
-from ..serializers import (
+from products.api.v1.serializers import (
     ProductListSerializer,
     ProductDetailSerializer,
     ProductCreateUpdateSerializer,
     ProductImageSerializer,
-    ProductImageCreateSerializer,
-    AttributeGroupSerializer,
-    AttributeGroupCreateUpdateSerializer,
-    AttributeSerializer,
-    AttributeCreateUpdateSerializer,
-    AttributeValueSerializer,
-    AttributeValueCreateUpdateSerializer,
-    ProductVariantSerializer,
-    ProductVariantCreateUpdateSerializer,
-    ProductVariantDetailSerializer,
-    ProductMotorcycleCompatibilitySerializer,
-    ProductMotorcycleCompatibilityCreateUpdateSerializer,
+    ProductImageWriteSerializer,
+    ProductAttributeReferenceSerializer,
 )
 
+from . import examples
+from . import responses
+
+
 # =========================================================
-# Product
+# Product Response Schemas
 # =========================================================
 
-product_list_schema = extend_schema(
+
+ProductPaginationDataSerializer = inline_serializer(
+    name="ProductPaginationData",
+    fields={
+        "count": serializers.IntegerField(),
+        "next": serializers.URLField(
+            allow_null=True
+        ),
+        "previous": serializers.URLField(
+            allow_null=True
+        ),
+        "results": ProductListSerializer(
+            many=True
+        ),
+    },
+)
+
+
+ProductListResponseSerializer = inline_serializer(
+    name="ProductListResponse",
+    fields={
+        "success": serializers.BooleanField(),
+        "message": serializers.CharField(),
+        "data": ProductPaginationDataSerializer,
+    },
+)
+
+
+ProductDetailResponseSerializer = inline_serializer(
+    name="ProductDetailResponse",
+    fields={
+        "success": serializers.BooleanField(),
+        "message": serializers.CharField(),
+        "data": ProductDetailSerializer(),
+    },
+)
+
+
+ProductMutationResponseSerializer = inline_serializer(
+    name="ProductMutationResponse",
+    fields={
+        "success": serializers.BooleanField(),
+        "message": serializers.CharField(),
+        "data": ProductDetailSerializer(),
+    },
+)
+
+
+ProductDeleteResponseSerializer = inline_serializer(
+    name="ProductDeleteResponse",
+    fields={
+        "success": serializers.BooleanField(),
+        "message": serializers.CharField(),
+        "data": serializers.JSONField(
+            allow_null=True
+        ),
+    },
+)
+
+
+ProductDeleteProtectedResponseSerializer = inline_serializer(
+    name="ProductDeleteProtectedResponse",
+    fields={
+        "success": serializers.BooleanField(),
+        "message": serializers.CharField(),
+        "errors": serializers.JSONField(
+            allow_null=True
+        ),
+    },
+)
+
+
+# =========================================================
+# Product List
+# =========================================================
+
+
+product_list_view_schema = extend_schema(
     tags=["Products"],
+    auth=[],
     operation_id="product_list",
     summary="List Products",
-    description=("Returns a list of all active products."),
-    responses={
-        200: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="List of products retrieved successfully.",
+    description=(
+        "Returns publicly visible active products.\n\n"
+        "Supported filters:\n"
+        "- category\n"
+        "- brand\n"
+        "- motorcycle\n"
+        "- min_price / max_price (Toman)\n"
+        "- in_stock\n"
+        "- featured\n"
+        "- search\n"
+        "- ordering\n\n"
+        "Dynamic product attributes can also be filtered "
+        "using parameters such as:\n"
+        "`attr_<attribute-slug>=value`\n"
+        "`attr_<attribute-slug>_min=value`\n"
+        "`attr_<attribute-slug>_max=value`."
+    ),
+    parameters=[
+        OpenApiParameter(
+            name="category",
+            type=OpenApiTypes.INT,
+            location=OpenApiParameter.QUERY,
+            required=False,
+            description=(
+                "Category ID. Products from descendant "
+                "categories are included."
+            ),
+        ),
+        OpenApiParameter(
+            name="brand",
+            type=OpenApiTypes.INT,
+            location=OpenApiParameter.QUERY,
+            required=False,
+            description="Product brand ID.",
+        ),
+        OpenApiParameter(
+            name="motorcycle",
+            type=OpenApiTypes.INT,
+            location=OpenApiParameter.QUERY,
+            required=False,
+            description=(
+                "Motorcycle model ID. Only compatible "
+                "products are returned."
+            ),
+        ),
+        OpenApiParameter(
+            name="min_price",
+            type=OpenApiTypes.INT,
+            location=OpenApiParameter.QUERY,
+            required=False,
+            description="Minimum product price in Toman.",
+        ),
+        OpenApiParameter(
+            name="max_price",
+            type=OpenApiTypes.INT,
+            location=OpenApiParameter.QUERY,
+            required=False,
+            description="Maximum product price in Toman.",
+        ),
+        OpenApiParameter(
+            name="in_stock",
+            type=OpenApiTypes.BOOL,
+            location=OpenApiParameter.QUERY,
+            required=False,
+            description="Filter by stock availability.",
+        ),
+        OpenApiParameter(
+            name="featured",
+            type=OpenApiTypes.BOOL,
+            location=OpenApiParameter.QUERY,
+            required=False,
+            description="Filter featured products.",
+        ),
+        OpenApiParameter(
+            name="search",
+            type=OpenApiTypes.STR,
+            location=OpenApiParameter.QUERY,
+            required=False,
+            description=(
+                "Search by product name, SKU, OEM code, "
+                "part number, barcode, keywords, brand, "
+                "category or compatible motorcycle."
+            ),
             examples=[
                 OpenApiExample(
-                    name="Product List Success",
-                    value=responses.ProductListSuccess,
-                    media_type="application/json",
-                    response_only=True,
+                    name="Part Number",
+                    value="CPR6EA-9",
                 ),
+                OpenApiExample(
+                    name="Motorcycle",
+                    value="CG125",
+                ),
+            ],
+        ),
+        OpenApiParameter(
+            name="ordering",
+            type=OpenApiTypes.STR,
+            location=OpenApiParameter.QUERY,
+            required=False,
+            enum=[
+                "newest",
+                "oldest",
+                "price_asc",
+                "price_desc",
+                "name",
+            ],
+            description="Product ordering.",
+        ),
+    ],
+    responses={
+        200: OpenApiResponse(
+            response=ProductListResponseSerializer,
+            description="Products retrieved successfully.",
+            examples=[
+                OpenApiExample(
+                    name="Products Retrieved",
+                    value=responses.ProductListSuccess,
+                    response_only=True,
+                )
+            ],
+        ),
+        400: OpenApiResponse(
+            response=OpenApiTypes.OBJECT,
+            description="Invalid filter parameter.",
+        ),
+    },
+)
+
+
+# =========================================================
+# Product Detail
+# =========================================================
+
+
+product_detail_view_schema = extend_schema(
+    tags=["Products"],
+    auth=[],
+    operation_id="product_detail",
+    summary="Get Product",
+    description=(
+        "Returns the public detail of an active product. "
+        "Inactive or archived products are not exposed "
+        "through this public endpoint."
+    ),
+    responses={
+        200: OpenApiResponse(
+            response=ProductDetailResponseSerializer,
+            examples=[
+                OpenApiExample(
+                    name="Product Retrieved",
+                    value=responses.ProductDetailSuccess,
+                    response_only=True,
+                )
+            ],
+        ),
+        404: OpenApiResponse(
+            response=OpenApiTypes.OBJECT,
+            examples=[
+                OpenApiExample(
+                    name="Product Not Found",
+                    value=responses.ProductNotFound,
+                    response_only=True,
+                )
             ],
         ),
     },
 )
 
 
-product_create_schema = extend_schema(
+# =========================================================
+# Product Create
+# =========================================================
+
+
+product_create_view_schema = extend_schema(
     tags=["Products"],
     operation_id="product_create",
     summary="Create Product",
-    description=("Creates a new product. " "Authentication is required."),
+    description=(
+        "Creates a product. Admin permission is required. "
+        "The slug and final Toman price are generated "
+        "by the backend."
+    ),
     request=ProductCreateUpdateSerializer,
+    examples=[
+        OpenApiExample(
+            name="USD Based Product",
+            value=examples.PRODUCT_CREATE_USD_EXAMPLE,
+            request_only=True,
+        ),
+        OpenApiExample(
+            name="Fixed Toman Product",
+            value=examples.PRODUCT_CREATE_FIXED_EXAMPLE,
+            request_only=True,
+        ),
+    ],
     responses={
         201: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Product created successfully.",
+            response=ProductMutationResponseSerializer,
             examples=[
                 OpenApiExample(
-                    name="Product Create Success",
+                    name="Product Created",
                     value=responses.ProductCreateSuccess,
-                    media_type="application/json",
                     response_only=True,
-                ),
+                )
             ],
         ),
         400: OpenApiResponse(
             response=OpenApiTypes.OBJECT,
-            description="Validation error.",
+            description="Product validation error.",
             examples=[
                 OpenApiExample(
-                    name="Validation Error",
+                    name="Required Field",
                     value=responses.ProductValidationError,
-                    media_type="application/json",
+                    response_only=True,
+                ),
+                OpenApiExample(
+                    name="USD Price Required",
+                    value=responses.ProductUSDPriceRequired,
+                    response_only=True,
+                ),
+                OpenApiExample(
+                    name="Toman Price Required",
+                    value=responses.ProductTomanPriceRequired,
+                    response_only=True,
+                ),
+                OpenApiExample(
+                    name="Inactive Category",
+                    value=responses.ProductInactiveCategory,
+                    response_only=True,
+                ),
+                OpenApiExample(
+                    name="Inactive Brand",
+                    value=responses.ProductInactiveBrand,
+                    response_only=True,
+                ),
+                OpenApiExample(
+                    name="Invalid Attribute",
+                    value=responses.ProductInvalidAttribute,
+                    response_only=True,
+                ),
+                OpenApiExample(
+                    name="Required Attribute Missing",
+                    value=responses.ProductMissingRequiredAttribute,
+                    response_only=True,
+                ),
+                OpenApiExample(
+                    name="Pricing Error",
+                    value=responses.ProductPricingError,
                     response_only=True,
                 ),
             ],
         ),
-    },
-)
-
-
-product_retrieve_schema = extend_schema(
-    tags=["Products"],
-    operation_id="product_retrieve",
-    summary="Retrieve Product",
-    description=("Returns a single product by slug."),
-    responses={
-        200: OpenApiResponse(
-            response=ProductDetailSerializer,
-            description="Product retrieved successfully.",
-        ),
-        404: OpenApiResponse(
+        401: OpenApiResponse(
             response=OpenApiTypes.OBJECT,
-            description="Product not found.",
             examples=[
                 OpenApiExample(
-                    name="Not Found",
-                    value=responses.ProductNotFoundError,
-                    media_type="application/json",
+                    name="Authentication Required",
+                    value=responses.AuthenticationRequired,
                     response_only=True,
-                ),
+                )
+            ],
+        ),
+        403: OpenApiResponse(
+            response=OpenApiTypes.OBJECT,
+            examples=[
+                OpenApiExample(
+                    name="Permission Denied",
+                    value=responses.PermissionDenied,
+                    response_only=True,
+                )
             ],
         ),
     },
 )
 
 
-product_update_schema = extend_schema(
+# =========================================================
+# Product Update
+# =========================================================
+
+
+product_update_view_schema = extend_schema(
     tags=["Products"],
     operation_id="product_update",
     summary="Update Product",
-    description=("Completely updates a product. " "Authentication is required."),
+    description=(
+        "Fully updates a product. "
+        "Admin permission is required."
+    ),
     request=ProductCreateUpdateSerializer,
+    examples=[
+        OpenApiExample(
+            name="Update Product",
+            value=examples.PRODUCT_UPDATE_EXAMPLE,
+            request_only=True,
+        )
+    ],
     responses={
         200: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Product updated successfully.",
+            response=ProductMutationResponseSerializer,
+            examples=[
+                OpenApiExample(
+                    name="Product Updated",
+                    value=responses.ProductUpdateSuccess,
+                    response_only=True,
+                )
+            ],
         ),
         400: OpenApiResponse(
             response=OpenApiTypes.OBJECT,
             description="Validation error.",
         ),
+        401: OpenApiResponse(
+            response=OpenApiTypes.OBJECT,
+        ),
+        403: OpenApiResponse(
+            response=OpenApiTypes.OBJECT,
+        ),
         404: OpenApiResponse(
             response=OpenApiTypes.OBJECT,
-            description="Product not found.",
+            examples=[
+                OpenApiExample(
+                    name="Product Not Found",
+                    value=responses.ProductNotFound,
+                    response_only=True,
+                )
+            ],
         ),
     },
 )
 
 
-product_partial_update_schema = extend_schema(
+# =========================================================
+# Product Partial Update
+# =========================================================
+
+
+product_partial_update_view_schema = extend_schema(
     tags=["Products"],
     operation_id="product_partial_update",
     summary="Partially Update Product",
-    description=("Partially updates a product. " "Only submitted fields are updated."),
+    description=(
+        "Updates only submitted product fields. "
+        "If attributes, compatibilities or "
+        "related_product_ids are omitted, their existing "
+        "values remain unchanged."
+    ),
     request=ProductCreateUpdateSerializer,
+    examples=[
+        OpenApiExample(
+            name="Partial Update Product",
+            value=examples.PRODUCT_PARTIAL_UPDATE_EXAMPLE,
+            request_only=True,
+        )
+    ],
     responses={
         200: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Product partially updated successfully.",
+            response=ProductMutationResponseSerializer,
+            examples=[
+                OpenApiExample(
+                    name="Product Updated",
+                    value=responses.ProductUpdateSuccess,
+                    response_only=True,
+                )
+            ],
         ),
         400: OpenApiResponse(
             response=OpenApiTypes.OBJECT,
-            description="Validation error.",
+        ),
+        401: OpenApiResponse(
+            response=OpenApiTypes.OBJECT,
+        ),
+        403: OpenApiResponse(
+            response=OpenApiTypes.OBJECT,
         ),
         404: OpenApiResponse(
             response=OpenApiTypes.OBJECT,
-            description="Product not found.",
         ),
     },
 )
 
 
-product_delete_schema = extend_schema(
+# =========================================================
+# Product Delete
+# =========================================================
+
+
+product_delete_view_schema = extend_schema(
     tags=["Products"],
     operation_id="product_delete",
     summary="Delete Product",
-    description=("Deletes a product by slug. " "Authentication is required."),
+    description=(
+        "Deletes a product if no protected object "
+        "depends on it."
+    ),
+    request=None,
     responses={
         200: OpenApiResponse(
+            response=ProductDeleteResponseSerializer,
+            examples=[
+                OpenApiExample(
+                    name="Product Deleted",
+                    value=responses.ProductDeleteSuccess,
+                    response_only=True,
+                )
+            ],
+        ),
+        401: OpenApiResponse(
             response=OpenApiTypes.OBJECT,
-            description="Product deleted successfully.",
+        ),
+        403: OpenApiResponse(
+            response=OpenApiTypes.OBJECT,
         ),
         404: OpenApiResponse(
             response=OpenApiTypes.OBJECT,
-            description="Product not found.",
+        ),
+        409: OpenApiResponse(
+            response=ProductDeleteProtectedResponseSerializer,
+            examples=[
+                OpenApiExample(
+                    name="Product Protected",
+                    value=responses.ProductDeleteProtected,
+                    response_only=True,
+                )
+            ],
         ),
     },
 )
 
 
 # =========================================================
-# Product Images
+# Product Image - List
 # =========================================================
 
-product_image_list_schema = extend_schema(
+
+product_image_list_view_schema = extend_schema(
     tags=["Product Images"],
     operation_id="product_image_list",
     summary="List Product Images",
-    description=("Returns all images belonging to a product."),
+    description=(
+        "Returns product images. "
+        "Admin permission is required."
+    ),
     responses={
         200: OpenApiResponse(
             response=ProductImageSerializer(many=True),
-            description="Product images retrieved successfully.",
-        ),
-        404: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Product not found.",
-        ),
-    },
-)
-
-
-product_image_create_schema = extend_schema(
-    tags=["Product Images"],
-    operation_id="product_image_create",
-    summary="Create Product Image",
-    description=("Creates a new image for a product."),
-    request=ProductImageCreateSerializer,
-    responses={
-        201: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Product image created successfully.",
             examples=[
                 OpenApiExample(
-                    name="Product Image Create Success",
-                    value=responses.ProductImageCreateSuccess,
-                    media_type="application/json",
+                    name="Product Images",
+                    value=responses.ProductImageListSuccess,
                     response_only=True,
-                ),
+                )
             ],
         ),
-        400: OpenApiResponse(
+        401: OpenApiResponse(
             response=OpenApiTypes.OBJECT,
-            description="Validation error.",
         ),
-        404: OpenApiResponse(
+        403: OpenApiResponse(
             response=OpenApiTypes.OBJECT,
-            description="Product not found.",
         ),
     },
 )
 
 
-product_image_retrieve_schema = extend_schema(
+# =========================================================
+# Product Image - Detail
+# =========================================================
+
+
+product_image_detail_view_schema = extend_schema(
     tags=["Product Images"],
-    operation_id="product_image_retrieve",
-    summary="Retrieve Product Image",
-    description="Returns a single product image.",
+    operation_id="product_image_detail",
+    summary="Get Product Image",
     responses={
         200: OpenApiResponse(
             response=ProductImageSerializer,
-            description="Product image retrieved successfully.",
+            examples=[
+                OpenApiExample(
+                    name="Product Image",
+                    value=responses.ProductImageSuccess,
+                    response_only=True,
+                )
+            ],
+        ),
+        401: OpenApiResponse(
+            response=OpenApiTypes.OBJECT,
+        ),
+        403: OpenApiResponse(
+            response=OpenApiTypes.OBJECT,
         ),
         404: OpenApiResponse(
             response=OpenApiTypes.OBJECT,
-            description="Product image not found.",
         ),
     },
 )
 
 
-product_image_update_schema = extend_schema(
+# =========================================================
+# Product Image - Create
+# =========================================================
+
+
+product_image_create_view_schema = extend_schema(
+    tags=["Product Images"],
+    operation_id="product_image_create",
+    summary="Upload Product Image",
+    description=(
+        "Uploads a product image. "
+        "Use multipart/form-data. "
+        "Each product can have at most 20 images."
+    ),
+    request=ProductImageWriteSerializer,
+    examples=[
+        OpenApiExample(
+            name="Upload Product Image",
+            value=examples.PRODUCT_IMAGE_CREATE_EXAMPLE,
+            request_only=True,
+        )
+    ],
+    responses={
+        201: OpenApiResponse(
+            response=ProductImageSerializer,
+            examples=[
+                OpenApiExample(
+                    name="Image Created",
+                    value=responses.ProductImageSuccess,
+                    response_only=True,
+                )
+            ],
+        ),
+        400: OpenApiResponse(
+            response=OpenApiTypes.OBJECT,
+            examples=[
+                OpenApiExample(
+                    name="Image Limit",
+                    value=responses.ProductImageLimitError,
+                    response_only=True,
+                ),
+                OpenApiExample(
+                    name="Image Product Change",
+                    value=responses.ProductImageMoveError,
+                    response_only=True,
+                ),
+            ],
+        ),
+        401: OpenApiResponse(
+            response=OpenApiTypes.OBJECT,
+        ),
+        403: OpenApiResponse(
+            response=OpenApiTypes.OBJECT,
+        ),
+    },
+)
+
+
+# =========================================================
+# Product Image - Update
+# =========================================================
+
+
+product_image_update_view_schema = extend_schema(
     tags=["Product Images"],
     operation_id="product_image_update",
     summary="Update Product Image",
-    description="Completely updates a product image.",
-    request=ProductImageCreateSerializer,
+    request=ProductImageWriteSerializer,
+    examples=[
+        OpenApiExample(
+            name="Update Product Image",
+            value=examples.PRODUCT_IMAGE_UPDATE_EXAMPLE,
+            request_only=True,
+        )
+    ],
     responses={
-        200: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Product image updated successfully.",
-        ),
-        400: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Validation error.",
-        ),
-        404: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Product image not found.",
-        ),
+        200: ProductImageSerializer,
+        400: OpenApiTypes.OBJECT,
+        401: OpenApiTypes.OBJECT,
+        403: OpenApiTypes.OBJECT,
+        404: OpenApiTypes.OBJECT,
     },
 )
 
 
-product_image_partial_update_schema = extend_schema(
+# =========================================================
+# Product Image - Partial Update
+# =========================================================
+
+
+product_image_partial_update_view_schema = extend_schema(
     tags=["Product Images"],
     operation_id="product_image_partial_update",
     summary="Partially Update Product Image",
-    description="Partially updates a product image.",
-    request=ProductImageCreateSerializer,
+    request=ProductImageWriteSerializer,
+    examples=[
+        OpenApiExample(
+            name="Partial Update Product Image",
+            value=examples.PRODUCT_IMAGE_PARTIAL_UPDATE_EXAMPLE,
+            request_only=True,
+        )
+    ],
     responses={
-        200: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Product image partially updated successfully.",
-        ),
-        400: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Validation error.",
-        ),
-        404: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Product image not found.",
-        ),
+        200: ProductImageSerializer,
+        400: OpenApiTypes.OBJECT,
+        401: OpenApiTypes.OBJECT,
+        403: OpenApiTypes.OBJECT,
+        404: OpenApiTypes.OBJECT,
     },
 )
 
 
-product_image_delete_schema = extend_schema(
+# =========================================================
+# Product Image - Delete
+# =========================================================
+
+
+product_image_delete_view_schema = extend_schema(
     tags=["Product Images"],
     operation_id="product_image_delete",
     summary="Delete Product Image",
-    description="Deletes a product image.",
+    description=(
+        "Deletes an image. If the primary image is deleted, "
+        "the next available image becomes primary."
+    ),
+    request=None,
     responses={
-        200: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Product image deleted successfully.",
+        204: OpenApiResponse(
+            description="Image deleted successfully."
+        ),
+        401: OpenApiResponse(
+            response=OpenApiTypes.OBJECT
+        ),
+        403: OpenApiResponse(
+            response=OpenApiTypes.OBJECT
         ),
         404: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Product image not found.",
+            response=OpenApiTypes.OBJECT
         ),
     },
 )
 
 
 # =========================================================
-# Attribute Groups
+# Product Attribute - List
 # =========================================================
 
-attribute_group_list_schema = extend_schema(
-    tags=["Attribute Groups"],
-    operation_id="attribute_group_list",
-    summary="List Attribute Groups",
-    description="Returns all active attribute groups.",
+
+product_attribute_list_view_schema = extend_schema(
+    tags=["Product Attributes"],
+    auth=[],
+    operation_id="product_attribute_list",
+    summary="List Product Attributes",
+    description=(
+        "Returns active product attributes. "
+        "When category is supplied, attributes inherited "
+        "from the category and its ancestors are returned."
+    ),
+    parameters=[
+        OpenApiParameter(
+            name="category",
+            type=OpenApiTypes.INT,
+            location=OpenApiParameter.QUERY,
+            required=False,
+            description="Category ID.",
+        )
+    ],
     responses={
         200: OpenApiResponse(
-            response=AttributeGroupSerializer(many=True),
-            description="Attribute groups retrieved successfully.",
+            response=ProductAttributeReferenceSerializer(
+                many=True
+            ),
             examples=[
                 OpenApiExample(
-                    name="Attribute Group List Success",
-                    value=responses.AttributeGroupListSuccess,
-                    media_type="application/json",
+                    name="Product Attributes",
+                    value=responses.ProductAttributeListSuccess,
                     response_only=True,
-                ),
-            ],
-        ),
-    },
-)
-
-
-attribute_group_create_schema = extend_schema(
-    tags=["Attribute Groups"],
-    operation_id="attribute_group_create",
-    summary="Create Attribute Group",
-    request=AttributeGroupCreateUpdateSerializer,
-    responses={
-        201: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Attribute group created successfully.",
-            examples=[
-                OpenApiExample(
-                    name="Attribute Group Create Success",
-                    value=responses.AttributeGroupCreateSuccess,
-                    media_type="application/json",
-                    response_only=True,
-                ),
-            ],
-        ),
-        400: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Validation error.",
-        ),
-    },
-)
-
-
-attribute_group_retrieve_schema = extend_schema(
-    tags=["Attribute Groups"],
-    operation_id="attribute_group_retrieve",
-    summary="Retrieve Attribute Group",
-    responses={
-        200: OpenApiResponse(
-            response=AttributeGroupSerializer,
-            description="Attribute group retrieved successfully.",
-        ),
-        404: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Attribute group not found.",
-        ),
-    },
-)
-
-
-attribute_group_update_schema = extend_schema(
-    tags=["Attribute Groups"],
-    operation_id="attribute_group_update",
-    summary="Update Attribute Group",
-    request=AttributeGroupCreateUpdateSerializer,
-    responses={
-        200: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Attribute group updated successfully.",
-        ),
-        400: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Validation error.",
-        ),
-        404: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Attribute group not found.",
-        ),
-    },
-)
-
-
-attribute_group_partial_update_schema = extend_schema(
-    tags=["Attribute Groups"],
-    operation_id="attribute_group_partial_update",
-    summary="Partially Update Attribute Group",
-    request=AttributeGroupCreateUpdateSerializer,
-    responses={
-        200: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Attribute group partially updated successfully.",
-        ),
-        400: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Validation error.",
-        ),
-        404: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Attribute group not found.",
-        ),
-    },
-)
-
-
-attribute_group_delete_schema = extend_schema(
-    tags=["Attribute Groups"],
-    operation_id="attribute_group_delete",
-    summary="Delete Attribute Group",
-    responses={
-        200: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Attribute group deleted successfully.",
-        ),
-        404: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Attribute group not found.",
-        ),
-    },
-)
-
-
-# =========================================================
-# Attributes
-# =========================================================
-
-attribute_list_schema = extend_schema(
-    tags=["Attributes"],
-    operation_id="attribute_list",
-    summary="List Attributes",
-    description="Returns all active attributes.",
-    responses={
-        200: OpenApiResponse(
-            response=AttributeSerializer(many=True),
-            description="Attributes retrieved successfully.",
-            examples=[
-                OpenApiExample(
-                    name="Attribute List Success",
-                    value=responses.AttributeListSuccess,
-                    media_type="application/json",
-                    response_only=True,
-                ),
-            ],
-        ),
-    },
-)
-
-
-attribute_create_schema = extend_schema(
-    tags=["Attributes"],
-    operation_id="attribute_create",
-    summary="Create Attribute",
-    request=AttributeCreateUpdateSerializer,
-    responses={
-        201: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Attribute created successfully.",
-            examples=[
-                OpenApiExample(
-                    name="Attribute Create Success",
-                    value=responses.AttributeCreateSuccess,
-                    media_type="application/json",
-                    response_only=True,
-                ),
+                )
             ],
         ),
         400: OpenApiResponse(
             response=OpenApiTypes.OBJECT,
-            description="Validation error.",
-        ),
-    },
-)
-
-
-attribute_retrieve_schema = extend_schema(
-    tags=["Attributes"],
-    operation_id="attribute_retrieve",
-    summary="Retrieve Attribute",
-    responses={
-        200: OpenApiResponse(
-            response=AttributeSerializer,
-            description="Attribute retrieved successfully.",
-        ),
-        404: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Attribute not found.",
-        ),
-    },
-)
-
-
-attribute_update_schema = extend_schema(
-    tags=["Attributes"],
-    operation_id="attribute_update",
-    summary="Update Attribute",
-    request=AttributeCreateUpdateSerializer,
-    responses={
-        200: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Attribute updated successfully.",
-        ),
-        400: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Validation error.",
-        ),
-        404: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Attribute not found.",
-        ),
-    },
-)
-
-
-attribute_partial_update_schema = extend_schema(
-    tags=["Attributes"],
-    operation_id="attribute_partial_update",
-    summary="Partially Update Attribute",
-    request=AttributeCreateUpdateSerializer,
-    responses={
-        200: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Attribute partially updated successfully.",
-        ),
-        400: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Validation error.",
-        ),
-        404: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Attribute not found.",
-        ),
-    },
-)
-
-
-attribute_delete_schema = extend_schema(
-    tags=["Attributes"],
-    operation_id="attribute_delete",
-    summary="Delete Attribute",
-    responses={
-        200: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Attribute deleted successfully.",
-        ),
-        404: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Attribute not found.",
         ),
     },
 )
 
 
 # =========================================================
-# Attribute Values
+# Product Attribute - Detail
 # =========================================================
 
-attribute_value_list_schema = extend_schema(
-    tags=["Attribute Values"],
-    operation_id="attribute_value_list",
-    summary="List Attribute Values",
+
+product_attribute_detail_view_schema = extend_schema(
+    tags=["Product Attributes"],
+    auth=[],
+    operation_id="product_attribute_detail",
+    summary="Get Product Attribute",
     responses={
-        200: OpenApiResponse(
-            response=AttributeValueSerializer(many=True),
-            description="Attribute values retrieved successfully.",
-        ),
-    },
-)
-
-
-attribute_value_create_schema = extend_schema(
-    tags=["Attribute Values"],
-    operation_id="attribute_value_create",
-    summary="Create Attribute Value",
-    request=AttributeValueCreateUpdateSerializer,
-    responses={
-        201: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Attribute value created successfully.",
-            examples=[
-                OpenApiExample(
-                    name="Attribute Value Create Success",
-                    value=responses.AttributeValueCreateSuccess,
-                    media_type="application/json",
-                    response_only=True,
-                ),
-            ],
-        ),
-        400: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Validation error.",
-        ),
-    },
-)
-
-
-attribute_value_retrieve_schema = extend_schema(
-    tags=["Attribute Values"],
-    operation_id="attribute_value_retrieve",
-    summary="Retrieve Attribute Value",
-    responses={
-        200: OpenApiResponse(
-            response=AttributeValueSerializer,
-            description="Attribute value retrieved successfully.",
-        ),
-        404: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Attribute value not found.",
-        ),
-    },
-)
-
-
-attribute_value_update_schema = extend_schema(
-    tags=["Attribute Values"],
-    operation_id="attribute_value_update",
-    summary="Update Attribute Value",
-    request=AttributeValueCreateUpdateSerializer,
-    responses={
-        200: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Attribute value updated successfully.",
-        ),
-        400: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Validation error.",
-        ),
-        404: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Attribute value not found.",
-        ),
-    },
-)
-
-
-attribute_value_partial_update_schema = extend_schema(
-    tags=["Attribute Values"],
-    operation_id="attribute_value_partial_update",
-    summary="Partially Update Attribute Value",
-    request=AttributeValueCreateUpdateSerializer,
-    responses={
-        200: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Attribute value partially updated successfully.",
-        ),
-        400: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Validation error.",
-        ),
-        404: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Attribute value not found.",
-        ),
-    },
-)
-
-
-attribute_value_delete_schema = extend_schema(
-    tags=["Attribute Values"],
-    operation_id="attribute_value_delete",
-    summary="Delete Attribute Value",
-    responses={
-        200: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Attribute value deleted successfully.",
-        ),
-        404: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Attribute value not found.",
-        ),
-    },
-)
-
-
-# =========================================================
-# Product Variants
-# =========================================================
-
-product_variant_list_schema = extend_schema(
-    tags=["Product Variants"],
-    operation_id="product_variant_list",
-    summary="List Product Variants",
-    description="Returns all variants belonging to a product.",
-    responses={
-        200: OpenApiResponse(
-            response=ProductVariantSerializer(many=True),
-            description="Product variants retrieved successfully.",
-            examples=[
-                OpenApiExample(
-                    name="Product Variant List Success",
-                    value=responses.ProductVariantListSuccess,
-                    media_type="application/json",
-                    response_only=True,
-                ),
-            ],
-        ),
-        404: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Product not found.",
-        ),
-    },
-)
-
-
-product_variant_create_schema = extend_schema(
-    tags=["Product Variants"],
-    operation_id="product_variant_create",
-    summary="Create Product Variant",
-    request=ProductVariantCreateUpdateSerializer,
-    responses={
-        201: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Product variant created successfully.",
-            examples=[
-                OpenApiExample(
-                    name="Product Variant Create Success",
-                    value=responses.ProductVariantCreateSuccess,
-                    media_type="application/json",
-                    response_only=True,
-                ),
-            ],
-        ),
-        400: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Validation error.",
-        ),
-        404: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Product not found.",
-        ),
-    },
-)
-
-
-product_variant_retrieve_schema = extend_schema(
-    tags=["Product Variants"],
-    operation_id="product_variant_retrieve",
-    summary="Retrieve Product Variant",
-    responses={
-        200: OpenApiResponse(
-            response=ProductVariantDetailSerializer,
-            description="Product variant retrieved successfully.",
-        ),
-        404: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Product variant not found.",
-        ),
-    },
-)
-
-
-product_variant_update_schema = extend_schema(
-    tags=["Product Variants"],
-    operation_id="product_variant_update",
-    summary="Update Product Variant",
-    request=ProductVariantCreateUpdateSerializer,
-    responses={
-        200: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Product variant updated successfully.",
-        ),
-        400: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Validation error.",
-        ),
-        404: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Product variant not found.",
-        ),
-    },
-)
-
-
-product_variant_partial_update_schema = extend_schema(
-    tags=["Product Variants"],
-    operation_id="product_variant_partial_update",
-    summary="Partially Update Product Variant",
-    request=ProductVariantCreateUpdateSerializer,
-    responses={
-        200: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Product variant partially updated successfully.",
-        ),
-        400: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Validation error.",
-        ),
-        404: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Product variant not found.",
-        ),
-    },
-)
-
-
-product_variant_delete_schema = extend_schema(
-    tags=["Product Variants"],
-    operation_id="product_variant_delete",
-    summary="Delete Product Variant",
-    responses={
-        200: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Product variant deleted successfully.",
-        ),
-        404: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Product variant not found.",
-        ),
-    },
-)
-
-
-# =========================================================
-# Motorcycle Compatibility
-# =========================================================
-
-product_motorcycle_compatibility_list_schema = extend_schema(
-    tags=["Product Motorcycle Compatibility"],
-    operation_id="product_motorcycle_compatibility_list",
-    summary="List Motorcycle Compatibilities",
-    description=("Returns all motorcycle compatibilities " "for a product."),
-    responses={
-        200: OpenApiResponse(
-            response=ProductMotorcycleCompatibilitySerializer(many=True),
-            description="Motorcycle compatibilities retrieved successfully.",
-        ),
-        404: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Product not found.",
-        ),
-    },
-)
-
-
-product_motorcycle_compatibility_create_schema = extend_schema(
-    tags=["Product Motorcycle Compatibility"],
-    operation_id="product_motorcycle_compatibility_create",
-    summary="Create Motorcycle Compatibility",
-    request=ProductMotorcycleCompatibilityCreateUpdateSerializer,
-    responses={
-        201: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Motorcycle compatibility created successfully.",
-            examples=[
-                OpenApiExample(
-                    name="Motorcycle Compatibility Create Success",
-                    value=responses.ProductMotorcycleCompatibilityCreateSuccess,
-                    media_type="application/json",
-                    response_only=True,
-                ),
-            ],
-        ),
-        400: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Validation error.",
-        ),
-        404: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Product not found.",
-        ),
-    },
-)
-
-
-product_motorcycle_compatibility_retrieve_schema = extend_schema(
-    tags=["Product Motorcycle Compatibility"],
-    operation_id="product_motorcycle_compatibility_retrieve",
-    summary="Retrieve Motorcycle Compatibility",
-    responses={
-        200: OpenApiResponse(
-            response=ProductMotorcycleCompatibilitySerializer,
-            description="Motorcycle compatibility retrieved successfully.",
-        ),
-        404: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Motorcycle compatibility not found.",
-        ),
-    },
-)
-
-
-product_motorcycle_compatibility_update_schema = extend_schema(
-    tags=["Product Motorcycle Compatibility"],
-    operation_id="product_motorcycle_compatibility_update",
-    summary="Update Motorcycle Compatibility",
-    request=ProductMotorcycleCompatibilityCreateUpdateSerializer,
-    responses={
-        200: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Motorcycle compatibility updated successfully.",
-        ),
-        400: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Validation error.",
-        ),
-        404: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Motorcycle compatibility not found.",
-        ),
-    },
-)
-
-
-product_motorcycle_compatibility_partial_update_schema = extend_schema(
-    tags=["Product Motorcycle Compatibility"],
-    operation_id="product_motorcycle_compatibility_partial_update",
-    summary="Partially Update Motorcycle Compatibility",
-    request=ProductMotorcycleCompatibilityCreateUpdateSerializer,
-    responses={
-        200: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description=("Motorcycle compatibility partially updated successfully."),
-        ),
-        400: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Validation error.",
-        ),
-        404: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Motorcycle compatibility not found.",
-        ),
-    },
-)
-
-
-product_motorcycle_compatibility_delete_schema = extend_schema(
-    tags=["Product Motorcycle Compatibility"],
-    operation_id="product_motorcycle_compatibility_delete",
-    summary="Delete Motorcycle Compatibility",
-    responses={
-        200: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Motorcycle compatibility deleted successfully.",
-        ),
-        404: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Motorcycle compatibility not found.",
-        ),
+        200: ProductAttributeReferenceSerializer,
+        404: OpenApiTypes.OBJECT,
     },
 )

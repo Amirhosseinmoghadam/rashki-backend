@@ -1,100 +1,60 @@
 from django.contrib import admin
 
-from .models import Cart, CartItem
+from .models import (
+    Cart,
+    CartItem,
+)
+
 
 # =========================================================
 # Cart Item Inline
 # =========================================================
 
 
-class CartItemInline(admin.TabularInline):
+class CartItemInline(
+    admin.TabularInline
+):
+
     model = CartItem
+
     extra = 0
 
-    autocomplete_fields = ("variant",)
-
-    readonly_fields = (
-        "created_at",
-        "updated_at",
-    )
-
     fields = (
-        "variant",
+        "product",
         "quantity",
         "created_at",
         "updated_at",
     )
 
+    readonly_fields = fields
+
+    can_delete = False
+
+    show_change_link = False
+
 
 # =========================================================
-# Cart
+# Cart Admin
 # =========================================================
 
 
 @admin.register(Cart)
-class CartAdmin(admin.ModelAdmin):
+class CartAdmin(
+    admin.ModelAdmin
+):
+
     list_display = (
+        "id",
         "user",
-        "items_count",
+        "item_count",
+        "applied_discount",
         "created_at",
         "updated_at",
     )
 
     search_fields = (
-        "user__username",
-        "user__email",
-        "user__first_name",
-        "user__last_name",
-        "user__mobile_number",
-    )
-
-    readonly_fields = (
-        "created_at",
-        "updated_at",
-    )
-
-    autocomplete_fields = ("user",)
-
-    ordering = ("-updated_at",)
-
-    inlines = (CartItemInline,)
-
-    fieldsets = (
-        (
-            "اطلاعات سبد خرید",
-            {"fields": ("user",)},
-        ),
-        (
-            "اطلاعات سیستم",
-            {
-                "fields": (
-                    "created_at",
-                    "updated_at",
-                )
-            },
-        ),
-    )
-
-    @admin.display(
-        description="تعداد آیتم‌ها",
-    )
-    def items_count(self, obj):
-        return obj.items.count()
-
-
-# =========================================================
-# Cart Item
-# =========================================================
-
-
-@admin.register(CartItem)
-class CartItemAdmin(admin.ModelAdmin):
-    list_display = (
-        "cart",
-        "variant",
-        "quantity",
-        "created_at",
-        "updated_at",
+        "user__phone_number",
+        "applied_discount__code",
     )
 
     list_filter = (
@@ -102,23 +62,100 @@ class CartItemAdmin(admin.ModelAdmin):
         "updated_at",
     )
 
-    search_fields = (
-        "cart__user__username",
-        "cart__user__email",
-        "cart__user__first_name",
-        "cart__user__last_name",
-        "variant__sku",
-        "variant__product__name",
-    )
-
-    autocomplete_fields = (
-        "cart",
-        "variant",
+    list_select_related = (
+        "user",
+        "applied_discount",
     )
 
     readonly_fields = (
+        "user",
+        "applied_discount",
         "created_at",
         "updated_at",
     )
 
-    ordering = ("-updated_at",)
+    inlines = (
+        CartItemInline,
+    )
+
+    ordering = (
+        "-updated_at",
+    )
+
+    list_per_page = 50
+
+    @admin.display(
+        description="تعداد آیتم"
+    )
+    def item_count(
+        self,
+        obj,
+    ):
+
+        return obj.items.count()
+
+    def has_add_permission(
+        self,
+        request,
+    ):
+
+        return False
+
+
+# =========================================================
+# Cart Item Admin
+# =========================================================
+
+
+@admin.register(CartItem)
+class CartItemAdmin(
+    admin.ModelAdmin
+):
+
+    list_display = (
+        "id",
+        "cart",
+        "product",
+        "quantity",
+        "created_at",
+        "updated_at",
+    )
+
+    search_fields = (
+        "cart__user__phone_number",
+        "product__name",
+        "product__sku",
+    )
+
+    list_select_related = (
+        "cart",
+        "cart__user",
+        "product",
+    )
+
+    readonly_fields = (
+        "cart",
+        "product",
+        "quantity",
+        "created_at",
+        "updated_at",
+    )
+
+    ordering = (
+        "-updated_at",
+    )
+
+    def has_add_permission(
+        self,
+        request,
+    ):
+
+        return False
+
+    def has_change_permission(
+        self,
+        request,
+        obj=None,
+    ):
+
+        return False

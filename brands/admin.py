@@ -1,16 +1,29 @@
 from django.contrib import admin
+from django.utils.html import format_html
 
 from .models import Brand
 
 
+# =========================================================
+# Brand Admin
+# =========================================================
+
+
 @admin.register(Brand)
 class BrandAdmin(admin.ModelAdmin):
+
     list_display = (
+        "id",
         "name",
-        "website",
+        "slug",
+        "logo_preview",
         "is_active",
         "created_at",
-        "updated_at",
+    )
+
+    list_display_links = (
+        "id",
+        "name",
     )
 
     list_filter = (
@@ -23,46 +36,73 @@ class BrandAdmin(admin.ModelAdmin):
         "name",
         "slug",
         "description",
-        "website",
     )
 
-    prepopulated_fields = {
-        "slug": ("name",),
-    }
+    ordering = (
+        "name",
+    )
 
-    list_editable = ("is_active",)
+    list_per_page = 50
 
     readonly_fields = (
+        "slug",
+        "logo_preview",
         "created_at",
         "updated_at",
     )
 
-    ordering = ("name",)
-
     fieldsets = (
         (
-            "اطلاعات برند",
+            "اطلاعات اصلی",
             {
                 "fields": (
                     "name",
                     "slug",
-                    "logo",
                     "description",
                     "website",
-                )
+                ),
             },
         ),
         (
-            "وضعیت",
-            {"fields": ("is_active",)},
+            "لوگو و وضعیت",
+            {
+                "fields": (
+                    "logo",
+                    "logo_preview",
+                    "is_active",
+                ),
+            },
         ),
         (
-            "اطلاعات سیستم",
+            "اطلاعات سیستمی",
             {
                 "fields": (
                     "created_at",
                     "updated_at",
-                )
+                ),
+                "classes": (
+                    "collapse",
+                ),
             },
         ),
     )
+
+    @admin.display(
+        description="پیش‌نمایش لوگو",
+    )
+    def logo_preview(
+        self,
+        obj,
+    ):
+
+        if not obj.logo:
+            return "بدون لوگو"
+
+        return format_html(
+            '<img src="{}" '
+            'width="80" '
+            'height="80" '
+            'style="object-fit:contain;'
+            'border-radius:8px;" />',
+            obj.logo.url,
+        )

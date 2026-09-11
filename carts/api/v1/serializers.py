@@ -1,155 +1,351 @@
 from rest_framework import serializers
 
-from carts.models import Cart, CartItem
+from drf_spectacular.utils import (
+    extend_schema_field,
+)
+
+from brands.models import Brand
+from categories.models import Category
+from products.models import Product
+
+from carts.constants import (
+    MAX_CART_ITEM_QUANTITY,
+)
+
 
 # =========================================================
-# Cart Item Serializer
+# Product References
 # =========================================================
 
 
-class CartItemSerializer(serializers.ModelSerializer):
-    """Serializer for CartItem model."""
-
-    variant_id = serializers.IntegerField(source="variant.id", read_only=True)
-    variant_name = serializers.CharField(source="variant.name", read_only=True)
-    variant_sku = serializers.CharField(source="variant.sku", read_only=True)
-    variant_price = serializers.DecimalField(
-        source="variant.price",
-        max_digits=15,
-        decimal_places=0,
-        read_only=True,
-    )
-    variant_is_active = serializers.BooleanField(
-        source="variant.is_active", read_only=True
-    )
-    total_price = serializers.SerializerMethodField()
+class CartCategorySerializer(
+    serializers.ModelSerializer
+):
 
     class Meta:
-        model = CartItem
+
+        model = Category
+
         fields = [
             "id",
-            "cart",
-            "variant",
-            "variant_id",
-            "variant_name",
-            "variant_sku",
-            "variant_price",
-            "variant_is_active",
-            "quantity",
-            "total_price",
-            "created_at",
-            "updated_at",
-        ]
-        read_only_fields = [
-            "id",
-            "cart",
-            "created_at",
-            "updated_at",
+            "name",
+            "slug",
         ]
 
-    def get_total_price(self, obj):
-        """Calculate total price for this cart item."""
-        return int(obj.variant.price) * obj.quantity
+        read_only_fields = fields
 
 
-# =========================================================
-# Cart Serializer
-# =========================================================
-
-
-class CartSerializer(serializers.ModelSerializer):
-    """Serializer for Cart model."""
-
-    items = CartItemSerializer(many=True, read_only=True)
-    total_items = serializers.SerializerMethodField()
-    subtotal = serializers.SerializerMethodField()
+class CartBrandSerializer(
+    serializers.ModelSerializer
+):
 
     class Meta:
-        model = Cart
+
+        model = Brand
+
         fields = [
             "id",
-            "user",
-            "items",
-            "total_items",
-            "subtotal",
-            "created_at",
-            "updated_at",
-        ]
-        read_only_fields = [
-            "id",
-            "user",
-            "created_at",
-            "updated_at",
+            "name",
+            "slug",
+            "logo",
         ]
 
-    def get_total_items(self, obj):
-        """Get total number of items in cart."""
-        return obj.items.count()
-
-    def get_subtotal(self, obj):
-        """Calculate subtotal for all items in cart."""
-        total = 0
-        for item in obj.items.all():
-            total += int(item.variant.price) * item.quantity
-        return total
+        read_only_fields = fields
 
 
 # =========================================================
-# Add to Cart Serializer
+# Product
 # =========================================================
 
 
-class AddToCartSerializer(serializers.Serializer):
-    """Serializer for adding items to cart."""
+class CartProductSerializer(
+    serializers.ModelSerializer
+):
 
-    variant_id = serializers.IntegerField(
-        required=True,
-        help_text="Product variant ID to add to cart.",
+    category = CartCategorySerializer(
+        read_only=True
     )
+
+    brand = CartBrandSerializer(
+        read_only=True
+    )
+
+    primary_image = (
+        serializers.SerializerMethodField()
+    )
+
+    class Meta:
+
+        model = Product
+
+        fields = [
+            "id",
+            "name",
+            "slug",
+            "sku",
+            "category",
+            "brand",
+            "unit",
+            "primary_image",
+        ]
+
+        read_only_fields = fields
+
+    @extend_schema_field(
+        serializers.URLField(
+            allow_null=True
+        )
+    )
+    def get_primary_image(
+        self,
+        obj,
+    ):
+
+        images = getattr(
+            obj,
+            "_cart_primary_images",
+            None,
+        )
+
+        if images is not None:
+
+            image = (
+                images[0]
+                if images
+                else None
+            )
+
+        else:
+
+            image = (
+                obj.images
+                .filter(
+                    is_primary=True
+                )
+                .first()
+            )
+
+        if image is None:
+            return None
+
+        url = image.image.url
+
+        request = self.context.get(
+            "request"
+        )
+
+        if request:
+
+            return (
+                request
+                .build_absolute_uri(url)
+            )
+
+        return url
+
+
+# =========================================================
+# Cart Item Output
+# =========================================================
+
+
+class CartItemSerializer(
+    serializers.Serializer
+):
+
+    id = serializers.IntegerField()
+
+    product = CartProductSerializer()
+
+    quantity = serializers.IntegerField()
+
+    unit_price_toman = (
+        serializers.IntegerField(
+            allow_null=True
+        )
+    )
+
+    line_total_toman = (
+        serializers.IntegerField(
+            allow_null=True
+        )
+    )
+
+    is_available = (
+        serializers.BooleanField()
+    )
+
+    availability_message = (
+        serializers.CharField(
+            allow_null=True
+        )
+    )
+
+    available_stock = (
+        serializers.IntegerField()
+    )
+
+    created_at = (
+        serializers.DateTimeField()
+    )
+
+    updated_at = (
+        serializers.DateTimeField()
+    )
+
+
+# =========================================================
+# Discount Output
+# =========================================================
+
+
+class CartDiscountSerializer(
+    serializers.Serializer
+):
+
+    id = serializers.IntegerField()
+
+    code = serializers.CharField()
+
+    discount_type = serializers.CharField()
+
+    scope = serializers.CharField()
+
+    eligible_subtotal_toman = (
+        serializers.IntegerField(
+            required=False
+        )
+    )
+
+    discount_amount_toman = (
+        serializers.IntegerField(
+            required=False
+        )
+    )
+
+
+# =========================================================
+# Cart Output
+# =========================================================
+
+
+class CartSerializer(
+    serializers.Serializer
+):
+
+    id = serializers.IntegerField()
+
+    items = CartItemSerializer(
+        many=True
+    )
+
+    item_count = (
+        serializers.IntegerField()
+    )
+
+    total_quantity = (
+        serializers.IntegerField()
+    )
+
+    subtotal_toman = (
+        serializers.IntegerField()
+    )
+
+    applied_discount = (
+        CartDiscountSerializer(
+            allow_null=True
+        )
+    )
+
+    discount_valid = (
+        serializers.BooleanField(
+            allow_null=True
+        )
+    )
+
+    discount_error = (
+        serializers.CharField(
+            allow_null=True
+        )
+    )
+
+    discount_amount_toman = (
+        serializers.IntegerField()
+    )
+
+    final_subtotal_toman = (
+        serializers.IntegerField()
+    )
+
+    has_issues = (
+        serializers.BooleanField()
+    )
+
+    is_checkout_ready = (
+        serializers.BooleanField()
+    )
+
+    created_at = (
+        serializers.DateTimeField()
+    )
+
+    updated_at = (
+        serializers.DateTimeField()
+    )
+
+
+# =========================================================
+# Add Item Request
+# =========================================================
+
+
+class CartItemAddSerializer(
+    serializers.Serializer
+):
+
+    product_id = serializers.IntegerField(
+        min_value=1,
+    )
+
+    # در POST اگر Product از قبل داخل Cart باشد،
+    # این Quantity به مقدار قبلی اضافه می‌شود.
     quantity = serializers.IntegerField(
-        required=False,
+        min_value=1,
+        max_value=(
+            MAX_CART_ITEM_QUANTITY
+        ),
         default=1,
-        min_value=1,
-        help_text="Quantity to add (default: 1).",
     )
 
-    def validate_variant_id(self, value):
-        """Validate that variant exists and is active."""
-        from products.models import ProductVariant
-
-        try:
-            variant = ProductVariant.objects.select_related("product").get(pk=value)
-            if not variant.is_active:
-                raise serializers.ValidationError("این تنوع محصول غیرفعال است.")
-            if variant.stock <= 0:
-                raise serializers.ValidationError("این محصول موجودی ندارد.")
-        except ProductVariant.DoesNotExist:
-            raise serializers.ValidationError("تنوع محصول یافت نشد.")
-        return value
-
-    def validate_quantity(self, value):
-        """Validate quantity."""
-        if value < 1:
-            raise serializers.ValidationError("تعداد باید حداقل ۱ باشد.")
-        return value
-
 
 # =========================================================
-# Update Cart Item Serializer
+# Update Quantity Request
 # =========================================================
 
 
-class UpdateCartItemSerializer(serializers.Serializer):
-    """Serializer for updating cart item quantity."""
+class CartItemUpdateSerializer(
+    serializers.Serializer
+):
 
+    # در PATCH مقدار Quantity
+    # جایگزین Quantity قبلی می‌شود.
     quantity = serializers.IntegerField(
-        required=True,
         min_value=1,
-        help_text="New quantity for the cart item.",
+        max_value=(
+            MAX_CART_ITEM_QUANTITY
+        ),
     )
 
-    def validate_quantity(self, value):
-        """Validate quantity."""
-        if value < 1:
-            raise serializers.ValidationError("تعداد باید حداقل ۱ باشد.")
-        return value
+
+# =========================================================
+# Discount Request
+# =========================================================
+
+
+class CartDiscountApplySerializer(
+    serializers.Serializer
+):
+
+    code = serializers.CharField(
+        max_length=50,
+    )

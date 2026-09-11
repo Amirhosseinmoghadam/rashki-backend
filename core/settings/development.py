@@ -16,6 +16,7 @@ ALLOWED_HOSTS = env.list(  # noqa: F405
 )
 
 
+
 # =========================================================
 # Database
 # =========================================================
@@ -76,6 +77,18 @@ CSRF_TRUSTED_ORIGINS = env.list(  # noqa: F405
     ],
 )
 
+# =========================================================
+# Development Cache
+# =========================================================
+
+CACHES = {
+    "default": {
+        "BACKEND": (
+            "django.core.cache.backends.locmem.LocMemCache"
+        ),
+        "LOCATION": "rashki-development-cache",
+    }
+}
 
 # =========================================================
 # Development Security
@@ -84,3 +97,6 @@ CSRF_TRUSTED_ORIGINS = env.list(  # noqa: F405
 SECURE_SSL_REDIRECT = False
 SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_SECURE = False
+
+
+ZARINPAL_SANDBOX = True

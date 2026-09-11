@@ -1,415 +1,538 @@
-# from rest_framework import status
-# from rest_framework.permissions import IsAuthenticated
-# from rest_framework.response import Response
-# from rest_framework.views import APIView
-#
-# from django.db import transaction
-# from django.shortcuts import get_object_or_404
-#
-# from carts.models import Cart, CartItem
-# from products.models import ProductVariant
-#
-# from .serializers import (
-#     CartSerializer,
-#     CartItemSerializer,
-#     AddToCartSerializer,
-#     UpdateCartItemSerializer,
-# )
-#
-# from .openapi.schema import (
-#     cart_list_view_schema,
-#     add_to_cart_view_schema,
-#     update_cart_item_view_schema,
-#     remove_cart_item_view_schema,
-#     clear_cart_view_schema,
-# )
-#
-#
-# # =========================================================
-# # Cart List API View
-# # =========================================================
-# @cart_list_view_schema
-# class CartListView(APIView):
-#     """
-#     Get the authenticated user's cart with all items.
-#
-#     Returns the current cart with all items, quantities, and calculated totals.
-#     """
-#
-#     permission_classes = [IsAuthenticated]
-#
-#     def get(self, request):
-#         # Get or create cart for the user
-#         cart, created = Cart.objects.get_or_create(
-#             user=request.user,
-#         )
-#
-#         serializer = CartSerializer(cart)
-#
-#         return Response(
-#             {
-#                 "message": "سبد خرید با موفقیت دریافت شد.",
-#                 "data": serializer.data,
-#             },
-#             status=status.HTTP_200_OK,
-#         )
-#
-#
-# # =========================================================
-# # Add to Cart API View
-# # =========================================================
-# @add_to_cart_view_schema
-# class AddToCartView(APIView):
-#     """
-#     Add a product variant to the user's cart.
-#
-#     If the variant already exists in the cart, the quantity will be increased.
-#     """
-#
-#     permission_classes = [IsAuthenticated]
-#
-#     @transaction.atomic
-#     def post(self, request):
-#         serializer = AddToCartSerializer(data=request.data)
-#         serializer.is_valid(raise_exception=True)
-#
-#         variant_id = serializer.validated_data["variant_id"]
-#         quantity = serializer.validated_data["quantity"]
-#
-#         # Get or create cart
-#         cart, _ = Cart.objects.get_or_create(user=request.user)
-#
-#         # Get variant
-#         variant = get_object_or_404(ProductVariant, pk=variant_id)
-#
-#         # Check if item already exists in cart
-#         cart_item, created = CartItem.objects.get_or_create(
-#             cart=cart,
-#             variant=variant,
-#             defaults={"quantity": quantity},
-#         )
-#
-#         if not created:
-#             # Item exists, update quantity
-#             cart_item.quantity += quantity
-#             cart_item.save(update_fields=["quantity"])
-#
-#         # Serialize and return updated cart
-#         cart.refresh_from_db()
-#         cart_serializer = CartSerializer(cart)
-#
-#         return Response(
-#             {
-#                 "message": "محصول با موفقیت به سبد خرید اضافه شد.",
-#                 "data": cart_serializer.data,
-#             },
-#             status=status.HTTP_200_OK,
-#         )
-#
-#
-# # =========================================================
-# # Update Cart Item API View
-# # =========================================================
-# @update_cart_item_view_schema
-# class UpdateCartItemView(APIView):
-#     """
-#     Update the quantity of a specific item in the cart.
-#
-#     This allows setting a new quantity for an existing cart item.
-#     """
-#
-#     permission_classes = [IsAuthenticated]
-#
-#     @transaction.atomic
-#     def put(self, request, item_id):
-#         # Get cart item and ensure it belongs to user's cart
-#         cart_item = get_object_or_404(
-#             CartItem.objects.select_related("cart"),
-#             pk=item_id,
-#             cart__user=request.user,
-#         )
-#
-#         serializer = UpdateCartItemSerializer(data=request.data)
-#         serializer.is_valid(raise_exception=True)
-#
-#         quantity = serializer.validated_data["quantity"]
-#
-#         # Update quantity
-#         cart_item.quantity = quantity
-#         cart_item.save(update_fields=["quantity", "updated_at"])
-#
-#         # Serialize and return updated cart
-#         cart_item.cart.refresh_from_db()
-#         cart_serializer = CartSerializer(cart_item.cart)
-#
-#         return Response(
-#             {
-#                 "message": "تعداد محصول با موفقیت بروزرسانی شد.",
-#                 "data": cart_serializer.data,
-#             },
-#             status=status.HTTP_200_OK,
-#         )
-#
-#     def patch(self, request, item_id):
-#         return self.put(request, item_id)
-#
-#
-# # =========================================================
-# # Remove Cart Item API View
-# # =========================================================
-# @remove_cart_item_view_schema
-# class RemoveCartItemView(APIView):
-#     """
-#     Remove a specific item from the cart.
-#     """
-#
-#     permission_classes = [IsAuthenticated]
-#
-#     @transaction.atomic
-#     def delete(self, request, item_id):
-#         # Get cart item and ensure it belongs to user's cart
-#         cart_item = get_object_or_404(
-#             CartItem,
-#             pk=item_id,
-#             cart__user=request.user,
-#         )
-#
-#         cart_item.delete()
-#
-#         # Serialize and return updated cart
-#         cart_item.cart.refresh_from_db()
-#         cart_serializer = CartSerializer(cart_item.cart)
-#
-#         return Response(
-#             {
-#                 "message": "محصول با موفقیت از سبد خرید حذف شد.",
-#                 "data": cart_serializer.data,
-#             },
-#             status=status.HTTP_200_OK,
-#         )
-#
-#
-# # =========================================================
-# # Clear Cart API View
-# # =========================================================
-# @clear_cart_view_schema
-# class ClearCartView(APIView):
-#     """
-#     Remove all items from the user's cart.
-#     """
-#
-#     permission_classes = [IsAuthenticated]
-#
-#     @transaction.atomic
-#     def delete(self, request):
-#         # Get user's cart
-#         cart = get_object_or_404(Cart, user=request.user)
-#
-#         # Delete all items
-#         cart.items.all().delete()
-#
-#         # Serialize empty cart
-#         cart.refresh_from_db()
-#         cart_serializer = CartSerializer(cart)
-#
-#         return Response(
-#             {
-#                 "message": "سبد خرید با موفقیت خالی شد.",
-#                 "data": cart_serializer.data,
-#             },
-#             status=status.HTTP_200_OK,
-#         )
-from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from rest_framework.views import APIView
+from rest_framework import (
+    generics,
+    status,
+)
 
-from django.db import transaction
-from django.shortcuts import get_object_or_404
+from rest_framework.permissions import (
+    IsAuthenticated,
+)
 
-from carts.models import Cart, CartItem
-from products.models import ProductVariant
+from rest_framework.response import (
+    Response,
+)
+
+from discounts.services import (
+    DiscountValidationError,
+)
+
+from carts.services import (
+    CartItemNotFoundError,
+    CartValidationError,
+    add_cart_item,
+    apply_cart_discount,
+    calculate_cart,
+    clear_cart,
+    get_cart,
+    remove_cart_discount,
+    remove_cart_item,
+    update_cart_item,
+)
 
 from .serializers import (
     CartSerializer,
-    AddToCartSerializer,
-    UpdateCartItemSerializer,
+    CartItemAddSerializer,
+    CartItemUpdateSerializer,
+    CartDiscountApplySerializer,
 )
 
 from .openapi.schema import (
-    cart_list_view_schema,
-    add_to_cart_view_schema,
-    update_cart_item_put_schema,
-    update_cart_item_patch_schema,
-    remove_cart_item_view_schema,
-    clear_cart_view_schema,
+    cart_detail_view_schema,
+    cart_add_item_view_schema,
+    cart_update_item_view_schema,
+    cart_remove_item_view_schema,
+    cart_clear_view_schema,
+    cart_apply_discount_view_schema,
+    cart_remove_discount_view_schema,
 )
 
 
-class CartListView(APIView):
+# =========================================================
+# Cart Detail
+# =========================================================
 
-    permission_classes = [IsAuthenticated]
 
-    @cart_list_view_schema
-    def get(self, request):
+class CartAPIView(
+    generics.GenericAPIView
+):
 
-        cart, created = Cart.objects.get_or_create(
-            user=request.user,
+    permission_classes = [
+        IsAuthenticated,
+    ]
+
+    serializer_class = (
+        CartSerializer
+    )
+
+    @cart_detail_view_schema
+    def get(
+        self,
+        request,
+        *args,
+        **kwargs,
+    ):
+
+        cart = get_cart(
+            request.user
         )
 
-        serializer = CartSerializer(cart)
+        data = calculate_cart(
+            cart
+        )
+
+        serializer = CartSerializer(
+            data,
+            context={
+                "request": request,
+            },
+        )
 
         return Response(
             {
-                "message": "سبد خرید با موفقیت دریافت شد.",
+                "success": True,
+                "message": (
+                    "سبد خرید با موفقیت "
+                    "دریافت شد."
+                ),
                 "data": serializer.data,
             },
             status=status.HTTP_200_OK,
         )
 
 
-class AddToCartView(APIView):
+# =========================================================
+# Add Cart Item
+# =========================================================
 
-    permission_classes = [IsAuthenticated]
 
-    @add_to_cart_view_schema
-    @transaction.atomic
-    def post(self, request):
+class CartItemAddAPIView(
+    generics.GenericAPIView
+):
 
-        serializer = AddToCartSerializer(data=request.data)
+    permission_classes = [
+        IsAuthenticated,
+    ]
 
-        serializer.is_valid(raise_exception=True)
+    serializer_class = (
+        CartItemAddSerializer
+    )
 
-        variant_id = serializer.validated_data["variant_id"]
-        quantity = serializer.validated_data["quantity"]
+    @cart_add_item_view_schema
+    def post(
+        self,
+        request,
+        *args,
+        **kwargs,
+    ):
 
-        cart, _ = Cart.objects.get_or_create(user=request.user)
-
-        variant = get_object_or_404(ProductVariant, pk=variant_id)
-
-        cart_item, created = CartItem.objects.get_or_create(
-            cart=cart,
-            variant=variant,
-            defaults={"quantity": quantity},
+        serializer = self.get_serializer(
+            data=request.data
         )
 
-        if not created:
-            cart_item.quantity += quantity
+        serializer.is_valid(
+            raise_exception=True
+        )
 
-            cart_item.save(update_fields=["quantity"])
+        try:
 
-        cart.refresh_from_db()
+            (
+                cart,
+                created,
+            ) = add_cart_item(
+                user=request.user,
+                product_id=(
+                    serializer
+                    .validated_data[
+                        "product_id"
+                    ]
+                ),
+                quantity=(
+                    serializer
+                    .validated_data[
+                        "quantity"
+                    ]
+                ),
+            )
 
-        cart_serializer = CartSerializer(cart)
+            data = calculate_cart(
+                cart
+            )
+
+        except CartValidationError as exc:
+
+            return Response(
+                {
+                    "success": False,
+                    "message": str(exc),
+                    "errors": None,
+                },
+                status=(
+                    status.HTTP_400_BAD_REQUEST
+                ),
+            )
+
+        response_serializer = CartSerializer(
+            data,
+            context={
+                "request": request,
+            },
+        )
 
         return Response(
             {
-                "message": "محصول با موفقیت به سبد خرید اضافه شد.",
-                "data": cart_serializer.data,
+                "success": True,
+                "message": (
+                    "محصول با موفقیت به "
+                    "سبد خرید اضافه شد."
+                    if created
+                    else
+                    "تعداد محصول در سبد "
+                    "خرید بروزرسانی شد."
+                ),
+                "data": (
+                    response_serializer.data
+                ),
+            },
+            status=(
+                status.HTTP_201_CREATED
+                if created
+                else status.HTTP_200_OK
+            ),
+        )
+
+
+# =========================================================
+# Update / Remove Item
+# =========================================================
+
+
+class CartItemAPIView(
+    generics.GenericAPIView
+):
+
+    permission_classes = [
+        IsAuthenticated,
+    ]
+
+    serializer_class = (
+        CartItemUpdateSerializer
+    )
+
+    # =====================================================
+    # PATCH
+    # =====================================================
+
+    @cart_update_item_view_schema
+    def patch(
+        self,
+        request,
+        product_id,
+        *args,
+        **kwargs,
+    ):
+
+        serializer = self.get_serializer(
+            data=request.data
+        )
+
+        serializer.is_valid(
+            raise_exception=True
+        )
+
+        try:
+
+            cart = update_cart_item(
+                user=request.user,
+                product_id=product_id,
+                quantity=(
+                    serializer
+                    .validated_data[
+                        "quantity"
+                    ]
+                ),
+            )
+
+            data = calculate_cart(
+                cart
+            )
+
+        except CartItemNotFoundError as exc:
+
+            return Response(
+                {
+                    "success": False,
+                    "message": str(exc),
+                    "errors": None,
+                },
+                status=(
+                    status.HTTP_404_NOT_FOUND
+                ),
+            )
+
+        except CartValidationError as exc:
+
+            return Response(
+                {
+                    "success": False,
+                    "message": str(exc),
+                    "errors": None,
+                },
+                status=(
+                    status.HTTP_400_BAD_REQUEST
+                ),
+            )
+
+        response_serializer = CartSerializer(
+            data,
+            context={
+                "request": request,
+            },
+        )
+
+        return Response(
+            {
+                "success": True,
+                "message": (
+                    "تعداد محصول با موفقیت "
+                    "بروزرسانی شد."
+                ),
+                "data": (
+                    response_serializer.data
+                ),
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    # =====================================================
+    # DELETE
+    # =====================================================
+
+    @cart_remove_item_view_schema
+    def delete(
+        self,
+        request,
+        product_id,
+        *args,
+        **kwargs,
+    ):
+
+        try:
+
+            cart = remove_cart_item(
+                user=request.user,
+                product_id=product_id,
+            )
+
+            data = calculate_cart(
+                cart
+            )
+
+        except CartItemNotFoundError as exc:
+
+            return Response(
+                {
+                    "success": False,
+                    "message": str(exc),
+                    "errors": None,
+                },
+                status=(
+                    status.HTTP_404_NOT_FOUND
+                ),
+            )
+
+        serializer = CartSerializer(
+            data,
+            context={
+                "request": request,
+            },
+        )
+
+        return Response(
+            {
+                "success": True,
+                "message": (
+                    "محصول با موفقیت از "
+                    "سبد خرید حذف شد."
+                ),
+                "data": serializer.data,
             },
             status=status.HTTP_200_OK,
         )
 
 
-class UpdateCartItemView(APIView):
+# =========================================================
+# Clear Cart
+# =========================================================
 
-    permission_classes = [IsAuthenticated]
 
-    @update_cart_item_put_schema
-    @transaction.atomic
-    def put(self, request, item_id):
+class CartClearAPIView(
+    generics.GenericAPIView
+):
 
-        cart_item = get_object_or_404(
-            CartItem.objects.select_related("cart"),
-            pk=item_id,
-            cart__user=request.user,
+    permission_classes = [
+        IsAuthenticated,
+    ]
+
+    @cart_clear_view_schema
+    def delete(
+        self,
+        request,
+        *args,
+        **kwargs,
+    ):
+
+        cart = clear_cart(
+            request.user
         )
 
-        serializer = UpdateCartItemSerializer(data=request.data)
-
-        serializer.is_valid(raise_exception=True)
-
-        quantity = serializer.validated_data["quantity"]
-
-        cart_item.quantity = quantity
-
-        cart_item.save(
-            update_fields=[
-                "quantity",
-                "updated_at",
-            ]
+        data = calculate_cart(
+            cart
         )
 
-        cart_item.cart.refresh_from_db()
-
-        cart_serializer = CartSerializer(cart_item.cart)
-
-        return Response(
-            {
-                "message": "تعداد محصول با موفقیت بروزرسانی شد.",
-                "data": cart_serializer.data,
+        serializer = CartSerializer(
+            data,
+            context={
+                "request": request,
             },
-            status=status.HTTP_200_OK,
         )
-
-    @update_cart_item_patch_schema
-    @transaction.atomic
-    def patch(self, request, item_id):
-
-        return self.put(request, item_id)
-
-
-class RemoveCartItemView(APIView):
-
-    permission_classes = [IsAuthenticated]
-
-    @remove_cart_item_view_schema
-    @transaction.atomic
-    def delete(self, request, item_id):
-
-        cart_item = get_object_or_404(
-            CartItem,
-            pk=item_id,
-            cart__user=request.user,
-        )
-
-        cart = cart_item.cart
-
-        cart_item.delete()
-
-        cart.refresh_from_db()
-
-        cart_serializer = CartSerializer(cart)
 
         return Response(
             {
-                "message": "محصول با موفقیت از سبد خرید حذف شد.",
-                "data": cart_serializer.data,
+                "success": True,
+                "message": (
+                    "سبد خرید با موفقیت "
+                    "خالی شد."
+                ),
+                "data": serializer.data,
             },
             status=status.HTTP_200_OK,
         )
 
 
-class ClearCartView(APIView):
+# =========================================================
+# Cart Discount
+# =========================================================
 
-    permission_classes = [IsAuthenticated]
 
-    @clear_cart_view_schema
-    @transaction.atomic
-    def delete(self, request):
+class CartDiscountAPIView(
+    generics.GenericAPIView
+):
 
-        cart = get_object_or_404(Cart, user=request.user)
+    permission_classes = [
+        IsAuthenticated,
+    ]
 
-        cart.items.all().delete()
+    serializer_class = (
+        CartDiscountApplySerializer
+    )
 
-        cart.refresh_from_db()
+    # =====================================================
+    # POST
+    # =====================================================
 
-        cart_serializer = CartSerializer(cart)
+    @cart_apply_discount_view_schema
+    def post(
+        self,
+        request,
+        *args,
+        **kwargs,
+    ):
+
+        serializer = self.get_serializer(
+            data=request.data
+        )
+
+        serializer.is_valid(
+            raise_exception=True
+        )
+
+        try:
+
+            cart = apply_cart_discount(
+                user=request.user,
+                code=(
+                    serializer
+                    .validated_data[
+                        "code"
+                    ]
+                ),
+            )
+
+            data = calculate_cart(
+                cart
+            )
+
+        except (
+            CartValidationError,
+            DiscountValidationError,
+        ) as exc:
+
+            return Response(
+                {
+                    "success": False,
+                    "message": str(exc),
+                    "errors": None,
+                },
+                status=(
+                    status.HTTP_400_BAD_REQUEST
+                ),
+            )
+
+        response_serializer = CartSerializer(
+            data,
+            context={
+                "request": request,
+            },
+        )
 
         return Response(
             {
-                "message": "سبد خرید با موفقیت خالی شد.",
-                "data": cart_serializer.data,
+                "success": True,
+                "message": (
+                    "کد تخفیف با موفقیت "
+                    "روی سبد خرید اعمال شد."
+                ),
+                "data": (
+                    response_serializer.data
+                ),
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    # =====================================================
+    # DELETE
+    # =====================================================
+
+    @cart_remove_discount_view_schema
+    def delete(
+        self,
+        request,
+        *args,
+        **kwargs,
+    ):
+
+        cart = remove_cart_discount(
+            request.user
+        )
+
+        data = calculate_cart(
+            cart
+        )
+
+        serializer = CartSerializer(
+            data,
+            context={
+                "request": request,
+            },
+        )
+
+        return Response(
+            {
+                "success": True,
+                "message": (
+                    "کد تخفیف از سبد "
+                    "خرید حذف شد."
+                ),
+                "data": serializer.data,
             },
             status=status.HTTP_200_OK,
         )

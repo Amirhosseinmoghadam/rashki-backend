@@ -1,43 +1,51 @@
 from django.urls import path
 
 from .views import (
-    CartListView,
-    AddToCartView,
-    UpdateCartItemView,
-    RemoveCartItemView,
-    ClearCartView,
+    CartAPIView,
+    CartClearAPIView,
+    CartDiscountAPIView,
+    CartItemAPIView,
+    CartItemAddAPIView,
 )
+
 
 app_name = "carts_api_v1"
 
 
 urlpatterns = [
-    # =====================================================
-    # Cart Management
-    # =====================================================
+
+    # دریافت Cart
     path(
-        "",
-        CartListView.as_view(),
-        name="cart-list",
+        "cart/",
+        CartAPIView.as_view(),
+        name="cart-detail",
     ),
+
+    # افزودن Product
     path(
-        "add/",
-        AddToCartView.as_view(),
-        name="cart-add",
+        "cart/items/",
+        CartItemAddAPIView.as_view(),
+        name="cart-item-add",
     ),
+
+    # تغییر Quantity / حذف Product
     path(
-        "<int:item_id>/",
-        UpdateCartItemView.as_view(),
-        name="cart-item-update",
+        "cart/items/<int:product_id>/",
+        CartItemAPIView.as_view(),
+        name="cart-item",
     ),
+
+    # خالی کردن Cart
     path(
-        "<int:item_id>/remove/",
-        RemoveCartItemView.as_view(),
-        name="cart-item-remove",
-    ),
-    path(
-        "clear/",
-        ClearCartView.as_view(),
+        "cart/clear/",
+        CartClearAPIView.as_view(),
         name="cart-clear",
+    ),
+
+    # اعمال / حذف Discount Code
+    path(
+        "cart/discount/",
+        CartDiscountAPIView.as_view(),
+        name="cart-discount",
     ),
 ]

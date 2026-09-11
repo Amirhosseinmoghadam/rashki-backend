@@ -1,282 +1,450 @@
 # =========================================================
-# Product Responses
+# Product List
 # =========================================================
 
+
 ProductListSuccess = {
-    "count": 10,
-    "results": [
-        {
-            "id": 1,
-            "name": "لنت ترمز جلو CG125",
-            "slug": "cg125-front-brake-pad",
-            "brand": 1,
-            "brand_name": "کاسه‌ای",
-            "category": 1,
-            "category_name": "لنت ترمز",
-            "short_description": "لنت ترمز با کیفیت بالا برای CG125",
-            "is_active": True,
-            "is_featured": True,
-            "created_at": "2024-01-15T10:30:00Z",
-            "primary_image": {
-                "id": 1,
-                "image_url": "/media/products/images/brake_pad.jpg",
-                "alt_text": "لنت ترمز CG125",
+    "success": True,
+    "message": "لیست محصولات با موفقیت دریافت شد.",
+    "data": {
+        "count": 2,
+        "next": None,
+        "previous": None,
+        "results": [
+            {
+                "id": 25,
+                "name": "شمع NGK CPR6EA-9",
+                "slug": "شمع-ngk-cpr6ea-9",
+                "sku": "NGK-CPR6EA9",
+                "category": {
+                    "id": 4,
+                    "name": "شمع",
+                    "slug": "شمع",
+                },
+                "brand": {
+                    "id": 2,
+                    "name": "NGK",
+                    "slug": "ngk",
+                    "logo": None,
+                },
+                "short_description": (
+                    "شمع NGK مناسب چند مدل "
+                    "موتورسیکلت هوندا."
+                ),
+                "current_price_toman": 590000,
+                "unit": "piece",
+                "stock_quantity": 30,
+                "is_in_stock": True,
+                "is_featured": False,
+                "primary_image": (
+                    "http://127.0.0.1:8000/"
+                    "media/products/product/2026/09/"
+                    "ngk-main.png"
+                ),
             },
-            "variants_count": 3,
-        }
-    ],
+            {
+                "id": 26,
+                "name": "لنت ترمز جلو",
+                "slug": "لنت-ترمز-جلو",
+                "sku": "BRK-FRONT-001",
+                "category": {
+                    "id": 7,
+                    "name": "لنت ترمز",
+                    "slug": "لنت-ترمز",
+                },
+                "brand": None,
+                "short_description": (
+                    "لنت ترمز جلو موتورسیکلت."
+                ),
+                "current_price_toman": 510000,
+                "unit": "pair",
+                "stock_quantity": 15,
+                "is_in_stock": True,
+                "is_featured": False,
+                "primary_image": None,
+            },
+        ],
+    },
 }
+
+
+# =========================================================
+# Product Detail
+# =========================================================
 
 
 ProductDetailSuccess = {
-    "id": 1,
-    "name": "لنت ترمز جلو CG125",
-    "slug": "cg125-front-brake-pad",
-    "brand": 1,
-    "brand_name": "کاسه‌ای",
-    "category": 1,
-    "category_name": "لنت ترمز",
-    "short_description": "لنت ترمز با کیفیت بالا برای CG125",
-    "description": "این لنت ترمز با استفاده از مواد اولیه درجه یک تولید شده و عمر مفید بالایی دارد.",
-    "is_active": True,
-    "is_featured": True,
-    "created_at": "2024-01-15T10:30:00Z",
-    "updated_at": "2024-01-20T14:45:00Z",
-    "images": [],
-    "attribute_values": [],
-    "variants": [],
-    "motorcycle_compatibilities": [],
+    "success": True,
+    "message": "محصول با موفقیت دریافت شد.",
+    "data": {
+        "id": 25,
+        "name": "شمع NGK CPR6EA-9",
+        "slug": "شمع-ngk-cpr6ea-9",
+        "category": {
+            "id": 4,
+            "name": "شمع",
+            "slug": "شمع",
+        },
+        "brand": {
+            "id": 2,
+            "name": "NGK",
+            "slug": "ngk",
+            "logo": None,
+        },
+        "unit": "piece",
+        "sku": "NGK-CPR6EA9",
+        "manufacturer_part_number": "CPR6EA-9",
+        "oem_code": "",
+        "barcode": None,
+        "short_description": (
+            "شمع NGK مناسب چند مدل موتورسیکلت هوندا."
+        ),
+        "description": (
+            "شمع NGK مدل CPR6EA-9 با کیفیت بالا."
+        ),
+        "current_price_toman": 590000,
+        "stock_quantity": 30,
+        "is_in_stock": True,
+        "weight_grams": 80,
+        "length_cm": "8.00",
+        "width_cm": "3.00",
+        "height_cm": "3.00",
+        "images": [
+            {
+                "id": 10,
+                "image": (
+                    "http://127.0.0.1:8000/"
+                    "media/products/product/2026/09/"
+                    "ngk-main.png"
+                ),
+                "alt_text": "شمع NGK CPR6EA-9",
+                "is_primary": True,
+                "sort_order": 0,
+            }
+        ],
+        "attributes": [
+            {
+                "id": 1,
+                "attribute": {
+                    "id": 5,
+                    "name": "قطر رزوه",
+                    "slug": "قطر-رزوه",
+                    "data_type": "number",
+                    "unit": "mm",
+                    "is_filterable": True,
+                    "is_searchable": False,
+                    "sort_order": 0,
+                    "options": [],
+                },
+                "value_text": "",
+                "value_number": "10.0000",
+                "value_boolean": None,
+                "option": None,
+            }
+        ],
+        "compatibilities": [
+            {
+                "id": 1,
+                "motorcycle": {
+                    "id": 2,
+                    "brand": {
+                        "id": 1,
+                        "name": "هوندا",
+                        "slug": "هوندا",
+                    },
+                    "name": "CG 125",
+                    "slug": "هوندا-cg-125",
+                    "engine_volume": 125,
+                    "production_start_year": 2010,
+                    "production_end_year": None,
+                },
+                "compatible_start_year": 2018,
+                "compatible_end_year": None,
+                "note": "",
+            }
+        ],
+        "related_products": [
+            {
+                "id": 18,
+                "name": "وایر شمع",
+                "slug": "وایر-شمع",
+                "current_price_toman": 180000,
+                "primary_image": None,
+            }
+        ],
+        "meta_title": "خرید شمع NGK CPR6EA-9",
+        "meta_description": (
+            "خرید شمع NGK مناسب موتورسیکلت‌های سازگار."
+        ),
+        "is_featured": False,
+        "created_at": "2026-09-04T10:00:00Z",
+        "updated_at": "2026-09-04T10:00:00Z",
+    },
 }
+
+
+# =========================================================
+# Product Create
+# =========================================================
 
 
 ProductCreateSuccess = {
+    "success": True,
     "message": "محصول با موفقیت ایجاد شد.",
-    "data": {
-        "id": 1,
-        "name": "لنت ترمز جلو CG125",
-        "brand": 1,
-        "category": 1,
-        "short_description": "لنت ترمز با کیفیت بالا برای CG125",
-        "description": "",
-        "is_active": True,
-        "is_featured": False,
-    },
+    "data": ProductDetailSuccess["data"],
 }
+
+
+# =========================================================
+# Product Update
+# =========================================================
 
 
 ProductUpdateSuccess = {
+    "success": True,
     "message": "محصول با موفقیت بروزرسانی شد.",
-    "data": {
-        "id": 1,
-        "name": "لنت ترمز جلو CG125 - نسخه جدید",
-        "brand": 1,
-        "category": 1,
-        "short_description": "لنت ترمز با کیفیت بالا برای CG125",
-        "description": "",
-        "is_active": True,
-        "is_featured": True,
-    },
+    "data": ProductDetailSuccess["data"],
 }
+
+
+# =========================================================
+# Product Delete
+# =========================================================
 
 
 ProductDeleteSuccess = {
+    "success": True,
     "message": "محصول با موفقیت حذف شد.",
+    "data": None,
 }
 
 
-ProductNotFoundError = {
-    "detail": "Not found.",
+ProductDeleteProtected = {
+    "success": False,
+    "message": (
+        "این محصول به اطلاعات دیگری وابسته است "
+        "و قابل حذف نیست."
+    ),
+    "errors": None,
 }
+
+
+# =========================================================
+# Validation Errors
+# =========================================================
 
 
 ProductValidationError = {
-    "message": "خطا در ایجاد محصول.",
-    "errors": {
-        "name": ["این فیلد الزامی است."],
-        "brand": ["این فیلد الزامی است."],
-        "category": ["این فیلد الزامی است."],
-    },
+    "name": [
+        "این فیلد الزامی است."
+    ]
+}
+
+
+ProductUSDPriceRequired = {
+    "base_price_usd": [
+        (
+            "برای قیمت‌گذاری دلاری "
+            "قیمت پایه دلار الزامی است."
+        )
+    ]
+}
+
+
+ProductTomanPriceRequired = {
+    "base_price_toman": [
+        (
+            "برای قیمت‌گذاری ثابت "
+            "قیمت پایه تومان الزامی است."
+        )
+    ]
+}
+
+
+ProductInactiveCategory = {
+    "category": [
+        (
+            "محصول فعال باید در دسته‌بندی فعال "
+            "قرار گیرد و تمام والدهای دسته‌بندی "
+            "نیز فعال باشند."
+        )
+    ]
+}
+
+
+ProductInactiveBrand = {
+    "brand": [
+        (
+            "برند محصول فعال نمی‌تواند "
+            "غیرفعال باشد."
+        )
+    ]
+}
+
+
+ProductInvalidAttribute = {
+    "attributes": [
+        (
+            "یک یا چند ویژگی برای دسته‌بندی "
+            "این محصول تعریف نشده‌اند."
+        )
+    ]
+}
+
+
+ProductMissingRequiredAttribute = {
+    "attributes": [
+        (
+            "برخی ویژگی‌های الزامی این "
+            "دسته‌بندی وارد نشده‌اند."
+        )
+    ]
+}
+
+
+ProductDuplicateCompatibility = {
+    "compatibilities": [
+        (
+            "یک مدل موتورسیکلت بیش از "
+            "یک بار ارسال شده است."
+        )
+    ]
+}
+
+
+ProductPricingError = {
+    "pricing": (
+        "نرخ فعال برای ارز USD تعریف نشده است."
+    )
 }
 
 
 # =========================================================
-# Product Image Responses
+# Product Not Found
 # =========================================================
 
-ProductImageCreateSuccess = {
-    "message": "تصویر محصول با موفقیت ایجاد شد.",
-    "data": {
-        "id": 1,
-        "product": 1,
-        "image": "/media/products/images/brake_pad.jpg",
-        "alt_text": "لنت ترمز CG125",
-        "caption": "تصویر اصلی",
-        "is_primary": True,
-        "sort_order": 0,
-        "created_at": "2024-01-15T10:30:00Z",
-    },
-}
 
-
-ProductImageDeleteSuccess = {
-    "message": "تصویر محصول با موفقیت حذف شد.",
+ProductNotFound = {
+    "detail": (
+        "No Product matches the given query."
+    )
 }
 
 
 # =========================================================
-# Attribute Group Responses
+# Authentication / Permission
 # =========================================================
 
-AttributeGroupListSuccess = [
+
+AuthenticationRequired = {
+    "detail": (
+        "Authentication credentials "
+        "were not provided."
+    )
+}
+
+
+PermissionDenied = {
+    "detail": (
+        "You do not have permission "
+        "to perform this action."
+    )
+}
+
+
+# =========================================================
+# Product Image
+# =========================================================
+
+
+ProductImageSuccess = {
+    "id": 10,
+    "image": (
+        "http://127.0.0.1:8000/"
+        "media/products/product/2026/09/"
+        "ngk-main.png"
+    ),
+    "alt_text": "نمای اصلی شمع NGK CPR6EA-9",
+    "is_primary": True,
+    "sort_order": 0,
+}
+
+
+ProductImageListSuccess = [
+    ProductImageSuccess,
     {
-        "id": 1,
-        "name": "مشخصات فنی",
-        "slug": "technical-specs",
-        "sort_order": 0,
-        "is_active": True,
-    }
+        "id": 11,
+        "image": (
+            "http://127.0.0.1:8000/"
+            "media/products/product/2026/09/"
+            "ngk-package.png"
+        ),
+        "alt_text": "بسته‌بندی محصول",
+        "is_primary": False,
+        "sort_order": 1,
+    },
 ]
 
 
-AttributeGroupCreateSuccess = {
-    "message": "گروه ویژگی با موفقیت ایجاد شد.",
-    "data": {
-        "id": 1,
-        "name": "مشخصات فنی",
-        "slug": "technical-specs",
-        "sort_order": 0,
-        "is_active": True,
-    },
+ProductImageLimitError = {
+    "image": [
+        (
+            "برای هر محصول حداکثر "
+            "20 تصویر قابل ثبت است."
+        )
+    ]
 }
 
 
-AttributeGroupDeleteSuccess = {
-    "message": "گروه ویژگی با موفقیت حذف شد.",
+ProductImageMoveError = {
+    "product": [
+        (
+            "انتقال تصویر از یک محصول "
+            "به محصول دیگر مجاز نیست."
+        )
+    ]
 }
 
 
 # =========================================================
-# Attribute Responses
+# Attribute
 # =========================================================
 
-AttributeListSuccess = [
+
+ProductAttributeListSuccess = [
     {
-        "id": 1,
-        "group": 1,
-        "group_name": "مشخصات فنی",
-        "name": "جنس",
-        "slug": "material",
-        "value_type": "text",
-        "value_type_display": "متن",
+        "id": 5,
+        "name": "قطر رزوه",
+        "slug": "قطر-رزوه",
+        "data_type": "number",
+        "unit": "mm",
+        "is_filterable": True,
+        "is_searchable": False,
+        "sort_order": 0,
+        "options": [],
+    },
+    {
+        "id": 6,
+        "name": "محل نصب",
+        "slug": "محل-نصب",
+        "data_type": "choice",
         "unit": "",
         "is_filterable": True,
-        "is_required": False,
-        "sort_order": 0,
-        "is_active": True,
-    }
+        "is_searchable": False,
+        "sort_order": 1,
+        "options": [
+            {
+                "id": 14,
+                "value": "جلو",
+                "slug": "جلو",
+                "sort_order": 0,
+            },
+            {
+                "id": 15,
+                "value": "عقب",
+                "slug": "عقب",
+                "sort_order": 1,
+            },
+        ],
+    },
 ]
-
-
-AttributeCreateSuccess = {
-    "message": "ویژگی با موفقیت ایجاد شد.",
-    "data": {
-        "id": 1,
-        "group": 1,
-        "name": "جنس",
-        "slug": "material",
-        "value_type": "text",
-        "unit": "",
-        "is_filterable": True,
-        "is_required": False,
-        "sort_order": 0,
-        "is_active": True,
-    },
-}
-
-
-AttributeDeleteSuccess = {
-    "message": "ویژگی با موفقیت حذف شد.",
-}
-
-
-# =========================================================
-# Attribute Value Responses
-# =========================================================
-
-AttributeValueCreateSuccess = {
-    "message": "مقدار ویژگی با موفقیت ایجاد شد.",
-    "data": {
-        "id": 1,
-        "attribute": 1,
-        "value": "سرامیک",
-        "slug": "ceramic",
-        "sort_order": 0,
-        "is_active": True,
-    },
-}
-
-
-AttributeValueDeleteSuccess = {
-    "message": "مقدار ویژگی با موفقیت حذف شد.",
-}
-
-
-# =========================================================
-# Product Variant Responses
-# =========================================================
-
-ProductVariantListSuccess = [
-    {
-        "id": 1,
-        "product": 1,
-        "name": "مدل استاندارد",
-        "sku": "CG125-BP-STD",
-        "price": "150000",
-        "stock": 50,
-        "is_active": True,
-        "is_in_stock": True,
-        "is_available": True,
-        "created_at": "2024-01-15T10:30:00Z",
-        "updated_at": "2024-01-20T14:45:00Z",
-    }
-]
-
-
-ProductVariantCreateSuccess = {
-    "message": "تنوع محصول با موفقیت ایجاد شد.",
-    "data": {
-        "id": 1,
-        "product": 1,
-        "name": "مدل استاندارد",
-        "sku": "CG125-BP-STD",
-        "price": "150000",
-        "stock": 50,
-        "is_active": True,
-    },
-}
-
-
-ProductVariantDeleteSuccess = {
-    "message": "تنوع محصول با موفقیت حذف شد.",
-}
-
-
-# =========================================================
-# Product Motorcycle Compatibility Responses
-# =========================================================
-
-ProductMotorcycleCompatibilityCreateSuccess = {
-    "message": "سازگاری موتورسیکلت با موفقیت ایجاد شد.",
-    "data": {
-        "id": 1,
-        "product": 1,
-        "motorcycle": 1,
-        "motorcycle_name": "CG125",
-        "note": "سازگار با تمام مدل‌های CG125",
-    },
-}
-
-
-ProductMotorcycleCompatibilityDeleteSuccess = {
-    "message": "سازگاری موتورسیکلت با موفقیت حذف شد.",
-}

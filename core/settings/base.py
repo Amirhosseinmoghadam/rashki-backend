@@ -1,6 +1,6 @@
 from datetime import timedelta
 from pathlib import Path
-
+import os
 import environ
 
 
@@ -55,15 +55,18 @@ INSTALLED_APPS = [
     "addresses",
     "articles",
     "brands",
-    "carts",
+    "carts.apps.CartsConfig",
     "categories",
     "contact",
     "discounts",
-    "inventory",
+    "shipping",
+    #"inventory",
     "motorcycles",
     "orders",
-    "payments",
+    "payments.apps.PaymentsConfig",
     "products",
+    "pricing",
+    "wishlists",
 ]
 
 
@@ -246,7 +249,7 @@ SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(
         minutes=env.int(
             "JWT_ACCESS_MINUTES",
-            default=20,
+            default=180,
         )
     ),
     "REFRESH_TOKEN_LIFETIME": timedelta(
@@ -265,6 +268,12 @@ SIMPLE_JWT = {
     ),
 }
 
+# =========================================================
+# Order
+# =========================================================
+# کاربر بعد از ایجاد Order
+# چند دقیقه فرصت دارد پرداخت را انجام دهد.
+ORDER_PAYMENT_TIMEOUT_MINUTES = 20
 
 # =========================================================
 # CORS / CSRF
@@ -292,8 +301,194 @@ MELIPAYAMAK = {
         default="",
     ),
 }
+# =========================================================
+# Tipax API
+# =========================================================
 
 
+TIPAX_BASE_URL = os.getenv(
+    "TIPAX_BASE_URL",
+    "https://omtestapi.tipax.ir",
+).rstrip("/")
+
+
+# ---------------------------------------------------------
+# Authentication
+# ---------------------------------------------------------
+
+
+# برای Production بهتر است Username/Password/API Key
+# قرار داده شوند تا Backend بتواند Token جدید بگیرد.
+TIPAX_USERNAME = os.getenv(
+    "TIPAX_USERNAME",
+    "",
+)
+
+TIPAX_PASSWORD = os.getenv(
+    "TIPAX_PASSWORD",
+    "",
+)
+
+TIPAX_API_KEY = os.getenv(
+    "TIPAX_API_KEY",
+    "",
+)
+
+
+# Token اولیه.
+#
+# فقط در ENV قرار بگیرد.
+TIPAX_ACCESS_TOKEN = os.getenv(
+    "TIPAX_ACCESS_TOKEN",
+    "",
+)
+
+TIPAX_REFRESH_TOKEN = os.getenv(
+    "TIPAX_REFRESH_TOKEN",
+    "",
+)
+
+
+# ---------------------------------------------------------
+# HTTP
+# ---------------------------------------------------------
+
+
+TIPAX_HTTP_TIMEOUT_SECONDS = int(
+    os.getenv(
+        "TIPAX_HTTP_TIMEOUT_SECONDS",
+        "20",
+    )
+)
+
+
+# ---------------------------------------------------------
+# Money
+# ---------------------------------------------------------
+#
+# مستندات عمومی‌ای که داریم واحد دقیق تمام Amountهای API
+# را صریح مشخص نکرده‌اند.
+#
+# اگر API مبلغ را تومان می‌دهد:
+#     1
+#
+# اگر API مبلغ را ریال می‌دهد:
+#     10
+#
+# بنابراین عمداً قابل تنظیم است.
+# ---------------------------------------------------------
+
+
+TIPAX_AMOUNT_DIVISOR_TO_TOMAN = int(
+    os.getenv(
+        "TIPAX_AMOUNT_DIVISOR_TO_TOMAN",
+        "1",
+    )
+)
+
+
+# ---------------------------------------------------------
+# API Paths
+# ---------------------------------------------------------
+TIPAX_BASE_URL = os.getenv(
+    "TIPAX_BASE_URL",
+    "https://omtestapi.tipax.ir",
+).rstrip("/")
+
+TIPAX_USERNAME = os.getenv(
+    "TIPAX_USERNAME",
+    "",
+)
+
+TIPAX_PASSWORD = os.getenv(
+    "TIPAX_PASSWORD",
+    "",
+)
+
+TIPAX_API_KEY = os.getenv(
+    "TIPAX_API_KEY",
+    "",
+)
+
+TIPAX_ACCESS_TOKEN = os.getenv(
+    "TIPAX_ACCESS_TOKEN",
+    "",
+)
+
+TIPAX_REFRESH_TOKEN = os.getenv(
+    "TIPAX_REFRESH_TOKEN",
+    "",
+)
+
+TIPAX_HTTP_TIMEOUT_SECONDS = int(
+    os.getenv(
+        "TIPAX_HTTP_TIMEOUT_SECONDS",
+        "20",
+    )
+)
+
+TIPAX_AMOUNT_DIVISOR_TO_TOMAN = int(
+    os.getenv(
+        "TIPAX_AMOUNT_DIVISOR_TO_TOMAN",
+        "1",
+    )
+)
+
+
+TIPAX_TOKEN_PATH = (
+    "/api/OM/v3/Account/token"
+)
+
+TIPAX_REFRESH_TOKEN_PATH = (
+    "/api/OM/v3/Account/RefreshToken"
+)
+
+TIPAX_PRICING_PATH = (
+    "/api/OM/v3/Pricing"
+)
+
+TIPAX_ORDERS_PATH = (
+    "/api/OM/v3/Orders"
+)
+
+TIPAX_PACK_CONTENT_RATES_PATH = (
+    "/api/OM/v3/PackContentRates"
+)
+
+TIPAX_PACKING_PRICES_PATH = (
+    "/api/OM/v3/PackingPrices"
+)
+
+TIPAX_PARCEL_TYPES_PATH = (
+    "/api/OM/v3/ParcelType/Search"
+)
+
+TIPAX_PAYMENT_TYPES_PATH = (
+    "/api/OM/v3/PaymentType/Search"
+)
+
+TIPAX_CITIES_PATH = (
+    "/api/OM/v3/Cities"
+)
+
+TIPAX_BRIEF_TRACKING_PATH = (
+    "/api/OM/v3/Tracking/"
+    "BriefTracking/{tracking_code}"
+)
+
+TIPAX_TRACK_BY_ORDER_PATH = (
+    "/api/OM/v3/Tracking/{order_id}"
+)
+
+TIPAX_CANCEL_ORDER_PATH = (
+    "/api/OM/v3/Orders/"
+    "CancelOrder/{order_id}"
+)
+
+TIPAX_SERVICES_BETWEEN_CITIES_PATH = (
+    "/api/OM/v3/Pricing/"
+    "GetServicesBetweenCities"
+)
 # =========================================================
 # Authentication / OTP
 # =========================================================
@@ -357,17 +552,232 @@ AUTH_OTP_VERIFY_IP_WINDOW_SECONDS = env.int(
     default=10 * 60,
 )
 
+# =========================================================
+# Payments
+# =========================================================
 
+
+# Timeout درخواست‌های HTTP به Providerها.
+PAYMENT_HTTP_TIMEOUT_SECONDS = int(
+    os.getenv(
+        "PAYMENT_HTTP_TIMEOUT_SECONDS",
+        "15",
+    )
+)
+
+
+# =========================================================
+# Frontend Payment Result
+# =========================================================
+
+
+# بعد از Callback موفق، Backend مرورگر را
+# به این صفحه Frontend هدایت می‌کند.
+PAYMENT_SUCCESS_REDIRECT_URL = os.getenv(
+    "PAYMENT_SUCCESS_REDIRECT_URL",
+    "http://localhost:5173/payment/success",
+)
+
+
+# بعد از پرداخت ناموفق یا لغوشده.
+PAYMENT_FAILED_REDIRECT_URL = os.getenv(
+    "PAYMENT_FAILED_REDIRECT_URL",
+    "http://localhost:5173/payment/failed",
+)
+
+
+# =========================================================
+# ZarinPal
+# =========================================================
+
+
+ZARINPAL_MERCHANT_ID = os.getenv(
+    "ZARINPAL_MERCHANT_ID",
+    "",
+)
+
+
+# کل سیستم ما تومان است.
+#
+# IRT = Toman
+# IRR = Rial
+#
+# اگر Merchant/API شما Rial خواست،
+# فقط ENV را IRR می‌کنیم.
+ZARINPAL_PROVIDER_CURRENCY = os.getenv(
+    "ZARINPAL_PROVIDER_CURRENCY",
+    "IRT",
+).upper()
+
+
+ZARINPAL_REQUEST_URL = os.getenv(
+    "ZARINPAL_REQUEST_URL",
+    (
+        "https://api.zarinpal.com/"
+        "pg/v4/payment/request.json"
+    ),
+)
+
+
+ZARINPAL_VERIFY_URL = os.getenv(
+    "ZARINPAL_VERIFY_URL",
+    (
+        "https://api.zarinpal.com/"
+        "pg/v4/payment/verify.json"
+    ),
+)
+
+
+ZARINPAL_GATEWAY_URL = os.getenv(
+    "ZARINPAL_GATEWAY_URL",
+    (
+        "https://www.zarinpal.com/"
+        "pg/StartPay/"
+    ),
+)
+
+
+# =========================================================
+# TCart
+# =========================================================
+
+
+TCART_API_TOKEN = os.getenv(
+    "TCART_API_TOKEN",
+    "",
+)
+
+
+TCART_WEBHOOK_SECRET = os.getenv(
+    "TCART_WEBHOOK_SECRET",
+    "",
+)
+
+
+# این موارد را بعد از دریافت مستندات دقیق TCart
+# تنظیم می‌کنیم.
+TCART_CREATE_INVOICE_URL = os.getenv(
+    "TCART_CREATE_INVOICE_URL",
+    "",
+)
+
+TCART_INVOICE_STATUS_URL = os.getenv(
+    "TCART_INVOICE_STATUS_URL",
+    "",
+)
 # =========================================================
 # Swagger / OpenAPI
 # =========================================================
 
 SPECTACULAR_SETTINGS = {
-    "TITLE": "Motorcycle Spare Parts API",
-    "DESCRIPTION": (
-        "API documentation for the motorcycle spare parts store."
+
+    "TITLE": (
+        "Motorcycle Spare Parts API"
     ),
+
+    "DESCRIPTION": (
+        "API documentation for the "
+        "motorcycle spare parts store."
+    ),
+
     "VERSION": "1.0.0",
+
     "SERVE_INCLUDE_SCHEMA": False,
+
     "COMPONENT_SPLIT_REQUEST": True,
+
+    # =====================================================
+    # Enum Names
+    # =====================================================
+    #
+    # خود TextChoices class را معرفی می‌کنیم.
+    # drf-spectacular خودش .choices را استخراج می‌کند.
+    #
+    # این کار از:
+    #
+    #   Status96cEnum
+    #   Provider67eEnum
+    #
+    # و نام‌های Hashدار جلوگیری می‌کند.
+    # =====================================================
+
+    "ENUM_NAME_OVERRIDES": {
+
+    # =====================================================
+    # Products
+    # =====================================================
+
+    "ProductStatusEnum": (
+        "products.models.Product.Status"
+    ),
+
+
+    # =====================================================
+    # Articles
+    # =====================================================
+
+    # Request:
+    # draft -> پیش‌نویس
+    # published -> منتشر شده
+    # archived -> بایگانی
+    "ArticleStatusEnum": (
+        "articles.models.Article.Status"
+    ),
+
+    # Response:
+    # draft -> draft
+    # published -> published
+    # archived -> archived
+    #
+    # drf-spectacular این Choice Set را به علت
+    # متفاوت بودن Labelها جدا تشخیص می‌دهد.
+    "ArticleStatusResponseEnum": [
+        "draft",
+        "published",
+        "archived",
+    ],
+
+
+    # =====================================================
+    # Orders
+    # =====================================================
+
+    "OrderStatusEnum": (
+        "orders.models.Order.Status"
+    ),
+
+    "OrderPaymentStatusEnum": (
+        "orders.models.Order.PaymentStatus"
+    ),
+
+
+    # =====================================================
+    # Payments
+    # =====================================================
+
+    "PaymentAttemptStatusEnum": (
+        "payments.models.PaymentAttempt.Status"
+    ),
+
+    "PaymentProviderEnum": (
+        "payments.models.PaymentAttempt.Provider"
+    ),
+
+    "PaymentRefundStatusEnum": (
+        "payments.models.PaymentRefund.Status"
+    ),
+
+
+    # =====================================================
+    # Shipping
+    # =====================================================
+
+    "ShipmentStatusEnum": (
+        "shipping.models.Shipment.Status"
+    ),
+
+    "ShippingProviderEnum": (
+        "shipping.models.ShippingMethod.Provider"
+    ),
+},
 }

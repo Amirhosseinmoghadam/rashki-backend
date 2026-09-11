@@ -1,13 +1,18 @@
-from django.urls import path
-from brands.api.v1.views import (
-    BrandListView,
-    BrandDetailView,
+from rest_framework.routers import DefaultRouter
+
+from brands.api.v1.views import BrandViewSet
+
+
+app_name = "brands_api_v1"
+
+
+router = DefaultRouter()
+
+router.register(
+    r"brands",
+    BrandViewSet,
+    basename="brand",
 )
 
-app_name = "brands"
 
-urlpatterns = [
-    # Brand URLs
-    path("brands/", BrandListView.as_view(), name="brand-list"),
-    path("brands/<str:identifier>/", BrandDetailView.as_view(), name="brand-detail"),
-]
+urlpatterns = router.urls
