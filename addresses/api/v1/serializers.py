@@ -1,54 +1,26 @@
-from django.db import transaction
 from rest_framework import serializers
 
-from addresses.models import Province, City, Address
-
-# =========================================================
-# Province Serializer
-# =========================================================
+from addresses.models import Address, City, Province
+from addresses.services import (
+    AddressServiceError,
+    create_address,
+    update_address,
+)
 
 
 class ProvinceSerializer(serializers.ModelSerializer):
-    """
-    Serializer for the Province model.
-    """
-
     class Meta:
         model = Province
-        fields = [
-            "id",
-            "name",
-        ]
-
-
-# =========================================================
-# City Serializer
-# =========================================================
+        fields = ["id", "name"]
 
 
 class CitySerializer(serializers.ModelSerializer):
-    """
-    Serializer for the City model.
-    """
-
     class Meta:
         model = City
-        fields = [
-            "id",
-            "name",
-        ]
-
-
-# =========================================================
-# Address Serializer
-# =========================================================
+        fields = ["id", "name"]
 
 
 class AddressSerializer(serializers.ModelSerializer):
-    """
-    Serializer for displaying an address.
-    """
-
     province_name = serializers.CharField(
         source="province.name",
         read_only=True,
@@ -61,7 +33,6 @@ class AddressSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Address
-
         fields = [
             "id",
             "first_name",
@@ -88,19 +59,9 @@ class AddressSerializer(serializers.ModelSerializer):
         ]
 
 
-# =========================================================
-# Address Create Serializer
-# =========================================================
-
-
-class AddressCreateSerializer(serializers.ModelSerializer):
-    """
-    Serializer for creating a new address.
-    """
-
+class AddressWriteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Address
-
         fields = [
             "first_name",
             "last_name",
@@ -113,116 +74,98 @@ class AddressCreateSerializer(serializers.ModelSerializer):
             "is_default",
         ]
 
-    def validate(self, attrs):
-        province = attrs.get("province")
-        city = attrs.get("city")
-
-        if province and city:
-            if city.province_id != province.id:
-                raise serializers.ValidationError(
-                    {"city": ("شهر انتخاب‌شده متعلق به " "استان انتخاب‌شده نیست.")}
-                )
-
-        return attrs
-
-    @transaction.atomic
-    def create(self, validated_data):
-        user = self.context["request"].user
-
-        addresses = Address.objects.select_for_update().filter(user=user)
-
-        has_addresses = addresses.exists()
-
-        # اولین آدرس کاربر به صورت خودکار پیش‌فرض شود
-        if not has_addresses:
-            validated_data["is_default"] = True
-
-        # اگر این آدرس قرار است پیش‌فرض باشد،
-        # تمام آدرس‌های قبلی غیرپیش‌فرض شوند.
-        if validated_data.get("is_default") is True:
-            addresses.filter(is_default=True).update(is_default=False)
-
-        return Address.objects.create(
-            user=user,
-            **validated_data,
-        )
-
-
-# =========================================================
-# Address Update Serializer
-# =========================================================
-
-
-class AddressUpdateSerializer(serializers.ModelSerializer):
-    """
-    Serializer for updating an existing address.
-    """
-
-    class Meta:
-        model = Address
-
-        fields = [
-            "first_name",
-            "last_name",
-            "mobile_number",
-            "phone_number",
-            "province",
-            "city",
-            "postal_code",
-            "postal_address",
-            "is_default",
-        ]
+        extra_kwargs = {
+            "first_name": {
+                "required": True,
+                "allow_null": False,
+                "allow_blank": False,
+            },
+            "last_name": {
+                "required": True,
+                "allow_null": False,
+                "allow_blank": False,
+            },
+            "mobile_number": {
+                "required": True,
+                "allow_null": False,
+                "allow_blank": False,
+            },
+            "postal_code": {
+                "required": True,
+                "allow_null": False,
+                "allow_blank": False,
+            },
+            "postal_address": {
+                "required": True,
+                "allow_null": False,
+                "allow_blank": False,
+            },
+            "phone_number": {
+                "required": False,
+                "allow_null": True,
+                "allow_blank": True,
+            },
+            "is_default": {
+                "required": False,
+            },
+        }
 
     def validate(self, attrs):
         instance = self.instance
 
         province = attrs.get(
             "province",
-            instance.province,
+            getattr(
+                instance,
+                "province",
+                None,
+            ),
         )
 
         city = attrs.get(
             "city",
-            instance.city,
+            getattr(
+                instance,
+                "city",
+                None,
+            ),
         )
 
-        if province and city:
-            if city.province_id != province.id:
-                raise serializers.ValidationError(
-                    {"city": ("شهر انتخاب‌شده متعلق به " "استان انتخاب‌شده نیست.")}
-                )
-
-        return attrs
-
-    @transaction.atomic
-    def update(self, instance, validated_data):
-        user = instance.user
-
-        # اگر آدرس دیگری پیش‌فرض شود،
-        # آدرس پیش‌فرض قبلی غیرپیش‌فرض شود.
-        if validated_data.get("is_default") is True:
-            (
-                Address.objects.select_for_update()
-                .filter(
-                    user=user,
-                    is_default=True,
-                )
-                .exclude(pk=instance.pk)
-                .update(is_default=False)
-            )
-
-        # اجازه نمی‌دهیم کاربر تنها آدرس پیش‌فرض
-        # خودش را unset کند.
-        if validated_data.get("is_default") is False and instance.is_default:
+        if (
+            province is not None
+            and city is not None
+            and city.province_id != province.id
+        ):
             raise serializers.ValidationError(
                 {
-                    "is_default": (
-                        "نمی‌توانید آدرس پیش‌فرض را " "بدون انتخاب آدرس جدید حذف کنید."
+                    "city": (
+                        "شهر انتخاب‌شده متعلق به "
+                        "استان انتخاب‌شده نیست."
                     )
                 }
             )
 
-        return super().update(
-            instance,
-            validated_data,
+        return attrs
+
+
+class AddressCreateSerializer(AddressWriteSerializer):
+    def create(self, validated_data):
+        return create_address(
+            user=self.context["request"].user,
+            validated_data=validated_data,
         )
+
+
+class AddressUpdateSerializer(AddressWriteSerializer):
+    def update(self, instance, validated_data):
+        try:
+            return update_address(
+                address=instance,
+                validated_data=validated_data,
+            )
+        except AddressServiceError as exc:
+            raise serializers.ValidationError(
+                {
+                    "is_default": str(exc),
+                }
+            ) from exc

@@ -1,18 +1,21 @@
 from django.urls import path
-from addresses.api.v1.views import ProvinceListView, CityListView
 
 from addresses.api.v1.views import (
-    # Address
     AddressDetailAPIView,
     AddressListCreateAPIView,
     AddressSetDefaultAPIView,
+    CityListView,
+    ProvinceListView,
 )
 
 app_name = "addresses_api_v1"
 
-
 urlpatterns = [
-    path("provinces/", ProvinceListView.as_view(), name="province-list"),
+    path(
+        "provinces/",
+        ProvinceListView.as_view(),
+        name="province-list",
+    ),
     path(
         "provinces/<int:province_id>/cities/",
         CityListView.as_view(),

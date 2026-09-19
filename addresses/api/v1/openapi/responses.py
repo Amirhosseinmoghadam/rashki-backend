@@ -1,189 +1,113 @@
-# =========================================================
-# Address List
-# =========================================================
-
-AddressListAPIViewSuccess = {
-    "message": "لیست آدرس‌ها با موفقیت دریافت شد.",
-    "addresses": [
-        {
-            "id": 1,
-            "first_name": "امیر",
-            "last_name": "مقدم",
-            "mobile_number": "09196558273",
-            "phone_number": "02112345678",
-            "province": 1,
-            "province_name": "تهران",
-            "city": 1,
-            "city_name": "تهران",
-            "postal_code": "1234567890",
-            "postal_address": "تهران، خیابان ولیعصر، پلاک ۱۲۳",
-            "is_default": True,
-            "created_at": "2026-08-18T18:30:00Z",
-            "updated_at": "2026-08-18T18:30:00Z",
-        },
-        {
-            "id": 2,
-            "first_name": "امیر",
-            "last_name": "مقدم",
-            "mobile_number": "09196558273",
-            "phone_number": "02187654321",
-            "province": 1,
-            "province_name": "تهران",
-            "city": 2,
-            "city_name": "ری",
-            "postal_code": "1234567891",
-            "postal_address": "ری، خیابان اصلی، پلاک ۴۵",
-            "is_default": False,
-            "created_at": "2026-08-17T15:20:00Z",
-            "updated_at": "2026-08-17T15:20:00Z",
-        },
+ProvinceListSuccess = {
+    "success": True,
+    "message": (
+        "لیست استان‌ها با موفقیت دریافت شد."
+    ),
+    "data": [
+        {"id": 1, "name": "تهران"},
+        {"id": 2, "name": "سیستان و بلوچستان"},
     ],
 }
 
+CityListSuccess = {
+    "success": True,
+    "message": (
+        "لیست شهرها با موفقیت دریافت شد."
+    ),
+    "data": [
+        {"id": 1, "name": "تهران"},
+        {"id": 2, "name": "ری"},
+    ],
+}
 
-# =========================================================
-# Address Create
-# =========================================================
+_address = {
+    "id": 1,
+    "first_name": "امیر",
+    "last_name": "مقدم",
+    "mobile_number": "09196558273",
+    "phone_number": "02112345678",
+    "province": 1,
+    "province_name": "تهران",
+    "city": 1,
+    "city_name": "تهران",
+    "postal_code": "1234567890",
+    "postal_address": (
+        "تهران، خیابان ولیعصر، پلاک ۱۲۳"
+    ),
+    "is_default": True,
+    "created_at": "2026-09-12T12:00:00Z",
+    "updated_at": "2026-09-12T12:00:00Z",
+}
 
-AddressCreateAPIViewSuccess = {
+AddressListSuccess = {
+    "success": True,
+    "message": (
+        "لیست آدرس‌ها با موفقیت دریافت شد."
+    ),
+    "data": [_address],
+}
+
+AddressCreateSuccess = {
+    "success": True,
     "message": "آدرس با موفقیت ایجاد شد.",
-    "address": {
-        "id": 3,
-        "first_name": "امیر",
-        "last_name": "مقدم",
-        "mobile_number": "09196558273",
-        "phone_number": "02112345678",
-        "province": 1,
-        "province_name": "تهران",
-        "city": 1,
-        "city_name": "تهران",
-        "postal_code": "1234567890",
-        "postal_address": "تهران، خیابان ولیعصر، پلاک ۱۲۳",
-        "is_default": True,
-        "created_at": "2026-08-18T18:30:00Z",
-        "updated_at": "2026-08-18T18:30:00Z",
-    },
+    "data": _address,
 }
 
-
-# =========================================================
-# Address Detail
-# =========================================================
-
-AddressDetailAPIViewSuccess = {
+AddressDetailSuccess = {
+    "success": True,
     "message": "آدرس با موفقیت دریافت شد.",
-    "address": {
-        "id": 1,
-        "first_name": "امیر",
-        "last_name": "مقدم",
-        "mobile_number": "09196558273",
-        "phone_number": "02112345678",
-        "province": 1,
-        "province_name": "تهران",
-        "city": 1,
-        "city_name": "تهران",
-        "postal_code": "1234567890",
-        "postal_address": "تهران، خیابان ولیعصر، پلاک ۱۲۳",
-        "is_default": True,
-        "created_at": "2026-08-18T18:30:00Z",
-        "updated_at": "2026-08-18T18:30:00Z",
-    },
+    "data": _address,
 }
 
-
-# =========================================================
-# Address Update
-# =========================================================
-
-AddressUpdateAPIViewSuccess = {
+AddressUpdateSuccess = {
+    "success": True,
     "message": "آدرس با موفقیت بروزرسانی شد.",
-    "address": {
-        "id": 1,
+    "data": {
+        **_address,
         "first_name": "امیرحسین",
-        "last_name": "مقدم",
-        "mobile_number": "09196558273",
-        "phone_number": "02112345678",
-        "province": 1,
-        "province_name": "تهران",
-        "city": 1,
-        "city_name": "تهران",
-        "postal_code": "1234567890",
-        "postal_address": "تهران، خیابان ولیعصر، پلاک ۱۲۵",
-        "is_default": True,
-        "created_at": "2026-08-18T18:30:00Z",
-        "updated_at": "2026-08-18T19:10:00Z",
     },
 }
 
-
-# =========================================================
-# Address Delete
-# =========================================================
-
-AddressDeleteAPIViewSuccess = {
+AddressDeleteSuccess = {
+    "success": True,
     "message": "آدرس با موفقیت حذف شد.",
+    "data": None,
 }
 
-
-# =========================================================
-# Set Default Address
-# =========================================================
-
-AddressSetDefaultAPIViewSuccess = {
-    "message": "آدرس پیش‌فرض با موفقیت تغییر کرد.",
-    "address": {
-        "id": 2,
-        "first_name": "امیر",
-        "last_name": "مقدم",
-        "mobile_number": "09196558273",
-        "phone_number": "02187654321",
-        "province": 1,
-        "province_name": "تهران",
-        "city": 2,
-        "city_name": "ری",
-        "postal_code": "1234567891",
-        "postal_address": "ری، خیابان اصلی، پلاک ۴۵",
-        "is_default": True,
-        "created_at": "2026-08-17T15:20:00Z",
-        "updated_at": "2026-08-18T19:20:00Z",
-    },
+AddressSetDefaultSuccess = {
+    "success": True,
+    "message": (
+        "آدرس پیش‌فرض با موفقیت تغییر کرد."
+    ),
+    "data": _address,
 }
-
-
-# =========================================================
-# Common Errors
-# =========================================================
 
 AddressNotFound = {
-    "detail": "آدرس موردنظر پیدا نشد.",
+    "success": False,
+    "message": "آدرس موردنظر پیدا نشد.",
+    "errors": None,
 }
-
-
-AddressValidationError = {
-    "postal_code": ["کد پستی باید 10 رقم باشد."],
-}
-
-
-AddressInvalidMobileNumber = {
-    "mobile_number": ["شماره موبایل نامعتبر است."],
-}
-
-
-AddressInvalidPhoneNumber = {
-    "phone_number": ["شماره تلفن باید 11 رقم باشد."],
-}
-
 
 AddressCityProvinceMismatch = {
-    "city": ["شهر انتخاب‌شده متعلق به استان انتخاب‌شده نیست."],
+    "city": [
+        (
+            "شهر انتخاب‌شده متعلق به "
+            "استان انتخاب‌شده نیست."
+        )
+    ]
 }
-
 
 AddressCannotUnsetDefault = {
-    "is_default": ["نمی‌توانید آدرس پیش‌فرض را بدون انتخاب آدرس جدید حذف کنید."],
+    "is_default": [
+        (
+            "نمی‌توانید آدرس پیش‌فرض را "
+            "بدون انتخاب آدرس جدید حذف کنید."
+        )
+    ]
 }
 
-
 AddressAuthenticationRequired = {
-    "detail": "Authentication credentials were not provided."
+    "detail": (
+        "Authentication credentials were not provided."
+    )
 }

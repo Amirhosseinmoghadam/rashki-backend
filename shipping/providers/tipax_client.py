@@ -1469,6 +1469,17 @@ class TipaxClient:
             ),
         )
 
+    def get_states(
+            self,
+    ):
+        return self.request(
+            "GET",
+            self._path(
+                "TIPAX_STATES_PATH",
+                "/api/OM/v3/States",
+            ),
+        )
+
     def get_services_between_cities(
         self,
         *,

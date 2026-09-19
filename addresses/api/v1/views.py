@@ -1,109 +1,109 @@
-from django.db import transaction
-
-from rest_framework import status
-from rest_framework.generics import ListAPIView, GenericAPIView
+from rest_framework import generics, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
-from addresses.models import Province, City, Address
-from utils.pagination import DefaultPagination
-
-from .serializers import (
-    ProvinceSerializer,
-    CitySerializer,
-    AddressSerializer,
-    AddressCreateSerializer,
-    AddressUpdateSerializer,
+from addresses.selectors import (
+    get_cities_for_province,
+    get_provinces,
+    get_user_address,
+    get_user_addresses,
+)
+from addresses.services import (
+    delete_address,
+    set_default_address,
 )
 
 from .openapi.schema import (
-    address_list_view_schema,
     address_create_view_schema,
-    address_detail_view_schema,
-    address_update_view_schema,
-    address_partial_update_view_schema,
     address_delete_view_schema,
+    address_detail_view_schema,
+    address_list_view_schema,
+    address_partial_update_view_schema,
     address_set_default_view_schema,
+    address_update_view_schema,
+    city_list_view_schema,
+    province_list_view_schema,
+)
+from .serializers import (
+    AddressCreateSerializer,
+    AddressSerializer,
+    AddressUpdateSerializer,
+    CitySerializer,
+    ProvinceSerializer,
 )
 
-# =========================================================
-# Province List
-# =========================================================
 
-
-class ProvinceListView(ListAPIView):
-    """
-    API endpoint for listing all provinces.
-    """
-
-    queryset = Province.objects.all().order_by("name")
+class ProvinceListView(generics.GenericAPIView):
+    permission_classes = [AllowAny]
     serializer_class = ProvinceSerializer
-    permission_classes = [AllowAny]
-    pagination_class = DefaultPagination
+    pagination_class = None
 
-
-# =========================================================
-# City List
-# =========================================================
-
-
-class CityListView(ListAPIView):
-    """
-    API endpoint for listing cities belonging to a province.
-    """
-
-    serializer_class = CitySerializer
-    permission_classes = [AllowAny]
-    pagination_class = DefaultPagination
-
-    def get_queryset(self):
-        province_id = self.kwargs.get("province_id")
-
-        if province_id is not None:
-            return City.objects.filter(province_id=province_id).order_by("name")
-
-        return City.objects.none()
-
-
-# =========================================================
-# Address List / Create
-# =========================================================
-
-
-class AddressListCreateAPIView(GenericAPIView):
-    """
-    List and create addresses for the authenticated user.
-    """
-
-    permission_classes = [
-        IsAuthenticated,
-    ]
-
-    serializer_class = AddressSerializer
-
-    def get_queryset(self):
-        return (
-            Address.objects.filter(user=self.request.user)
-            .select_related(
-                "province",
-                "city",
-            )
-            .order_by(
-                "-is_default",
-                "-created_at",
-            )
+    @province_list_view_schema
+    def get(self, request, *args, **kwargs):
+        serializer = self.get_serializer(
+            get_provinces(),
+            many=True,
         )
 
-    # -----------------------------------------------------
-    # GET
-    # -----------------------------------------------------
+        return Response(
+            {
+                "success": True,
+                "message": (
+                    "لیست استان‌ها با موفقیت دریافت شد."
+                ),
+                "data": serializer.data,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class CityListView(generics.GenericAPIView):
+    permission_classes = [AllowAny]
+    serializer_class = CitySerializer
+    pagination_class = None
+
+    @city_list_view_schema
+    def get(
+        self,
+        request,
+        province_id,
+        *args,
+        **kwargs,
+    ):
+        serializer = self.get_serializer(
+            get_cities_for_province(
+                province_id=province_id,
+            ),
+            many=True,
+        )
+
+        return Response(
+            {
+                "success": True,
+                "message": (
+                    "لیست شهرها با موفقیت دریافت شد."
+                ),
+                "data": serializer.data,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class AddressListCreateAPIView(generics.GenericAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get_serializer_class(self):
+        if self.request.method == "POST":
+            return AddressCreateSerializer
+
+        return AddressSerializer
 
     @address_list_view_schema
-    def get(self, request):
-        addresses = self.get_queryset()
-
+    def get(self, request, *args, **kwargs):
         serializer = AddressSerializer(
-            addresses,
+            get_user_addresses(
+                user=request.user,
+            ),
             many=True,
             context={
                 "request": request,
@@ -113,159 +113,126 @@ class AddressListCreateAPIView(GenericAPIView):
         return Response(
             {
                 "success": True,
-                "message": "لیست آدرس‌ها با موفقیت دریافت شد.",
+                "message": (
+                    "لیست آدرس‌ها با موفقیت دریافت شد."
+                ),
                 "data": serializer.data,
             },
             status=status.HTTP_200_OK,
         )
 
-    # -----------------------------------------------------
-    # POST
-    # -----------------------------------------------------
-
     @address_create_view_schema
-    def post(self, request):
-        serializer = AddressCreateSerializer(
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(
             data=request.data,
             context={
                 "request": request,
             },
         )
 
-        serializer.is_valid(raise_exception=True)
+        serializer.is_valid(
+            raise_exception=True,
+        )
 
         address = serializer.save()
-
-        response_serializer = AddressSerializer(
-            address,
-            context={
-                "request": request,
-            },
-        )
 
         return Response(
             {
                 "success": True,
-                "message": "آدرس با موفقیت ایجاد شد.",
-                "data": response_serializer.data,
+                "message": (
+                    "آدرس با موفقیت ایجاد شد."
+                ),
+                "data": AddressSerializer(
+                    address,
+                    context={
+                        "request": request,
+                    },
+                ).data,
             },
             status=status.HTTP_201_CREATED,
         )
 
 
-# =========================================================
-# Address Detail / Update / Delete
-# =========================================================
-
-
-class AddressDetailAPIView(GenericAPIView):
-    """
-    Retrieve, update, partially update and delete
-    an address belonging to the authenticated user.
-    """
-
-    permission_classes = [
-        IsAuthenticated,
-    ]
-
+class AddressDetailAPIView(generics.GenericAPIView):
+    permission_classes = [IsAuthenticated]
     serializer_class = AddressUpdateSerializer
 
-    def get_object(self, request, pk):
-        return (
-            Address.objects.filter(
-                pk=pk,
-                user=request.user,
-            )
-            .select_related(
-                "province",
-                "city",
-            )
-            .first()
+    def _get_address(self, *, request, pk):
+        return get_user_address(
+            user=request.user,
+            pk=pk,
         )
 
-    # -----------------------------------------------------
-    # GET
-    # -----------------------------------------------------
-
     @address_detail_view_schema
-    def get(self, request, pk):
-        address = self.get_object(
-            request,
-            pk,
+    def get(self, request, pk, *args, **kwargs):
+        address = self._get_address(
+            request=request,
+            pk=pk,
         )
 
         if address is None:
             return Response(
                 {
                     "success": False,
-                    "message": "آدرس موردنظر پیدا نشد.",
+                    "message": (
+                        "آدرس موردنظر پیدا نشد."
+                    ),
                     "errors": None,
                 },
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        serializer = AddressSerializer(
-            address,
-            context={
-                "request": request,
-            },
-        )
-
         return Response(
             {
                 "success": True,
-                "message": "آدرس با موفقیت دریافت شد.",
-                "data": serializer.data,
+                "message": (
+                    "آدرس با موفقیت دریافت شد."
+                ),
+                "data": AddressSerializer(
+                    address,
+                    context={
+                        "request": request,
+                    },
+                ).data,
             },
             status=status.HTTP_200_OK,
         )
 
-    # -----------------------------------------------------
-    # PUT
-    # -----------------------------------------------------
-
     @address_update_view_schema
-    @transaction.atomic
-    def put(self, request, pk):
+    def put(self, request, pk, *args, **kwargs):
         return self._update(
-            request,
-            pk,
+            request=request,
+            pk=pk,
             partial=False,
         )
 
-    # -----------------------------------------------------
-    # PATCH
-    # -----------------------------------------------------
-
     @address_partial_update_view_schema
-    @transaction.atomic
-    def patch(self, request, pk):
+    def patch(self, request, pk, *args, **kwargs):
         return self._update(
-            request,
-            pk,
+            request=request,
+            pk=pk,
             partial=True,
         )
 
-    # -----------------------------------------------------
-    # Update Helper
-    # -----------------------------------------------------
-
     def _update(
         self,
+        *,
         request,
         pk,
-        partial=False,
+        partial,
     ):
-        address = self.get_object(
-            request,
-            pk,
+        address = self._get_address(
+            request=request,
+            pk=pk,
         )
 
         if address is None:
             return Response(
                 {
                     "success": False,
-                    "message": "آدرس موردنظر پیدا نشد.",
+                    "message": (
+                        "آدرس موردنظر پیدا نشد."
+                    ),
                     "errors": None,
                 },
                 status=status.HTTP_404_NOT_FOUND,
@@ -280,146 +247,102 @@ class AddressDetailAPIView(GenericAPIView):
             },
         )
 
-        serializer.is_valid(raise_exception=True)
+        serializer.is_valid(
+            raise_exception=True,
+        )
 
         address = serializer.save()
-
-        response_serializer = AddressSerializer(
-            address,
-            context={
-                "request": request,
-            },
-        )
 
         return Response(
             {
                 "success": True,
-                "message": "آدرس با موفقیت بروزرسانی شد.",
-                "data": response_serializer.data,
+                "message": (
+                    "آدرس با موفقیت بروزرسانی شد."
+                ),
+                "data": AddressSerializer(
+                    address,
+                    context={
+                        "request": request,
+                    },
+                ).data,
             },
             status=status.HTTP_200_OK,
         )
 
-    # -----------------------------------------------------
-    # DELETE
-    # -----------------------------------------------------
-
     @address_delete_view_schema
-    @transaction.atomic
-    def delete(self, request, pk):
-        address = self.get_object(
-            request,
-            pk,
+    def delete(self, request, pk, *args, **kwargs):
+        address = self._get_address(
+            request=request,
+            pk=pk,
         )
 
         if address is None:
             return Response(
                 {
                     "success": False,
-                    "message": "آدرس موردنظر پیدا نشد.",
+                    "message": (
+                        "آدرس موردنظر پیدا نشد."
+                    ),
                     "errors": None,
                 },
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        was_default = address.is_default
-
-        address.delete()
-
-        # اگر آدرس پیش‌فرض حذف شد،
-        # جدیدترین آدرس را پیش‌فرض کن.
-        if was_default:
-            new_default = (
-                Address.objects.filter(user=request.user)
-                .order_by("-created_at")
-                .first()
-            )
-
-            if new_default:
-                new_default.set_as_default()
+        delete_address(
+            address=address,
+        )
 
         return Response(
             {
                 "success": True,
-                "message": "آدرس با موفقیت حذف شد.",
+                "message": (
+                    "آدرس با موفقیت حذف شد."
+                ),
                 "data": None,
             },
             status=status.HTTP_200_OK,
         )
 
 
-# =========================================================
-# Set Default Address
-# =========================================================
-
-
-class AddressSetDefaultAPIView(GenericAPIView):
-    """
-    Set an address as the default address
-    for the authenticated user.
-    """
-
-    permission_classes = [
-        IsAuthenticated,
-    ]
-
+class AddressSetDefaultAPIView(generics.GenericAPIView):
+    permission_classes = [IsAuthenticated]
     serializer_class = AddressSerializer
 
     @address_set_default_view_schema
-    @transaction.atomic
-    def post(self, request, pk):
-
-        address = (
-            Address.objects.select_for_update()
-            .filter(
-                pk=pk,
-                user=request.user,
-            )
-            .first()
+    def post(self, request, pk, *args, **kwargs):
+        address = get_user_address(
+            user=request.user,
+            pk=pk,
         )
 
         if address is None:
             return Response(
                 {
                     "success": False,
-                    "message": "آدرس موردنظر پیدا نشد.",
+                    "message": (
+                        "آدرس موردنظر پیدا نشد."
+                    ),
                     "errors": None,
                 },
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        # تمام آدرس‌های قبلی غیرپیش‌فرض شوند.
-        (
-            Address.objects.filter(
-                user=request.user,
-                is_default=True,
-            )
-            .exclude(pk=address.pk)
-            .update(is_default=False)
-        )
-
-        # آدرس انتخاب‌شده پیش‌فرض شود.
-        address.is_default = True
-
-        address.save(
-            update_fields=[
-                "is_default",
-                "updated_at",
-            ]
-        )
-
-        serializer = AddressSerializer(
-            address,
-            context={
-                "request": request,
-            },
+        address = set_default_address(
+            address=address,
         )
 
         return Response(
             {
                 "success": True,
-                "message": "آدرس پیش‌فرض با موفقیت تغییر کرد.",
-                "data": serializer.data,
+                "message": (
+                    "آدرس پیش‌فرض با موفقیت تغییر کرد."
+                ),
+                "data": AddressSerializer(
+                    address,
+                    context={
+                        "request": request,
+                    },
+                ).data,
             },
             status=status.HTTP_200_OK,
         )

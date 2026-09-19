@@ -1,27 +1,54 @@
 from rest_framework import serializers
 
 from drf_spectacular.utils import (
-    extend_schema,
     OpenApiExample,
+    OpenApiParameter,
     OpenApiResponse,
     OpenApiTypes,
+    extend_schema,
     inline_serializer,
 )
 
 from addresses.api.v1.serializers import (
-    AddressSerializer,
     AddressCreateSerializer,
+    AddressSerializer,
     AddressUpdateSerializer,
+    CitySerializer,
+    ProvinceSerializer,
 )
 
 from . import examples, responses
 
-# =========================================================
-# Reusable Response Schemas
-# =========================================================
 
-address_set_default_response = inline_serializer(
-    name="AddressSetDefaultResponse",
+ProvinceListResponse = inline_serializer(
+    name="ProvinceListResponse",
+    fields={
+        "success": serializers.BooleanField(),
+        "message": serializers.CharField(),
+        "data": ProvinceSerializer(many=True),
+    },
+)
+
+CityListResponse = inline_serializer(
+    name="CityListResponse",
+    fields={
+        "success": serializers.BooleanField(),
+        "message": serializers.CharField(),
+        "data": CitySerializer(many=True),
+    },
+)
+
+AddressListResponse = inline_serializer(
+    name="AddressListResponse",
+    fields={
+        "success": serializers.BooleanField(),
+        "message": serializers.CharField(),
+        "data": AddressSerializer(many=True),
+    },
+)
+
+AddressDetailResponse = inline_serializer(
+    name="AddressDetailResponse",
     fields={
         "success": serializers.BooleanField(),
         "message": serializers.CharField(),
@@ -29,462 +56,265 @@ address_set_default_response = inline_serializer(
     },
 )
 
+AddressDeleteResponse = inline_serializer(
+    name="AddressDeleteResponse",
+    fields={
+        "success": serializers.BooleanField(),
+        "message": serializers.CharField(),
+        "data": serializers.JSONField(
+            allow_null=True,
+        ),
+    },
+)
 
-# =========================================================
-# Address List
-# =========================================================
+AddressErrorResponse = inline_serializer(
+    name="AddressErrorResponse",
+    fields={
+        "success": serializers.BooleanField(),
+        "message": serializers.CharField(),
+        "errors": serializers.JSONField(
+            allow_null=True,
+        ),
+    },
+)
+
+
+province_list_view_schema = extend_schema(
+    tags=["Addresses - Locations"],
+    operation_id="province_list",
+    summary="List Provinces",
+    responses={
+        200: OpenApiResponse(
+            response=ProvinceListResponse,
+            examples=[
+                OpenApiExample(
+                    name="Success",
+                    value=responses.ProvinceListSuccess,
+                    response_only=True,
+                ),
+            ],
+        ),
+    },
+)
+
+city_list_view_schema = extend_schema(
+    tags=["Addresses - Locations"],
+    operation_id="city_list_by_province",
+    summary="List Cities By Province",
+    parameters=[
+        OpenApiParameter(
+            name="province_id",
+            type=OpenApiTypes.INT,
+            location=OpenApiParameter.PATH,
+            required=True,
+        ),
+    ],
+    responses={
+        200: OpenApiResponse(
+            response=CityListResponse,
+            examples=[
+                OpenApiExample(
+                    name="Success",
+                    value=responses.CityListSuccess,
+                    response_only=True,
+                ),
+            ],
+        ),
+    },
+)
 
 address_list_view_schema = extend_schema(
     tags=["Addresses"],
     operation_id="address_list",
     summary="List User Addresses",
-    description=(
-        "Returns all addresses belonging to the authenticated user. "
-        "Only addresses owned by the current user are returned. "
-        "The default address is returned first."
-    ),
     responses={
         200: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="User addresses retrieved successfully.",
+            response=AddressListResponse,
             examples=[
                 OpenApiExample(
-                    name="Addresses Retrieved Successfully",
-                    value=responses.AddressListAPIViewSuccess,
-                    media_type="application/json",
+                    name="Success",
+                    value=responses.AddressListSuccess,
                     response_only=True,
                 ),
             ],
         ),
         401: OpenApiResponse(
             response=OpenApiTypes.OBJECT,
-            description=(
-                "Authentication credentials were not provided " "or are invalid."
-            ),
-            examples=[
-                OpenApiExample(
-                    name="Authentication Required",
-                    value=responses.AddressAuthenticationRequired,
-                    media_type="application/json",
-                    response_only=True,
-                ),
-            ],
         ),
     },
 )
-
-
-# =========================================================
-# Address Create
-# =========================================================
 
 address_create_view_schema = extend_schema(
     tags=["Addresses"],
     operation_id="address_create",
     summary="Create User Address",
-    description=(
-        "Creates a new address for the authenticated user. "
-        "The user is automatically assigned to the address. "
-        "The first address of a user is automatically set as "
-        "the default address."
-    ),
     request=AddressCreateSerializer,
     examples=[
         OpenApiExample(
-            name="Example Request",
-            value=examples.AddressCreateAPIViewExample,
+            name="Request",
+            value=examples.AddressCreateRequestExample,
             request_only=True,
         ),
     ],
     responses={
         201: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Address created successfully.",
+            response=AddressDetailResponse,
             examples=[
                 OpenApiExample(
-                    name="Address Created Successfully",
-                    value=responses.AddressCreateAPIViewSuccess,
-                    media_type="application/json",
+                    name="Success",
+                    value=responses.AddressCreateSuccess,
                     response_only=True,
                 ),
             ],
         ),
         400: OpenApiResponse(
             response=OpenApiTypes.OBJECT,
-            description="Validation error.",
-            examples=[
-                OpenApiExample(
-                    name="Validation Error",
-                    value=responses.AddressValidationError,
-                    media_type="application/json",
-                    response_only=True,
-                ),
-                OpenApiExample(
-                    name="Invalid Mobile Number",
-                    value=responses.AddressInvalidMobileNumber,
-                    media_type="application/json",
-                    response_only=True,
-                ),
-                OpenApiExample(
-                    name="Invalid Phone Number",
-                    value=responses.AddressInvalidPhoneNumber,
-                    media_type="application/json",
-                    response_only=True,
-                ),
-                OpenApiExample(
-                    name="City Province Mismatch",
-                    value=responses.AddressCityProvinceMismatch,
-                    media_type="application/json",
-                    response_only=True,
-                ),
-            ],
         ),
         401: OpenApiResponse(
             response=OpenApiTypes.OBJECT,
-            description="Authentication required.",
-            examples=[
-                OpenApiExample(
-                    name="Authentication Required",
-                    value=responses.AddressAuthenticationRequired,
-                    media_type="application/json",
-                    response_only=True,
-                ),
-            ],
         ),
     },
 )
-
-
-# =========================================================
-# Address Detail
-# =========================================================
 
 address_detail_view_schema = extend_schema(
     tags=["Addresses"],
     operation_id="address_detail",
     summary="Get User Address",
-    description=(
-        "Returns a single address belonging to the authenticated user. "
-        "Users cannot access addresses belonging to other users."
-    ),
     responses={
         200: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Address retrieved successfully.",
+            response=AddressDetailResponse,
             examples=[
                 OpenApiExample(
-                    name="Address Retrieved Successfully",
-                    value=responses.AddressDetailAPIViewSuccess,
-                    media_type="application/json",
+                    name="Success",
+                    value=responses.AddressDetailSuccess,
                     response_only=True,
                 ),
             ],
         ),
         401: OpenApiResponse(
             response=OpenApiTypes.OBJECT,
-            description="Authentication required.",
-            examples=[
-                OpenApiExample(
-                    name="Authentication Required",
-                    value=responses.AddressAuthenticationRequired,
-                    media_type="application/json",
-                    response_only=True,
-                ),
-            ],
         ),
         404: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Address not found.",
+            response=AddressErrorResponse,
             examples=[
                 OpenApiExample(
-                    name="Address Not Found",
+                    name="Not Found",
                     value=responses.AddressNotFound,
-                    media_type="application/json",
                     response_only=True,
                 ),
             ],
         ),
     },
 )
-
-
-# =========================================================
-# Address Update
-# =========================================================
 
 address_update_view_schema = extend_schema(
     tags=["Addresses"],
     operation_id="address_update",
     summary="Update User Address",
-    description=(
-        "Updates an existing address belonging to the authenticated user. "
-        "The PUT method requires the complete address data."
-    ),
     request=AddressUpdateSerializer,
     examples=[
         OpenApiExample(
-            name="Example Request",
-            value=examples.AddressUpdateAPIViewExample,
+            name="Request",
+            value=examples.AddressUpdateRequestExample,
             request_only=True,
         ),
     ],
     responses={
         200: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Address updated successfully.",
+            response=AddressDetailResponse,
             examples=[
                 OpenApiExample(
-                    name="Address Updated Successfully",
-                    value=responses.AddressUpdateAPIViewSuccess,
-                    media_type="application/json",
+                    name="Success",
+                    value=responses.AddressUpdateSuccess,
                     response_only=True,
                 ),
             ],
         ),
         400: OpenApiResponse(
             response=OpenApiTypes.OBJECT,
-            description="Validation error.",
-            examples=[
-                OpenApiExample(
-                    name="Validation Error",
-                    value=responses.AddressValidationError,
-                    media_type="application/json",
-                    response_only=True,
-                ),
-                OpenApiExample(
-                    name="City Province Mismatch",
-                    value=responses.AddressCityProvinceMismatch,
-                    media_type="application/json",
-                    response_only=True,
-                ),
-                OpenApiExample(
-                    name="Cannot Unset Default Address",
-                    value=responses.AddressCannotUnsetDefault,
-                    media_type="application/json",
-                    response_only=True,
-                ),
-            ],
         ),
         401: OpenApiResponse(
             response=OpenApiTypes.OBJECT,
-            description="Authentication required.",
-            examples=[
-                OpenApiExample(
-                    name="Authentication Required",
-                    value=responses.AddressAuthenticationRequired,
-                    media_type="application/json",
-                    response_only=True,
-                ),
-            ],
         ),
         404: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Address not found.",
-            examples=[
-                OpenApiExample(
-                    name="Address Not Found",
-                    value=responses.AddressNotFound,
-                    media_type="application/json",
-                    response_only=True,
-                ),
-            ],
+            response=AddressErrorResponse,
         ),
     },
 )
-
-
-# =========================================================
-# Address Partial Update
-# =========================================================
 
 address_partial_update_view_schema = extend_schema(
     tags=["Addresses"],
     operation_id="address_partial_update",
     summary="Partially Update User Address",
-    description=(
-        "Partially updates an existing address. "
-        "Only the fields that need to be changed "
-        "should be provided."
-    ),
     request=AddressUpdateSerializer,
     examples=[
         OpenApiExample(
-            name="Example Request",
-            value=examples.AddressPartialUpdateAPIViewExample,
+            name="Request",
+            value=examples.AddressPartialUpdateRequestExample,
             request_only=True,
         ),
     ],
     responses={
         200: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Address updated successfully.",
-            examples=[
-                OpenApiExample(
-                    name="Address Updated Successfully",
-                    value=responses.AddressUpdateAPIViewSuccess,
-                    media_type="application/json",
-                    response_only=True,
-                ),
-            ],
+            response=AddressDetailResponse,
         ),
         400: OpenApiResponse(
             response=OpenApiTypes.OBJECT,
-            description="Validation error.",
-            examples=[
-                OpenApiExample(
-                    name="Validation Error",
-                    value=responses.AddressValidationError,
-                    media_type="application/json",
-                    response_only=True,
-                ),
-                OpenApiExample(
-                    name="City Province Mismatch",
-                    value=responses.AddressCityProvinceMismatch,
-                    media_type="application/json",
-                    response_only=True,
-                ),
-                OpenApiExample(
-                    name="Cannot Unset Default Address",
-                    value=responses.AddressCannotUnsetDefault,
-                    media_type="application/json",
-                    response_only=True,
-                ),
-            ],
         ),
         401: OpenApiResponse(
             response=OpenApiTypes.OBJECT,
-            description="Authentication required.",
-            examples=[
-                OpenApiExample(
-                    name="Authentication Required",
-                    value=responses.AddressAuthenticationRequired,
-                    media_type="application/json",
-                    response_only=True,
-                ),
-            ],
         ),
         404: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Address not found.",
-            examples=[
-                OpenApiExample(
-                    name="Address Not Found",
-                    value=responses.AddressNotFound,
-                    media_type="application/json",
-                    response_only=True,
-                ),
-            ],
+            response=AddressErrorResponse,
         ),
     },
 )
-
-
-# =========================================================
-# Address Delete
-# =========================================================
 
 address_delete_view_schema = extend_schema(
     tags=["Addresses"],
     operation_id="address_delete",
     summary="Delete User Address",
-    description=(
-        "Deletes an address belonging to the authenticated user. "
-        "If the deleted address was the default address, "
-        "another address will automatically become the default."
-    ),
     responses={
         200: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Address deleted successfully.",
+            response=AddressDeleteResponse,
             examples=[
                 OpenApiExample(
-                    name="Address Deleted Successfully",
-                    value=responses.AddressDeleteAPIViewSuccess,
-                    media_type="application/json",
+                    name="Success",
+                    value=responses.AddressDeleteSuccess,
                     response_only=True,
                 ),
             ],
         ),
         401: OpenApiResponse(
             response=OpenApiTypes.OBJECT,
-            description="Authentication required.",
-            examples=[
-                OpenApiExample(
-                    name="Authentication Required",
-                    value=responses.AddressAuthenticationRequired,
-                    media_type="application/json",
-                    response_only=True,
-                ),
-            ],
         ),
         404: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Address not found.",
-            examples=[
-                OpenApiExample(
-                    name="Address Not Found",
-                    value=responses.AddressNotFound,
-                    media_type="application/json",
-                    response_only=True,
-                ),
-            ],
+            response=AddressErrorResponse,
         ),
     },
 )
-
-
-# =========================================================
-# Set Default Address
-# =========================================================
 
 address_set_default_view_schema = extend_schema(
     tags=["Addresses"],
     operation_id="address_set_default",
     summary="Set Default Address",
-    description=(
-        "Sets the selected address as the default address "
-        "for the authenticated user. "
-        "Any previously selected default address "
-        "will automatically be unset."
-    ),
-    # این endpoint هیچ Request Body ندارد.
     request=None,
     responses={
         200: OpenApiResponse(
-            response=address_set_default_response,
-            description="Default address changed successfully.",
+            response=AddressDetailResponse,
             examples=[
                 OpenApiExample(
-                    name="Default Address Changed",
-                    value=responses.AddressSetDefaultAPIViewSuccess,
-                    media_type="application/json",
+                    name="Success",
+                    value=responses.AddressSetDefaultSuccess,
                     response_only=True,
                 ),
             ],
         ),
         401: OpenApiResponse(
             response=OpenApiTypes.OBJECT,
-            description="Authentication required.",
-            examples=[
-                OpenApiExample(
-                    name="Authentication Required",
-                    value=responses.AddressAuthenticationRequired,
-                    media_type="application/json",
-                    response_only=True,
-                ),
-            ],
         ),
         404: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Address not found.",
-            examples=[
-                OpenApiExample(
-                    name="Address Not Found",
-                    value=responses.AddressNotFound,
-                    media_type="application/json",
-                    response_only=True,
-                ),
-            ],
+            response=AddressErrorResponse,
         ),
     },
 )

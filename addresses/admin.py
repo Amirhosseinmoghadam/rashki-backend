@@ -1,85 +1,27 @@
-# Register your models here.
 from django.contrib import admin
 
-from addresses.models import Province, City
-
-
-from django.contrib import admin
-from django.contrib.auth.admin import (
-    UserAdmin,
-)
-
-from .models import (
-    User,
-    Address,
-)
+from addresses.models import Address, City, Province
 
 
 @admin.register(Province)
 class ProvinceAdmin(admin.ModelAdmin):
-    """Admin options for the Province model."""
-
-    list_display = ("name", "id")
+    list_display = ("id", "name")
     search_fields = ("name",)
+    ordering = ("name",)
 
 
 @admin.register(City)
 class CityAdmin(admin.ModelAdmin):
-    """Admin options for the City model."""
-
-    list_display = ("name", "province", "id")
+    list_display = ("id", "name", "province")
     search_fields = ("name", "province__name")
     list_filter = ("province",)
-    ordering = ("province", "name")
-
-
-# =========================================================
-# Address Admin
-# =========================================================
-
-
-# @admin.register(Address)
-# class AddressAdmin(admin.ModelAdmin):
-#
-#     list_display = (
-#         "user",
-#         "first_name",
-#         "last_name",
-#         "mobile_number",
-#         "province",
-#         "city",
-#         "is_default",
-#         "created_at",
-#     )
-#
-#     list_filter = (
-#         "is_default",
-#         "province",
-#         "city",
-#     )
-#
-#     search_fields = (
-#         "user__phone_number",
-#         "first_name",
-#         "last_name",
-#         "mobile_number",
-#         "postal_code",
-#     )
-#
-#     ordering = ("-created_at",)
-
-
-from django.utils.html import format_html
-
-from .models import Address
+    ordering = ("province__name", "name")
+    autocomplete_fields = ("province",)
+    list_select_related = ("province",)
 
 
 @admin.register(Address)
 class AddressAdmin(admin.ModelAdmin):
-    # =====================================================
-    # List Display
-    # =====================================================
-
     list_display = (
         "id",
         "user_display",
@@ -87,13 +29,9 @@ class AddressAdmin(admin.ModelAdmin):
         "mobile_number",
         "province",
         "city",
-        "default_status",
+        "is_default",
         "created_at",
     )
-
-    # =====================================================
-    # List Filters
-    # =====================================================
 
     list_filter = (
         "is_default",
@@ -101,10 +39,6 @@ class AddressAdmin(admin.ModelAdmin):
         "city",
         "created_at",
     )
-
-    # =====================================================
-    # Search
-    # =====================================================
 
     search_fields = (
         "first_name",
@@ -118,24 +52,8 @@ class AddressAdmin(admin.ModelAdmin):
         "user__last_name",
     )
 
-    # =====================================================
-    # Ordering
-    # =====================================================
-
-    ordering = (
-        "-is_default",
-        "-created_at",
-    )
-
-    # =====================================================
-    # Pagination
-    # =====================================================
-
+    ordering = ("-is_default", "-created_at")
     list_per_page = 25
-
-    # =====================================================
-    # Related Object Optimization
-    # =====================================================
 
     list_select_related = (
         "user",
@@ -143,28 +61,16 @@ class AddressAdmin(admin.ModelAdmin):
         "city",
     )
 
-    # =====================================================
-    # Autocomplete
-    # =====================================================
-
     autocomplete_fields = (
         "user",
         "province",
         "city",
     )
 
-    # =====================================================
-    # Read Only Fields
-    # =====================================================
-
     readonly_fields = (
         "created_at",
         "updated_at",
     )
-
-    # =====================================================
-    # Fieldsets
-    # =====================================================
 
     fieldsets = (
         (
@@ -209,36 +115,26 @@ class AddressAdmin(admin.ModelAdmin):
         ),
     )
 
-    # =====================================================
-    # Custom Display Methods
-    # =====================================================
-
     @admin.display(
         description="کاربر",
-        ordering="user",
+        ordering="user__phone_number",
     )
     def user_display(self, obj):
-        if not obj.user:
-            return "-"
-
-        if hasattr(obj.user, "phone_number"):
-            return obj.user.phone_number
-
-        return str(obj.user)
+        return (
+            getattr(
+                obj.user,
+                "phone_number",
+                None,
+            )
+            or str(obj.user)
+        )
 
     @admin.display(
         description="نام گیرنده",
         ordering="first_name",
     )
     def full_name(self, obj):
-        full_name = (f"{obj.first_name or ''} " f"{obj.last_name or ''}").strip()
-
-        return full_name or "-"
-
-    @admin.display(
-        description="پیش‌فرض",
-        boolean=True,
-        ordering="is_default",
-    )
-    def default_status(self, obj):
-        return obj.is_default
+        return (
+            f"{obj.first_name or ''} "
+            f"{obj.last_name or ''}"
+        ).strip() or "-"

@@ -1,14 +1,4 @@
-# =========================================================
-# Address List
-# =========================================================
-AddressListAPIViewExample = {}
-
-
-# =========================================================
-# Address Create
-# =========================================================
-
-AddressCreateAPIViewExample = {
+AddressCreateRequestExample = {
     "first_name": "امیر",
     "last_name": "مقدم",
     "mobile_number": "09196558273",
@@ -16,23 +6,13 @@ AddressCreateAPIViewExample = {
     "province": 1,
     "city": 1,
     "postal_code": "1234567890",
-    "postal_address": "تهران، خیابان ولیعصر، پلاک ۱۲۳",
+    "postal_address": (
+        "تهران، خیابان ولیعصر، پلاک ۱۲۳"
+    ),
     "is_default": True,
 }
 
-
-# =========================================================
-# Address Detail
-# =========================================================
-
-AddressDetailAPIViewExample = {}
-
-
-# =========================================================
-# Address Update
-# =========================================================
-
-AddressUpdateAPIViewExample = {
+AddressUpdateRequestExample = {
     "first_name": "امیرحسین",
     "last_name": "مقدم",
     "mobile_number": "09196558273",
@@ -40,29 +20,14 @@ AddressUpdateAPIViewExample = {
     "province": 1,
     "city": 1,
     "postal_code": "1234567890",
-    "postal_address": "تهران، خیابان ولیعصر، پلاک ۱۲۳",
+    "postal_address": (
+        "تهران، خیابان ولیعصر، پلاک ۱۲۵"
+    ),
     "is_default": True,
 }
 
-
-# =========================================================
-# Address Partial Update
-# =========================================================
-
-AddressPartialUpdateAPIViewExample = {
-    "postal_address": "تهران، خیابان ولیعصر، پلاک ۱۲۵",
+AddressPartialUpdateRequestExample = {
+    "postal_address": (
+        "تهران، خیابان ولیعصر، پلاک ۱۲۵"
+    ),
 }
-
-
-# =========================================================
-# Address Delete
-# =========================================================
-
-AddressDeleteAPIViewExample = {}
-
-
-# =========================================================
-# Set Default Address
-# =========================================================
-
-AddressSetDefaultAPIViewExample = {}

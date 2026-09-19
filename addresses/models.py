@@ -1,17 +1,12 @@
 from django.core.validators import RegexValidator
 from django.db import models
-
-# Create your models here.
-from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from accounts.models import User
 
 
 class Province(models.Model):
-    """
-    Model representing a Province in Iran.
-    """
+    """استان داخلی سیستم."""
 
     name = models.CharField(
         _("Name"),
@@ -26,14 +21,11 @@ class Province(models.Model):
         ordering = ["name"]
 
     def __str__(self):
-        """String representation of the Province object."""
         return self.name
 
 
 class City(models.Model):
-    """
-    Model representing a City in Iran, belonging to a Province.
-    """
+    """شهر داخلی سیستم."""
 
     province = models.ForeignKey(
         Province,
@@ -42,6 +34,7 @@ class City(models.Model):
         verbose_name=_("Province"),
         help_text=_("The province this city belongs to."),
     )
+
     name = models.CharField(
         _("Name"),
         max_length=150,
@@ -51,21 +44,28 @@ class City(models.Model):
     class Meta:
         verbose_name = _("City")
         verbose_name_plural = _("Cities")
-        # Ensures that the combination of province and city name is unique.
-        unique_together = ("province", "name")
         ordering = ["province__name", "name"]
 
+        constraints = [
+            models.UniqueConstraint(
+                fields=["province", "name"],
+                name="unique_city_name_per_province",
+            ),
+        ]
+
+        indexes = [
+            models.Index(
+                fields=["province", "name"],
+                name="address_city_prov_name_idx",
+            ),
+        ]
+
     def __str__(self):
-        """String representation of the City object."""
         return f"{self.name} ({self.province.name})"
 
 
-# =========================================================
-# Address
-# =========================================================
-
-
 class Address(models.Model):
+    """آدرس گیرنده متعلق به یک User."""
 
     user = models.ForeignKey(
         User,
@@ -94,7 +94,7 @@ class Address(models.Model):
             RegexValidator(
                 regex=r"^09[0-9]{9}$",
                 message="شماره موبایل نامعتبر است.",
-            )
+            ),
         ],
         null=True,
         blank=True,
@@ -107,7 +107,7 @@ class Address(models.Model):
             RegexValidator(
                 regex=r"^[0-9]{11}$",
                 message="شماره تلفن باید 11 رقم باشد.",
-            )
+            ),
         ],
         null=True,
         blank=True,
@@ -115,14 +115,16 @@ class Address(models.Model):
     )
 
     province = models.ForeignKey(
-        "addresses.Province",
+        Province,
         on_delete=models.PROTECT,
+        related_name="addresses",
         verbose_name="استان",
     )
 
     city = models.ForeignKey(
-        "addresses.City",
+        City,
         on_delete=models.PROTECT,
+        related_name="addresses",
         verbose_name="شهر",
     )
 
@@ -132,7 +134,7 @@ class Address(models.Model):
             RegexValidator(
                 regex=r"^[0-9]{10}$",
                 message="کد پستی باید 10 رقم باشد.",
-            )
+            ),
         ],
         null=True,
         blank=True,
@@ -163,30 +165,29 @@ class Address(models.Model):
     class Meta:
         verbose_name = "آدرس"
         verbose_name_plural = "آدرس‌ها"
+        ordering = ["-is_default", "-created_at"]
 
         constraints = [
             models.UniqueConstraint(
                 fields=["user"],
                 condition=models.Q(is_default=True),
-                name=("unique_default_address_per_user"),
-            )
+                name="unique_default_address_per_user",
+            ),
         ]
 
-    def set_as_default(self):
-        Address.objects.filter(
-            user=self.user,
-            is_default=True,
-        ).exclude(
-            pk=self.pk
-        ).update(is_default=False)
-
-        self.is_default = True
-
-        self.save(update_fields=["is_default"])
+        indexes = [
+            models.Index(
+                fields=["user", "is_default"],
+                name="address_user_default_idx",
+            ),
+        ]
 
     def __str__(self):
+        full_name = (
+            f"{self.first_name or ''} "
+            f"{self.last_name or ''}"
+        ).strip()
+
         city_name = self.city.name if self.city_id else "-"
 
-        return (
-            f"{self.first_name or ''} " f"{self.last_name or ''} - " f"{city_name}"
-        ).strip()
+        return f"{full_name or '-'} - {city_name}"
