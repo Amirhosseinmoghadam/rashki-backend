@@ -226,7 +226,7 @@ class AccountsAuthAPITests(APITestCase):
         )
 
     @patch(
-        "accounts.services.generate_otp",
+        "accounts.api.v1.views.generate_otp",
         return_value="123456",
     )
     def test_send_otp_invalidates_previous_active_otp(
@@ -270,11 +270,11 @@ class AccountsAuthAPITests(APITestCase):
             1,
         )
 
-        self.assertEqual(
-            response.data["data"][
-                "debug_otp"
-            ],
-            "123456",
+        mocked_generate.assert_called_once_with()
+
+        self.assertNotIn(
+            "debug_otp",
+            response.data["data"],
         )
 
     def test_logout_rejects_refresh_token_from_another_user(self):

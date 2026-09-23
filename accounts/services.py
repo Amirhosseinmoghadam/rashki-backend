@@ -157,141 +157,155 @@ def issue_auth_otp(
     }
 
 
-@transaction.atomic
+
 def verify_auth_otp(
     *,
     phone_number,
     otp_code,
 ):
-    otp = (
-        OTPCode.objects
-        .select_for_update()
-        .filter(
-            phone_number=phone_number,
-            purpose=OTPCode.OTPPurpose.AUTH,
-            is_used=False,
-        )
-        .order_by(
-            "-created_at"
-        )
-        .first()
-    )
+    pending_error = None
+    result = None
 
-    if otp is None:
-        raise InvalidOTPError(
-            "کد تایید معتبر نیست."
-        )
-
-    if otp.is_expired:
-        otp.is_used = True
-
-        otp.save(
-            update_fields=[
-                "is_used",
-            ]
-        )
-
-        raise ExpiredOTPError(
-            "کد تایید منقضی شده است."
-        )
-
-    if otp.attempts >= otp.max_attempts:
-        otp.is_used = True
-
-        otp.save(
-            update_fields=[
-                "is_used",
-            ]
-        )
-
-        raise OTPAttemptsExceededError(
-            "تعداد تلاش‌های مجاز به پایان رسیده است."
-        )
-
-    if not verify_otp_hash(
-        otp_code,
-        otp.code_hash,
-    ):
-        otp.attempts += 1
-
-        update_fields = [
-            "attempts",
-        ]
-
-        if otp.attempts >= otp.max_attempts:
-            otp.is_used = True
-            update_fields.append(
-                "is_used"
-            )
-
-        otp.save(
-            update_fields=update_fields
-        )
-
-        remaining_attempts = max(
-            0,
-            otp.max_attempts
-            - otp.attempts,
-        )
-
-        raise OTPCodeMismatchError(
-            "کد تایید اشتباه است.",
-            extra={
-                "remaining_attempts": (
-                    remaining_attempts
-                ),
-            },
-        )
-
-    otp.is_used = True
-
-    otp.save(
-        update_fields=[
-            "is_used",
-        ]
-    )
-
-    try:
-        user = (
-            User.objects
+    with transaction.atomic():
+        otp = (
+            OTPCode.objects
             .select_for_update()
-            .get(
-                phone_number=phone_number
+            .filter(
+                phone_number=phone_number,
+                purpose=OTPCode.OTPPurpose.AUTH,
+                is_used=False,
             )
+            .order_by("-created_at")
+            .first()
         )
 
-        is_new_user = False
+        if otp is None:
+            raise InvalidOTPError(
+                "کد تایید معتبر نیست."
+            )
 
-    except User.DoesNotExist:
-        user = User.objects.create_user(
-            phone_number=phone_number,
-            is_phone_verified=True,
-        )
+        if otp.is_expired:
+            otp.is_used = True
 
-        is_new_user = True
+            otp.save(
+                update_fields=[
+                    "is_used",
+                ]
+            )
 
-    if not user.is_active:
-        raise InactiveUserError(
-            "حساب کاربری غیرفعال است."
-        )
+            pending_error = ExpiredOTPError(
+                "کد تایید منقضی شده است."
+            )
 
-    update_fields = []
+        elif otp.attempts >= otp.max_attempts:
+            otp.is_used = True
 
-    if not user.is_phone_verified:
-        user.is_phone_verified = True
-        update_fields.append(
-            "is_phone_verified"
-        )
+            otp.save(
+                update_fields=[
+                    "is_used",
+                ]
+            )
 
-    if update_fields:
-        user.save(
-            update_fields=update_fields
-        )
+            pending_error = OTPAttemptsExceededError(
+                "تعداد تلاش‌های مجاز به پایان رسیده است."
+            )
 
-    return {
-        "user": user,
-        "is_new_user": is_new_user,
-    }
+        elif not verify_otp_hash(
+            otp_code,
+            otp.code_hash,
+        ):
+            otp.attempts += 1
+
+            update_fields = [
+                "attempts",
+            ]
+
+            if otp.attempts >= otp.max_attempts:
+                otp.is_used = True
+
+                update_fields.append(
+                    "is_used"
+                )
+
+            otp.save(
+                update_fields=update_fields
+            )
+
+            remaining_attempts = max(
+                0,
+                otp.max_attempts
+                - otp.attempts,
+            )
+
+            pending_error = OTPCodeMismatchError(
+                "کد تایید اشتباه است.",
+                extra={
+                    "remaining_attempts": (
+                        remaining_attempts
+                    ),
+                },
+            )
+
+        else:
+            otp.is_used = True
+
+            otp.save(
+                update_fields=[
+                    "is_used",
+                ]
+            )
+
+            try:
+                user = (
+                    User.objects
+                    .select_for_update()
+                    .get(
+                        phone_number=phone_number
+                    )
+                )
+
+                is_new_user = False
+
+            except User.DoesNotExist:
+                user = User.objects.create_user(
+                    phone_number=phone_number,
+                    is_phone_verified=True,
+                )
+
+                is_new_user = True
+
+            if not user.is_active:
+                pending_error = InactiveUserError(
+                    "حساب کاربری غیرفعال است."
+                )
+
+            else:
+                update_fields = []
+
+                if not user.is_phone_verified:
+                    user.is_phone_verified = True
+
+                    update_fields.append(
+                        "is_phone_verified"
+                    )
+
+                if update_fields:
+                    user.save(
+                        update_fields=update_fields
+                    )
+
+                result = {
+                    "user": user,
+                    "is_new_user": is_new_user,
+                }
+
+    # مهم:
+    # Exception بعد از پایان transaction
+    # ایجاد می‌شود تا تغییرات OTP rollback نشوند.
+    if pending_error is not None:
+        raise pending_error
+
+    return result
 
 
 def get_next_page(user):
