@@ -1,259 +1,262 @@
+from rest_framework import serializers
+
 from drf_spectacular.utils import (
-    extend_schema,
     OpenApiExample,
     OpenApiResponse,
     OpenApiTypes,
-    extend_schema_view,
+    extend_schema,
+    inline_serializer,
 )
-from rest_framework_simplejwt.views import TokenRefreshView
+
+from accounts.api.v1.serializers import (
+    CompleteProfileSerializer,
+    LogoutSerializer,
+    OTPVerifySerializer,
+    SendOTPSerializer,
+    UserSerializer,
+)
 
 from . import examples, responses
 
-from accounts.api.v1.serializers import (
-    SendOTPSerializer,
-    OTPVerifySerializer,
-    CompleteProfileSerializer,
+
+GenericErrorResponse = inline_serializer(
+    name="AccountsGenericErrorResponse",
+    fields={
+        "success": serializers.BooleanField(),
+        "message": serializers.CharField(),
+        "errors": serializers.JSONField(
+            allow_null=True,
+        ),
+    },
 )
 
-# Define the decorated view object here
-DecoratedTokenRefreshView = extend_schema_view(
-    post=extend_schema(
-        summary="Refresh JWT Access Token",
-        description="Use a valid refresh token to obtain a new access token.",
-        tags=["Authentication (Accounts Login)"],
-    )
-)(TokenRefreshView)
+SendOTPSuccessResponse = inline_serializer(
+    name="SendOTPSuccessResponse",
+    fields={
+        "success": serializers.BooleanField(),
+        "message": serializers.CharField(),
+        "data": serializers.JSONField(),
+    },
+)
 
-# =========================================================
-# Send OTP
-# =========================================================
+OTPVerifySuccessResponse = inline_serializer(
+    name="OTPVerifySuccessResponse",
+    fields={
+        "success": serializers.BooleanField(),
+        "message": serializers.CharField(),
+        "data": serializers.JSONField(),
+    },
+)
+
+UserSuccessResponse = inline_serializer(
+    name="AccountUserSuccessResponse",
+    fields={
+        "success": serializers.BooleanField(),
+        "message": serializers.CharField(),
+        "data": UserSerializer(),
+    },
+)
+
+GenericSuccessResponse = inline_serializer(
+    name="AccountsGenericSuccessResponse",
+    fields={
+        "success": serializers.BooleanField(),
+        "message": serializers.CharField(),
+        "data": serializers.JSONField(
+            allow_null=True,
+        ),
+    },
+)
+
 
 send_otp_view_schema = extend_schema(
     tags=["Authentication"],
     operation_id="send_otp",
     summary="Send Authentication OTP",
     description=(
-        "Sends an authentication OTP to the provided phone number. "
-        "This endpoint is used for both existing and new users. "
-        "A previously active OTP is invalidated before creating a new one. "
-        "The OTP itself is never returned in the response."
+        "Sends a one-time authentication code. "
+        "The endpoint is shared by login and signup."
     ),
     request=SendOTPSerializer,
     examples=[
         OpenApiExample(
-            name="Example Request",
-            value=examples.SendOTPViewExample,
+            name="Request",
+            value=examples.SendOTPRequestExample,
             request_only=True,
         ),
     ],
     responses={
         200: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="OTP sent successfully.",
+            response=SendOTPSuccessResponse,
             examples=[
                 OpenApiExample(
-                    name="OTP Sent Successfully",
-                    value=responses.SendOTPViewOTPSentSuccessfully,
-                    media_type="application/json",
+                    name="Success",
+                    value=responses.SendOTPSuccess,
                     response_only=True,
                 ),
             ],
         ),
         400: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Validation error.",
+            response=GenericErrorResponse,
             examples=[
                 OpenApiExample(
                     name="Validation Error",
-                    value={
-                        "phone_number": [
-                            "شماره تلفن همراه باید با 09 شروع شود و ۱۱ رقم باشد."
-                        ]
-                    },
-                    media_type="application/json",
+                    value=responses.ValidationError,
                     response_only=True,
                 ),
             ],
         ),
         429: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Too many OTP requests.",
+            response=GenericErrorResponse,
             examples=[
                 OpenApiExample(
-                    name="Rate Limit Exceeded",
-                    value=responses.SendOTPViewRateLimitExceeded,
-                    media_type="application/json",
+                    name="Rate Limited",
+                    value=responses.RateLimitError,
                     response_only=True,
                 ),
             ],
         ),
+        503: OpenApiResponse(
+            response=GenericErrorResponse,
+            description="OTP delivery provider unavailable.",
+        ),
     },
 )
 
-
-# =========================================================
-# OTP Verify
-# =========================================================
 
 otp_verify_view_schema = extend_schema(
     tags=["Authentication"],
     operation_id="verify_otp",
     summary="Verify Authentication OTP",
-    description=(
-        "Verifies the OTP sent to the user's phone number. "
-        "For an existing user, this completes authentication. "
-        "For a new user, the user is created automatically after "
-        "successful OTP verification. "
-        "The response contains JWT access and refresh tokens "
-        "and indicates whether the user needs to complete their profile."
-    ),
     request=OTPVerifySerializer,
     examples=[
         OpenApiExample(
-            name="Example Request",
-            value=examples.OTPVerifyViewExample,
+            name="Request",
+            value=examples.OTPVerifyRequestExample,
             request_only=True,
         ),
     ],
     responses={
         200: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="OTP verified successfully and JWT tokens generated.",
+            response=OTPVerifySuccessResponse,
             examples=[
                 OpenApiExample(
-                    name="Existing User - Profile Completed",
-                    value=responses.OTPVerifyViewSuccess,
-                    media_type="application/json",
+                    name="Existing User",
+                    value=responses.OTPVerifyExistingUserSuccess,
                     response_only=True,
                 ),
                 OpenApiExample(
-                    name="New User - Profile Incomplete",
-                    value=responses.OTPVerifyViewSuccessNewUser,
-                    media_type="application/json",
+                    name="New User",
+                    value=responses.OTPVerifyNewUserSuccess,
                     response_only=True,
                 ),
             ],
         ),
         400: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description=("Invalid, expired, or otherwise unusable OTP."),
+            response=GenericErrorResponse,
             examples=[
                 OpenApiExample(
                     name="Invalid OTP",
-                    value=responses.OTPVerifyViewInvalidOTP,
-                    media_type="application/json",
+                    value=responses.InvalidOTPError,
                     response_only=True,
                 ),
+            ],
+        ),
+        403: OpenApiResponse(
+            response=GenericErrorResponse,
+            examples=[
                 OpenApiExample(
-                    name="Expired OTP",
-                    value=responses.OTPVerifyViewExpiredOTP,
-                    media_type="application/json",
-                    response_only=True,
-                ),
-                OpenApiExample(
-                    name="Invalid OTP Code",
-                    value=responses.OTPVerifyViewInvalidCode,
-                    media_type="application/json",
+                    name="Inactive User",
+                    value=responses.InactiveUserError,
                     response_only=True,
                 ),
             ],
         ),
         429: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description=(
-                "OTP verification rate limit exceeded "
-                "or maximum OTP attempts reached."
-            ),
-            examples=[
-                OpenApiExample(
-                    name="Verification Rate Limit",
-                    value=responses.OTPVerifyViewRateLimitExceeded,
-                    media_type="application/json",
-                    response_only=True,
-                ),
-                OpenApiExample(
-                    name="Maximum Attempts Exceeded",
-                    value=responses.OTPVerifyViewMaxAttemptsExceeded,
-                    media_type="application/json",
-                    response_only=True,
-                ),
-            ],
+            response=GenericErrorResponse,
         ),
     },
 )
 
 
-# =========================================================
-# Complete Profile
-# =========================================================
-
 complete_profile_view_schema = extend_schema(
-    tags=["Authentication"],
+    tags=["Accounts"],
     operation_id="complete_profile",
     summary="Complete User Profile",
-    description=(
-        "Updates the authenticated user's basic profile information. "
-        "The phone number cannot be changed through this endpoint. "
-        "After successful completion, the user can continue to the home page."
-    ),
     request=CompleteProfileSerializer,
     examples=[
         OpenApiExample(
-            name="Example Request",
-            value=examples.CompleteProfileViewExample,
+            name="Request",
+            value=examples.CompleteProfileRequestExample,
             request_only=True,
         ),
     ],
     responses={
         200: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="User profile updated successfully.",
-            examples=[
-                OpenApiExample(
-                    name="Profile Completed",
-                    value=responses.CompleteProfileViewSuccess,
-                    media_type="application/json",
-                    response_only=True,
-                ),
-            ],
+            response=GenericSuccessResponse,
         ),
         400: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Validation error.",
-            examples=[
-                OpenApiExample(
-                    name="Validation Error",
-                    value={"first_name": ["این فیلد الزامی است."]},
-                    media_type="application/json",
-                    response_only=True,
-                ),
-            ],
+            response=GenericErrorResponse,
         ),
         401: OpenApiResponse(
-            description="Authentication credentials were not provided or are invalid.",
+            response=OpenApiTypes.OBJECT,
         ),
     },
 )
 
 
-# =========================================================
-# Logout
-# =========================================================
+me_get_view_schema = extend_schema(
+    tags=["Accounts"],
+    operation_id="account_me",
+    summary="Get Current User",
+    request=None,
+    responses={
+        200: OpenApiResponse(
+            response=UserSuccessResponse,
+            examples=[
+                OpenApiExample(
+                    name="Success",
+                    value=responses.ProfileSuccess,
+                    response_only=True,
+                ),
+            ],
+        ),
+        401: OpenApiResponse(
+            response=OpenApiTypes.OBJECT,
+        ),
+    },
+)
 
-user_logout_api_view_schema = extend_schema(
+
+me_update_view_schema = extend_schema(
+    tags=["Accounts"],
+    operation_id="account_me_update",
+    summary="Update Current User",
+    request=CompleteProfileSerializer,
+    responses={
+        200: OpenApiResponse(
+            response=UserSuccessResponse,
+        ),
+        400: OpenApiResponse(
+            response=GenericErrorResponse,
+        ),
+        401: OpenApiResponse(
+            response=OpenApiTypes.OBJECT,
+        ),
+    },
+)
+
+
+token_refresh_view_schema = extend_schema(
     tags=["Authentication"],
-    operation_id="logout",
-    summary="Logout User",
-    description=(
-        "Logs out the authenticated user by blacklisting " "the provided refresh token."
-    ),
+    operation_id="token_refresh",
+    summary="Refresh JWT Access Token",
     request={
         "application/json": {
             "type": "object",
             "properties": {
                 "refresh": {
                     "type": "string",
-                    "description": "JWT refresh token.",
                 },
             },
             "required": ["refresh"],
@@ -261,47 +264,60 @@ user_logout_api_view_schema = extend_schema(
     },
     examples=[
         OpenApiExample(
-            name="Example Request",
-            value=examples.UserLogoutAPIViewExample,
+            name="Request",
+            value=examples.TokenRefreshRequestExample,
             request_only=True,
         ),
     ],
     responses={
         200: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="User logged out successfully.",
+            response=GenericSuccessResponse,
             examples=[
                 OpenApiExample(
-                    name="Logout Successful",
-                    value=responses.UserLogoutAPIViewSuccess,
-                    media_type="application/json",
-                    response_only=True,
-                ),
-            ],
-        ),
-        400: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description="Refresh token was not provided.",
-            examples=[
-                OpenApiExample(
-                    name="Missing Refresh Token",
-                    value=responses.UserLogoutAPIViewMissingRefreshToken,
-                    media_type="application/json",
+                    name="Success",
+                    value=responses.TokenRefreshSuccess,
                     response_only=True,
                 ),
             ],
         ),
         401: OpenApiResponse(
-            response=OpenApiTypes.OBJECT,
-            description=("Refresh token is invalid or has already been blacklisted."),
+            response=GenericErrorResponse,
+        ),
+    },
+)
+
+
+user_logout_api_view_schema = extend_schema(
+    tags=["Authentication"],
+    operation_id="logout",
+    summary="Logout User",
+    request=LogoutSerializer,
+    examples=[
+        OpenApiExample(
+            name="Request",
+            value=examples.LogoutRequestExample,
+            request_only=True,
+        ),
+    ],
+    responses={
+        200: OpenApiResponse(
+            response=GenericSuccessResponse,
             examples=[
                 OpenApiExample(
-                    name="Invalid Refresh Token",
-                    value=responses.UserLogoutAPIViewInvalidRefreshToken,
-                    media_type="application/json",
+                    name="Success",
+                    value=responses.LogoutSuccess,
                     response_only=True,
                 ),
             ],
+        ),
+        400: OpenApiResponse(
+            response=GenericErrorResponse,
+        ),
+        401: OpenApiResponse(
+            response=GenericErrorResponse,
+        ),
+        403: OpenApiResponse(
+            response=GenericErrorResponse,
         ),
     },
 )

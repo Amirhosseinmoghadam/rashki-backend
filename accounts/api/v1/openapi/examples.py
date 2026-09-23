@@ -1,41 +1,25 @@
-# =========================================================
-# Send OTP
-# =========================================================
-
-SendOTPViewExample = {
+SendOTPRequestExample = {
     "phone_number": "09196558273",
 }
 
-
-# =========================================================
-# Verify OTP
-# =========================================================
-
-OTPVerifyViewExample = {
+OTPVerifyRequestExample = {
     "phone_number": "09196558273",
     "otp_code": "123456",
 }
 
-
-# =========================================================
-# Complete Profile
-# =========================================================
-
-CompleteProfileViewExample = {
+CompleteProfileRequestExample = {
     "first_name": "امیر",
     "last_name": "مقدم",
 }
 
+LogoutRequestExample = {
+    "refresh": (
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+    ),
+}
 
-# =========================================================
-# Logout
-# =========================================================
-
-UserLogoutAPIViewExample = {"refresh": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."}
-
-
-# =========================================================
-# Set Default Address
-# =========================================================
-
-AddressSetDefaultAPIViewExample = {}
+TokenRefreshRequestExample = {
+    "refresh": (
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+    ),
+}

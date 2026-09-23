@@ -1,120 +1,114 @@
-# =========================================================
-# Send OTP
-# =========================================================
-
-SendOTPViewOTPSentSuccessfully = {
+SendOTPSuccess = {
+    "success": True,
     "message": "کد تایید با موفقیت ارسال شد.",
-    "expires_in": 120,
+    "data": {
+        "expires_in": 120,
+    },
 }
 
-
-SendOTPViewRateLimitExceeded = {
-    "detail": "تعداد درخواست‌ها بیش از حد مجاز است.",
-    "retry_after": 45,
-}
-
-
-# =========================================================
-# OTP Verify
-# =========================================================
-
-OTPVerifyViewSuccess = {
+OTPVerifyExistingUserSuccess = {
+    "success": True,
     "message": "احراز هویت با موفقیت انجام شد.",
-    "is_new_user": False,
-    "is_profile_completed": True,
-    "next": "home",
-    "user": {
+    "data": {
+        "is_new_user": False,
+        "is_profile_completed": True,
+        "next": "home",
+        "user": {
+            "id": 1,
+            "phone_number": "09196558273",
+            "first_name": "امیر",
+            "last_name": "مقدم",
+            "is_phone_verified": True,
+            "is_profile_completed": True,
+        },
+        "tokens": {
+            "refresh": "refresh-token...",
+            "access": "access-token...",
+        },
+    },
+}
+
+OTPVerifyNewUserSuccess = {
+    "success": True,
+    "message": "احراز هویت با موفقیت انجام شد.",
+    "data": {
+        "is_new_user": True,
+        "is_profile_completed": False,
+        "next": "complete_profile",
+        "user": {
+            "id": 2,
+            "phone_number": "09196558273",
+            "first_name": "",
+            "last_name": "",
+            "is_phone_verified": True,
+            "is_profile_completed": False,
+        },
+        "tokens": {
+            "refresh": "refresh-token...",
+            "access": "access-token...",
+        },
+    },
+}
+
+ProfileSuccess = {
+    "success": True,
+    "message": "اطلاعات کاربر با موفقیت دریافت شد.",
+    "data": {
         "id": 1,
         "phone_number": "09196558273",
         "first_name": "امیر",
         "last_name": "مقدم",
         "is_phone_verified": True,
-    },
-    "tokens": {
-        "refresh": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-        "access": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+        "is_profile_completed": True,
     },
 }
 
+LogoutSuccess = {
+    "success": True,
+    "message": "خروج از حساب با موفقیت انجام شد.",
+    "data": None,
+}
 
-OTPVerifyViewSuccessNewUser = {
-    "message": "احراز هویت با موفقیت انجام شد.",
-    "is_new_user": True,
-    "is_profile_completed": False,
-    "next": "complete_profile",
-    "user": {
-        "id": 2,
-        "phone_number": "09196558273",
-        "first_name": "",
-        "last_name": "",
-        "is_phone_verified": True,
-    },
-    "tokens": {
-        "refresh": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-        "access": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+TokenRefreshSuccess = {
+    "success": True,
+    "message": "Access token با موفقیت بروزرسانی شد.",
+    "data": {
+        "access": "new-access-token...",
     },
 }
 
-
-OTPVerifyViewInvalidOTP = {
-    "detail": "کد تایید معتبر نیست.",
-}
-
-
-OTPVerifyViewExpiredOTP = {
-    "detail": "کد تایید منقضی شده است.",
-}
-
-
-OTPVerifyViewMaxAttemptsExceeded = {
-    "detail": "تعداد تلاش‌های مجاز به پایان رسیده است.",
-}
-
-
-OTPVerifyViewInvalidCode = {
-    "detail": "کد تایید اشتباه است.",
-    "remaining_attempts": 2,
-}
-
-
-OTPVerifyViewRateLimitExceeded = {
-    "detail": "تعداد تلاش‌های تایید بیش از حد مجاز است.",
-    "retry_after": 60,
-}
-
-
-# =========================================================
-# Complete Profile
-# =========================================================
-
-CompleteProfileViewSuccess = {
-    "message": "اطلاعات کاربر با موفقیت تکمیل شد.",
-    "is_profile_completed": True,
-    "next": "home",
-    "user": {
-        "id": 1,
-        "phone_number": "09196558273",
-        "first_name": "امیر",
-        "last_name": "مقدم",
-        "is_phone_verified": True,
+ValidationError = {
+    "success": False,
+    "message": "اطلاعات ارسالی معتبر نیست.",
+    "errors": {
+        "phone_number": [
+            "شماره تلفن همراه باید با 09 شروع شود و ۱۱ رقم باشد."
+        ]
     },
 }
 
-
-# =========================================================
-# Logout
-# =========================================================
-
-UserLogoutAPIViewSuccess = {
-    "message": "Logout successful.",
+RateLimitError = {
+    "success": False,
+    "message": "تعداد درخواست‌ها بیش از حد مجاز است.",
+    "errors": {
+        "retry_after": 60,
+        "reason": "resend",
+    },
 }
 
-
-UserLogoutAPIViewMissingRefreshToken = {
-    "detail": "Refresh token is required.",
+InvalidOTPError = {
+    "success": False,
+    "message": "کد تایید اشتباه است.",
+    "errors": {
+        "code": "otp_code_mismatch",
+        "remaining_attempts": 2,
+    },
 }
 
-
-UserLogoutAPIViewInvalidRefreshToken = {
-    "detail": "Refresh token is invalid or already blacklisted.",
+InactiveUserError = {
+    "success": False,
+    "message": "حساب کاربری غیرفعال است.",
+    "errors": {
+        "code": "inactive_user",
+    },
 }

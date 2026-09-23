@@ -1,44 +1,33 @@
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.db import models
-from django.contrib.auth.models import (
-    AbstractBaseUser,
-    PermissionsMixin,
-)
-from django.core.validators import RegexValidator
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from .managers import UserManager
-
-# =========================================================
-# User
-# =========================================================
+from accounts.managers import UserManager
+from accounts.validators import validate_iran_mobile
 
 
 class User(AbstractBaseUser, PermissionsMixin):
     """
-    Custom User model.
+    کاربر اصلی سیستم.
 
-    Authentication:
-        Phone Number + OTP
-
-    Username:
+    Login identifier:
         phone_number
-    """
 
-    phone_validator = RegexValidator(
-        regex=r"^09\d{9}$",
-        message="شماره موبایل نامعتبر است.",
-    )
+    Customer authentication:
+        Phone Number + OTP
+    """
 
     phone_number = models.CharField(
         _("Phone Number"),
         max_length=11,
         unique=True,
-        db_index=True,
-        validators=[phone_validator],
-        editable=False,
+        validators=[validate_iran_mobile],
         error_messages={
-            "unique": ("کاربری با این شماره موبایل " "قبلاً ثبت شده است."),
+            "unique": (
+                "کاربری با این شماره موبایل "
+                "قبلاً ثبت شده است."
+            ),
         },
     )
 
@@ -67,7 +56,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(
         _("Staff Status"),
         default=False,
-        help_text=_("Designates whether the user can log into " "the admin site."),
+        help_text=_(
+            "Designates whether the user "
+            "can log into the admin site."
+        ),
     )
 
     date_joined = models.DateTimeField(
@@ -88,7 +80,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects = UserManager()
 
     USERNAME_FIELD = "phone_number"
-
     REQUIRED_FIELDS = []
 
     class Meta:
@@ -100,7 +91,10 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.phone_number
 
     def get_full_name(self):
-        return (f"{self.first_name} {self.last_name}").strip()
+        return (
+            f"{self.first_name} "
+            f"{self.last_name}"
+        ).strip()
 
     def get_short_name(self):
         return self.first_name or self.phone_number
@@ -111,30 +105,16 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     @property
     def is_profile_completed(self):
-        """
-        Basic profile completion.
-
-        Currently:
-            first_name
-            last_name
-
-        Address can be added later.
-        """
-
-        return bool(self.first_name.strip() and self.last_name.strip())
-
-
-# =========================================================
-# OTP
-# =========================================================
+        return bool(
+            self.first_name.strip()
+            and self.last_name.strip()
+        )
 
 
 class OTPCode(models.Model):
     """
-    OTP verification model.
-
-    The actual OTP is NEVER stored.
-    Only an HMAC hash is stored.
+    OTP خام هرگز ذخیره نمی‌شود.
+    فقط HMAC hash داخل دیتابیس قرار می‌گیرد.
     """
 
     class OTPPurpose(models.TextChoices):
@@ -144,12 +124,7 @@ class OTPCode(models.Model):
         _("Phone Number"),
         max_length=11,
         db_index=True,
-        validators=[
-            RegexValidator(
-                regex=r"^09\d{9}$",
-                message="شماره موبایل نامعتبر است.",
-            )
-        ],
+        validators=[validate_iran_mobile],
     )
 
     code_hash = models.CharField(
@@ -197,15 +172,16 @@ class OTPCode(models.Model):
             models.Index(
                 fields=[
                     "phone_number",
+                    "purpose",
                     "is_used",
                     "-created_at",
                 ],
-                name="otp_phone_used_created_idx",
+                name="otp_phone_purp_used_idx",
             ),
         ]
 
     def __str__(self):
-        return f"{self.phone_number} - " f"{self.purpose}"
+        return f"{self.phone_number} - {self.purpose}"
 
     @property
     def is_expired(self):
