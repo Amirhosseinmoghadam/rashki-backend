@@ -179,6 +179,7 @@ def verify_auth_otp(
             .first()
         )
 
+
         if otp is None:
             raise InvalidOTPError(
                 "کد تایید معتبر نیست."
