@@ -470,6 +470,9 @@ TIPAX_PAYMENT_TYPES_PATH = (
 TIPAX_CITIES_PATH = (
     "/api/OM/v3/Cities"
 )
+TIPAX_STATES_PATH = (
+    "/api/OM/v3/States"
+)
 
 TIPAX_BRIEF_TRACKING_PATH = (
     "/api/OM/v3/Tracking/"

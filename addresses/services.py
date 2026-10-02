@@ -9,25 +9,30 @@ class AddressServiceError(Exception):
 
 @transaction.atomic
 def create_address(*, user, validated_data):
-    addresses = (
-        Address.objects
+    user = (
+        User.objects
         .select_for_update()
-        .filter(user=user)
+        .get(pk=user.pk)
     )
 
-    has_addresses = addresses.exists()
+    addresses = Address.objects.filter(
+        user=user
+    )
 
-    if not has_addresses:
+    if not addresses.exists():
         validated_data["is_default"] = True
 
     if validated_data.get("is_default") is True:
-        addresses.filter(is_default=True).update(is_default=False)
+        addresses.filter(
+            is_default=True
+        ).update(
+            is_default=False
+        )
 
     return Address.objects.create(
         user=user,
         **validated_data,
     )
-
 
 @transaction.atomic
 def update_address(*, address, validated_data):
