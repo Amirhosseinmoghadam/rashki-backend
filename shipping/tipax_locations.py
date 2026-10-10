@@ -1,30 +1,31 @@
+from __future__ import annotations
+
 import re
 import unicodedata
 from decimal import Decimal, InvalidOperation
 
 from django.db import transaction
 
-from addresses.models import Province, City
+from addresses.models import City, Province
 
 from shipping.models import (
     ShippingMethod,
-    ShippingProviderProvince,
-    ShippingProviderProvinceMap,
     ShippingProviderCity,
     ShippingProviderCityMap,
+    ShippingProviderProvince,
+    ShippingProviderProvinceMap,
+)
+from shipping.providers.tipax_client import (
+    TipaxAPIError,
+    TipaxClient,
 )
 
-from shipping.providers.tipax_client import (
-    TipaxClient,
-    TipaxAPIError,
-)
+
+PROVIDER = ShippingMethod.Provider.TIPAX
 
 
 class TipaxLocationSyncError(Exception):
     pass
-
-
-PROVIDER = ShippingMethod.Provider.TIPAX
 
 
 # =========================================================
@@ -53,6 +54,7 @@ def normalize_location_name(value):
         value
         .replace("\u200c", " ")
         .replace("\u200f", " ")
+        .replace("\u200e", " ")
     )
 
     value = re.sub(
@@ -64,21 +66,39 @@ def normalize_location_name(value):
     return value
 
 
-def normalize_province_name(value):
-    value = normalize_location_name(value)
+def location_key(value):
+    """
+    برای Match کردن اختلاف‌هایی مثل:
+
+        سیستان وبلوچستان
+        سیستان و بلوچستان
+
+    یا:
+        بندر عباس
+        بندرعباس
+    """
+
+    value = normalize_location_name(
+        value
+    )
 
     if value.startswith("استان "):
         value = value[6:].strip()
 
-    return value
+    return (
+        value
+        .replace(" ", "")
+        .replace("-", "")
+        .replace("_", "")
+    )
 
 
 # =========================================================
-# Helpers
+# Generic response helpers
 # =========================================================
 
 
-def _first_value(data, *keys):
+def first_value(data, *keys):
     if not isinstance(data, dict):
         return None
 
@@ -94,13 +114,23 @@ def _first_value(data, *keys):
     return None
 
 
-def _extract_items(payload, keys):
+def extract_items(payload, *keys):
     """
-    پاسخ‌های مختلف Tipax را تحمل می‌کند:
+    Tipax ممکن است مستقیم List برگرداند:
 
-    [...]
-    {"data": [...]}
-    {"data": {"cities": [...]}}
+        [...]
+
+    یا:
+
+        {"data": [...]}
+
+    یا:
+
+        {
+            "data": {
+                "items": [...]
+            }
+        }
     """
 
     if isinstance(payload, list):
@@ -117,12 +147,12 @@ def _extract_items(payload, keys):
         if isinstance(value, list):
             return value
 
-    for container_key in (
+    for wrapper in (
         "data",
         "result",
     ):
         container = payload.get(
-            container_key
+            wrapper
         )
 
         if isinstance(container, list):
@@ -130,17 +160,22 @@ def _extract_items(payload, keys):
 
         if isinstance(container, dict):
             for key in keys:
-                value = container.get(key)
+                value = container.get(
+                    key
+                )
 
-                if isinstance(value, list):
+                if isinstance(
+                    value,
+                    list,
+                ):
                     return value
 
     raise TipaxLocationSyncError(
-        "لیست Location در پاسخ Tipax پیدا نشد."
+        "لیست Locations در پاسخ Tipax پیدا نشد."
     )
 
 
-def _to_decimal(value):
+def safe_decimal(value):
     if value in (
         None,
         "",
@@ -161,192 +196,47 @@ def _to_decimal(value):
 
 
 # =========================================================
-# Province Helpers
+# Local lookup helpers
 # =========================================================
 
 
-def _find_local_province(name):
-    normalized = normalize_province_name(
-        name
-    )
+def build_province_lookup():
+    result = {}
 
     for province in Province.objects.all():
-        if (
-            normalize_province_name(
+        result[
+            location_key(
                 province.name
             )
-            == normalized
-        ):
-            return province
+        ] = province
 
-    return None
+    return result
 
 
-def _resolve_local_province(
-    *,
-    provider_id,
-    provider_name,
-):
-    existing_map = (
-        ShippingProviderProvinceMap.objects
+def build_city_lookup():
+    result = {}
+
+    queryset = (
+        City.objects
         .select_related("province")
-        .filter(
-            provider=PROVIDER,
-            provider_province_id=str(
-                provider_id
-            ),
-        )
-        .first()
+        .all()
     )
 
-    if existing_map:
-        if not existing_map.is_active:
-            existing_map.is_active = True
-            existing_map.save(
-                update_fields=[
-                    "is_active",
-                    "updated_at",
-                ]
-            )
-
-        return existing_map.province
-
-    province = _find_local_province(
-        provider_name
-    )
-
-    if province is None:
-        province = Province.objects.create(
-            name=normalize_location_name(
-                provider_name
-            )
-        )
-
-    ShippingProviderProvinceMap.objects.update_or_create(
-        provider=PROVIDER,
-        province=province,
-        defaults={
-            "provider_province_id": str(
-                provider_id
-            ),
-            "provider_province_name": (
-                provider_name
-            ),
-            "is_active": True,
-        },
-    )
-
-    return province
-
-
-# =========================================================
-# City Helpers
-# =========================================================
-
-
-def _find_local_city(
-    *,
-    province,
-    name,
-):
-    normalized = normalize_location_name(
-        name
-    )
-
-    for city in City.objects.filter(
-        province=province
-    ):
-        if (
-            normalize_location_name(
+    for city in queryset:
+        key = (
+            city.province_id,
+            location_key(
                 city.name
-            )
-            == normalized
-        ):
-            return city
-
-    return None
-
-
-def _resolve_local_city(
-    *,
-    provider_city_id,
-    provider_city_name,
-    local_province,
-):
-    existing_map = (
-        ShippingProviderCityMap.objects
-        .select_related(
-            "city",
-            "city__province",
-        )
-        .filter(
-            provider=PROVIDER,
-            provider_city_id=int(
-                provider_city_id
-            ),
-        )
-        .first()
-    )
-
-    if existing_map:
-        if (
-            existing_map.city.province_id
-            != local_province.id
-        ):
-            raise TipaxLocationSyncError(
-                (
-                    f"شهر {provider_city_name} "
-                    "قبلاً به استان دیگری Map شده است."
-                )
-            )
-
-        existing_map.provider_city_name = (
-            provider_city_name
-        )
-        existing_map.is_active = True
-
-        existing_map.save(
-            update_fields=[
-                "provider_city_name",
-                "is_active",
-                "updated_at",
-            ]
-        )
-
-        return existing_map.city
-
-    city = _find_local_city(
-        province=local_province,
-        name=provider_city_name,
-    )
-
-    if city is None:
-        city = City.objects.create(
-            province=local_province,
-            name=normalize_location_name(
-                provider_city_name
             ),
         )
 
-    ShippingProviderCityMap.objects.update_or_create(
-        provider=PROVIDER,
-        city=city,
-        defaults={
-            "provider_city_id": int(
-                provider_city_id
-            ),
-            "provider_city_name": (
-                provider_city_name
-            ),
-            "is_active": True,
-        },
-    )
+        result[key] = city
 
-    return city
+    return result
 
 
 # =========================================================
-# Sync
+# Main Sync
 # =========================================================
 
 
@@ -354,7 +244,14 @@ def sync_tipax_locations(
     *,
     client=None,
 ):
-    client = client or TipaxClient()
+    client = (
+        client
+        or TipaxClient()
+    )
+
+    # =====================================================
+    # Fetch remote data BEFORE transaction
+    # =====================================================
 
     try:
         states_response = (
@@ -367,252 +264,573 @@ def sync_tipax_locations(
 
     except TipaxAPIError as exc:
         raise TipaxLocationSyncError(
-            f"خطا در دریافت Locations از Tipax: {exc}"
+            (
+                "خطا در دریافت استان/شهر "
+                f"از Tipax: {exc}"
+            )
         ) from exc
 
-    states = _extract_items(
+    states = extract_items(
         states_response,
-        (
-            "states",
-            "stateList",
-            "items",
-        ),
+        "states",
+        "stateList",
+        "items",
     )
 
-    cities = _extract_items(
+    cities = extract_items(
         cities_response,
-        (
-            "cities",
-            "cityList",
-            "items",
-        ),
+        "cities",
+        "cityList",
+        "items",
     )
 
-    if not states:
-        raise TipaxLocationSyncError(
-            "Tipax هیچ استانی برنگرداند."
-        )
-
-    if not cities:
-        raise TipaxLocationSyncError(
-            "Tipax هیچ شهری برنگرداند."
-        )
+    # =====================================================
+    # Statistics
+    # =====================================================
 
     stats = {
-        "provinces": 0,
-        "cities": 0,
-        "province_maps": 0,
-        "city_maps": 0,
-        "skipped_cities": 0,
+        "raw_states": len(
+            states
+        ),
+        "raw_cities": len(
+            cities
+        ),
+
+        "valid_states": 0,
+        "invalid_states": 0,
+
+        "valid_cities": 0,
+        "invalid_cities": 0,
+
+        "unknown_state_cities": 0,
+
+        "province_created": 0,
+        "province_existing": 0,
+
+        "city_created": 0,
+        "city_existing": 0,
+
+        "provider_province_created": 0,
+        "provider_province_updated": 0,
+
+        "provider_city_created": 0,
+        "provider_city_updated": 0,
+
+        "province_map_created": 0,
+        "province_map_updated": 0,
+
+        "city_map_created": 0,
+        "city_map_updated": 0,
+
+        "skipped_cities": [],
     }
 
-    active_province_ids = set()
+    province_lookup = (
+        build_province_lookup()
+    )
+
+    city_lookup = (
+        build_city_lookup()
+    )
+
+    # Tipax stateId → local Province
+    remote_state_to_local = {}
+
+    active_state_ids = set()
     active_city_ids = set()
 
-    province_map = {}
+    # =====================================================
+    # Database
+    # =====================================================
 
     with transaction.atomic():
 
         # =================================================
-        # Provinces
+        # States / Provinces
         # =================================================
 
-        for state in states:
+        for raw_state in states:
+
             if not isinstance(
-                state,
+                raw_state,
                 dict,
             ):
+                stats[
+                    "invalid_states"
+                ] += 1
+
                 continue
 
-            provider_id = _first_value(
-                state,
-                "id",
-                "stateId",
-                "provinceId",
-            )
-
-            name = _first_value(
-                state,
-                "name",
-                "stateName",
-                "provinceName",
-                "title",
-            )
-
-            if (
-                provider_id is None
-                or not name
-            ):
-                continue
-
-            provider_id = str(
-                provider_id
-            )
-
-            name = normalize_location_name(
-                name
-            )
-
-            ShippingProviderProvince.objects.update_or_create(
-                provider=PROVIDER,
-                provider_province_id=provider_id,
-                defaults={
-                    "name": name,
-                    "is_active": True,
-                    "raw_data": state,
-                },
-            )
-
-            local_province = (
-                _resolve_local_province(
-                    provider_id=provider_id,
-                    provider_name=name,
+            remote_state_id = (
+                first_value(
+                    raw_state,
+                    "id",
+                    "stateId",
+                    "provinceId",
                 )
             )
 
-            province_map[
-                provider_id
-            ] = local_province
-
-            active_province_ids.add(
-                provider_id
+            state_name = first_value(
+                raw_state,
+                "title",
+                "name",
+                "stateTitle",
+                "stateName",
+                "provinceTitle",
+                "provinceName",
             )
 
-            stats["provinces"] += 1
-            stats["province_maps"] += 1
+            if (
+                remote_state_id
+                in (
+                    None,
+                    "",
+                )
+                or
+                not state_name
+            ):
+                stats[
+                    "invalid_states"
+                ] += 1
+
+                continue
+
+            try:
+                remote_state_id_int = int(
+                    remote_state_id
+                )
+
+            except (
+                TypeError,
+                ValueError,
+            ):
+                stats[
+                    "invalid_states"
+                ] += 1
+
+                continue
+
+            remote_state_id_str = str(
+                remote_state_id_int
+            )
+
+            state_name = (
+                normalize_location_name(
+                    state_name
+                )
+            )
+
+            # ---------------------------------------------
+            # Provider Province Catalog
+            # ---------------------------------------------
+
+            (
+                provider_province,
+                provider_created,
+            ) = (
+                ShippingProviderProvince
+                .objects
+                .update_or_create(
+                    provider=PROVIDER,
+                    provider_province_id=(
+                        remote_state_id_str
+                    ),
+                    defaults={
+                        "name": (
+                            state_name
+                        ),
+                        "is_active": True,
+                        "raw_data": (
+                            raw_state
+                        ),
+                    },
+                )
+            )
+
+            if provider_created:
+                stats[
+                    "provider_province_created"
+                ] += 1
+
+            else:
+                stats[
+                    "provider_province_updated"
+                ] += 1
+
+            # ---------------------------------------------
+            # Local Province
+            # ---------------------------------------------
+
+            key = location_key(
+                state_name
+            )
+
+            local_province = (
+                province_lookup.get(
+                    key
+                )
+            )
+
+            if local_province is None:
+
+                local_province = (
+                    Province.objects.create(
+                        name=state_name
+                    )
+                )
+
+                province_lookup[
+                    key
+                ] = local_province
+
+                stats[
+                    "province_created"
+                ] += 1
+
+            else:
+                stats[
+                    "province_existing"
+                ] += 1
+
+            # ---------------------------------------------
+            # Provider Province Map
+            # ---------------------------------------------
+
+            (
+                province_map,
+                map_created,
+            ) = (
+                ShippingProviderProvinceMap
+                .objects
+                .update_or_create(
+                    provider=PROVIDER,
+                    provider_province_id=(
+                        remote_state_id_str
+                    ),
+                    defaults={
+                        "province": (
+                            local_province
+                        ),
+                        "provider_province_name": (
+                            state_name
+                        ),
+                        "is_active": True,
+                    },
+                )
+            )
+
+            if map_created:
+                stats[
+                    "province_map_created"
+                ] += 1
+
+            else:
+                stats[
+                    "province_map_updated"
+                ] += 1
+
+            remote_state_to_local[
+                remote_state_id_str
+            ] = local_province
+
+            active_state_ids.add(
+                remote_state_id_str
+            )
+
+            stats[
+                "valid_states"
+            ] += 1
 
         # =================================================
         # Cities
         # =================================================
 
-        for city_data in cities:
+        for raw_city in cities:
+
             if not isinstance(
-                city_data,
+                raw_city,
                 dict,
             ):
+                stats[
+                    "invalid_cities"
+                ] += 1
+
                 continue
 
-            provider_city_id = _first_value(
-                city_data,
+            remote_city_id = first_value(
+                raw_city,
                 "id",
                 "cityId",
             )
 
-            provider_province_id = _first_value(
-                city_data,
-                "stateId",
-                "provinceId",
-                "state_id",
+            city_name = first_value(
+                raw_city,
+                "title",
+                "name",
+                "cityTitle",
+                "cityName",
             )
 
-            name = _first_value(
-                city_data,
-                "name",
-                "cityName",
-                "title",
+            remote_state_id = (
+                first_value(
+                    raw_city,
+                    "stateId",
+                    "provinceId",
+                )
             )
+
+            # ---------------------------------------------
+            # Invalid system/non-location records
+            # ---------------------------------------------
 
             if (
-                provider_city_id is None
-                or provider_province_id is None
-                or not name
+                remote_city_id
+                in (
+                    None,
+                    "",
+                )
+                or
+                not city_name
+                or
+                remote_state_id
+                in (
+                    None,
+                    "",
+                )
             ):
                 stats[
-                    "skipped_cities"
+                    "invalid_cities"
                 ] += 1
+
+                if (
+                    len(
+                        stats[
+                            "skipped_cities"
+                        ]
+                    )
+                    < 20
+                ):
+                    stats[
+                        "skipped_cities"
+                    ].append(
+                        raw_city
+                    )
+
                 continue
 
-            provider_city_id = str(
-                provider_city_id
+            try:
+                remote_city_id_int = int(
+                    remote_city_id
+                )
+
+                remote_state_id_int = int(
+                    remote_state_id
+                )
+
+            except (
+                TypeError,
+                ValueError,
+            ):
+                stats[
+                    "invalid_cities"
+                ] += 1
+
+                continue
+
+            remote_city_id_str = str(
+                remote_city_id_int
             )
 
-            provider_province_id = str(
-                provider_province_id
+            remote_state_id_str = str(
+                remote_state_id_int
             )
 
-            name = normalize_location_name(
-                name
+            city_name = (
+                normalize_location_name(
+                    city_name
+                )
             )
 
-            ShippingProviderCity.objects.update_or_create(
-                provider=PROVIDER,
-                provider_city_id=(
-                    provider_city_id
-                ),
-                defaults={
-                    "provider_province_id": (
-                        provider_province_id
+            # ---------------------------------------------
+            # Provider City Catalog
+            # ---------------------------------------------
+
+            (
+                provider_city,
+                provider_created,
+            ) = (
+                ShippingProviderCity
+                .objects
+                .update_or_create(
+                    provider=PROVIDER,
+                    provider_city_id=(
+                        remote_city_id_str
                     ),
-                    "name": name,
-                    "provider_uuid": str(
-                        _first_value(
-                            city_data,
-                            "uuid",
-                            "cityUuid",
-                        )
-                        or ""
-                    ),
-                    "latitude": _to_decimal(
-                        _first_value(
-                            city_data,
-                            "latitude",
-                            "lat",
-                        )
-                    ),
-                    "longitude": _to_decimal(
-                        _first_value(
-                            city_data,
-                            "longitude",
-                            "lng",
-                            "lon",
-                        )
-                    ),
-                    "is_active": True,
-                    "raw_data": city_data,
-                },
+                    defaults={
+                        "provider_province_id": (
+                            remote_state_id_str
+                        ),
+                        "name": city_name,
+                        "provider_uuid": str(
+                            first_value(
+                                raw_city,
+                                "jetId",
+                                "uuid",
+                                "cityUuid",
+                            )
+                            or ""
+                        ),
+                        "latitude": (
+                            safe_decimal(
+                                first_value(
+                                    raw_city,
+                                    "latitude",
+                                    "lat",
+                                )
+                            )
+                        ),
+                        "longitude": (
+                            safe_decimal(
+                                first_value(
+                                    raw_city,
+                                    "longitude",
+                                    "lng",
+                                    "lon",
+                                )
+                            )
+                        ),
+                        "is_active": True,
+                        "raw_data": (
+                            raw_city
+                        ),
+                    },
+                )
             )
+
+            if provider_created:
+                stats[
+                    "provider_city_created"
+                ] += 1
+
+            else:
+                stats[
+                    "provider_city_updated"
+                ] += 1
+
+            # ---------------------------------------------
+            # Local Province
+            # ---------------------------------------------
 
             local_province = (
-                province_map.get(
-                    provider_province_id
+                remote_state_to_local.get(
+                    remote_state_id_str
                 )
             )
 
             if local_province is None:
                 stats[
-                    "skipped_cities"
+                    "unknown_state_cities"
                 ] += 1
+
                 continue
 
-            _resolve_local_city(
-                provider_city_id=(
-                    provider_city_id
-                ),
-                provider_city_name=name,
-                local_province=(
-                    local_province
+            # ---------------------------------------------
+            # Local City
+            # ---------------------------------------------
+
+            local_city_key = (
+                local_province.id,
+                location_key(
+                    city_name
                 ),
             )
+
+            local_city = (
+                city_lookup.get(
+                    local_city_key
+                )
+            )
+
+            if local_city is None:
+
+                local_city = (
+                    City.objects.create(
+                        province=(
+                            local_province
+                        ),
+                        name=city_name,
+                    )
+                )
+
+                city_lookup[
+                    local_city_key
+                ] = local_city
+
+                stats[
+                    "city_created"
+                ] += 1
+
+            else:
+                stats[
+                    "city_existing"
+                ] += 1
+
+            # ---------------------------------------------
+            # Provider City Map
+            # ---------------------------------------------
+
+            (
+                city_map,
+                map_created,
+            ) = (
+                ShippingProviderCityMap
+                .objects
+                .update_or_create(
+                    provider=PROVIDER,
+                    provider_city_id=(
+                        remote_city_id_int
+                    ),
+                    defaults={
+                        "city": local_city,
+                        "provider_city_name": (
+                            city_name
+                        ),
+                        "is_active": True,
+                    },
+                )
+            )
+
+            if map_created:
+                stats[
+                    "city_map_created"
+                ] += 1
+
+            else:
+                stats[
+                    "city_map_updated"
+                ] += 1
 
             active_city_ids.add(
-                provider_city_id
+                remote_city_id_int
             )
 
-            stats["cities"] += 1
-            stats["city_maps"] += 1
+            stats[
+                "valid_cities"
+            ] += 1
 
         # =================================================
-        # Deactivate removed provider locations
+        # Deactivate removed Tipax locations
         # =================================================
 
         (
-            ShippingProviderProvince.objects
+            ShippingProviderProvince
+            .objects
             .filter(
                 provider=PROVIDER
             )
             .exclude(
                 provider_province_id__in=(
-                    active_province_ids
+                    active_state_ids
                 )
             )
             .update(
@@ -621,13 +839,14 @@ def sync_tipax_locations(
         )
 
         (
-            ShippingProviderProvinceMap.objects
+            ShippingProviderProvinceMap
+            .objects
             .filter(
                 provider=PROVIDER
             )
             .exclude(
                 provider_province_id__in=(
-                    active_province_ids
+                    active_state_ids
                 )
             )
             .update(
@@ -636,7 +855,26 @@ def sync_tipax_locations(
         )
 
         (
-            ShippingProviderCity.objects
+            ShippingProviderCity
+            .objects
+            .filter(
+                provider=PROVIDER
+            )
+            .exclude(
+                provider_city_id__in=[
+                    str(value)
+                    for value
+                    in active_city_ids
+                ]
+            )
+            .update(
+                is_active=False
+            )
+        )
+
+        (
+            ShippingProviderCityMap
+            .objects
             .filter(
                 provider=PROVIDER
             )
@@ -644,23 +882,6 @@ def sync_tipax_locations(
                 provider_city_id__in=(
                     active_city_ids
                 )
-            )
-            .update(
-                is_active=False
-            )
-        )
-
-        (
-            ShippingProviderCityMap.objects
-            .filter(
-                provider=PROVIDER
-            )
-            .exclude(
-                provider_city_id__in=[
-                    int(value)
-                    for value
-                    in active_city_ids
-                ]
             )
             .update(
                 is_active=False

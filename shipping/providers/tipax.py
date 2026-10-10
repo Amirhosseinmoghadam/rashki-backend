@@ -5,6 +5,7 @@ from decimal import Decimal, InvalidOperation
 from shipping.models import (
     ShippingMethod,
     ShippingProviderCityMap,
+    ShippingProviderOriginMap,
     TipaxSettings,
 )
 
@@ -15,7 +16,7 @@ from shipping.origins.selectors import (
 from shipping.providers.tipax_client import (
     TipaxClient,
     TipaxIndeterminateError,
-    TipaxRequestError,
+    TipaxRequestError, TipaxAPIError,
 )
 from .base import (
     BaseShippingProvider,
@@ -25,10 +26,7 @@ from .base import (
     ShippingRateNotFoundError,
 )
 
-from .tipax_client import (
-    TipaxAPIError,
-    TipaxClient,
-)
+
 
 
 class TipaxProvider(BaseShippingProvider):
@@ -259,6 +257,70 @@ class TipaxProvider(BaseShippingProvider):
             )
 
         return provider_city_id
+
+    # =========================================================
+    # Tipax origin address map
+    # =========================================================
+
+    @classmethod
+    def _get_tipax_origin_address_id(
+            cls,
+            origin,
+    ):
+        """
+        ShippingOrigin داخلی پروژه
+            ↓
+        Address Book ID واقعی Tipax
+        """
+
+        if origin is None:
+            raise ShippingProviderConfigurationError(
+                "مبدا ارسال مشخص نشده است."
+            )
+
+        origin_map = (
+            ShippingProviderOriginMap.objects
+            .filter(
+                provider=cls.provider_code,
+                origin=origin,
+                is_active=True,
+            )
+            .first()
+        )
+
+        if origin_map is None:
+            raise ShippingProviderConfigurationError(
+                (
+                    f"مبدا «{origin.title}» "
+                    "به Address Book تیپاکس متصل نشده است."
+                )
+            )
+
+        try:
+            provider_address_id = int(
+                origin_map.provider_address_id
+            )
+
+        except (
+                TypeError,
+                ValueError,
+        ) as exc:
+            raise ShippingProviderConfigurationError(
+                (
+                    "شناسه آدرس Tipax برای "
+                    f"مبدا «{origin.title}» معتبر نیست."
+                )
+            ) from exc
+
+        if provider_address_id <= 0:
+            raise ShippingProviderConfigurationError(
+                (
+                    "شناسه آدرس Tipax برای "
+                    f"مبدا «{origin.title}» معتبر نیست."
+                )
+            )
+
+        return provider_address_id
 
     # =========================================================
     # Service ID
@@ -1277,6 +1339,11 @@ class TipaxProvider(BaseShippingProvider):
                 destination_address.city
             )
         )
+        origin_address_id = (
+            self._get_tipax_origin_address_id(
+                origin
+            )
+        )
 
         # -------------------------
         # API calls
@@ -1403,6 +1470,10 @@ class TipaxProvider(BaseShippingProvider):
                 "provider_city_id": (
                     origin_city_id
                 ),
+
+                "provider_address_id": (
+                    origin_address_id
+                ),
             },
 
             # -----------------------------------------
@@ -1437,6 +1508,36 @@ class TipaxProvider(BaseShippingProvider):
             "service": (
                 service_info
             ),
+            # -----------------------------------------
+            # Shipment options snapshot
+            # -----------------------------------------
+
+            "shipment_options": {
+                "payment_type": int(
+                    settings_obj.payment_type
+                ),
+
+                "pickup_type": int(
+                    settings_obj.pickup_type
+                ),
+
+                "distribution_type": int(
+                    settings_obj.distribution_type
+                ),
+
+                "enable_label_privacy": bool(
+                    settings_obj.enable_label_privacy
+                ),
+
+                "customer_substation_code": (
+                        settings_obj.customer_substation_code
+                        or ""
+                ),
+
+                "customer_id": (
+                    settings_obj.customer_id
+                ),
+            },
 
             # -----------------------------------------
             # Package snapshot
