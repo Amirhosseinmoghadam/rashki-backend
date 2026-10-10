@@ -81,14 +81,14 @@ CSRF_TRUSTED_ORIGINS = env.list(  # noqa: F405
 # Development Cache
 # =========================================================
 
-CACHES = {
-    "default": {
-        "BACKEND": (
-            "django.core.cache.backends.locmem.LocMemCache"
-        ),
-        "LOCATION": "rashki-development-cache",
-    }
-}
+# CACHES = {
+#     "default": {
+#         "BACKEND": (
+#             "django.core.cache.backends.locmem.LocMemCache"
+#         ),
+#         "LOCATION": "rashki-development-cache",
+#     }
+# }
 
 # =========================================================
 # Development Security
