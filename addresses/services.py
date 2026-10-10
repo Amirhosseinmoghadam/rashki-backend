@@ -1,5 +1,6 @@
 from django.db import transaction
 
+from accounts.models import User
 from addresses.models import Address
 
 

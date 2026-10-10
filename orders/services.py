@@ -320,7 +320,7 @@ def create_order_from_cart(
 
     cart = (
         Cart.objects
-        .select_for_update()
+        .select_for_update(of=("self",))
         .select_related(
             "applied_discount",
         )
@@ -370,7 +370,7 @@ def create_order_from_cart(
         product.id: product
         for product in (
             Product.objects
-            .select_for_update()
+            .select_for_update(of=("self",))
             .select_related(
                 "category",
                 "brand",

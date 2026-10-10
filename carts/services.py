@@ -678,7 +678,7 @@ def update_cart_item(
 
     item = (
         CartItem.objects
-        .select_for_update()
+        .select_for_update(of=("self",))
         .select_related(
             "product",
             "product__category",

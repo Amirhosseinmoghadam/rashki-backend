@@ -1,0 +1,41 @@
+name: Backend tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  postgres:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: rashki
+          POSTGRES_USER: rashki
+          POSTGRES_PASSWORD: test_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U rashki -d rashki"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DJANGO_SETTINGS_MODULE: core.settings.development
+      DJANGO_SECRET_KEY: ci-only-django-secret-key-never-use-in-production
+      JWT_SIGNING_KEY: ci-only-jwt-signing-key-never-use-in-production
+      AUTH_OTP_HMAC_KEY: ci-only-otp-hmac-key-never-use-in-production
+      DATABASE_URL: postgresql://rashki:test_password@127.0.0.1:5432/rashki
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - run: pip check
+      - run: python manage.py check
+      - run: python manage.py makemigrations --check --dry-run
+      - run: python manage.py migrate --noinput
+      - run: python manage.py test --noinput

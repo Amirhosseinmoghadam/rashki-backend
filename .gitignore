@@ -142,8 +142,5 @@ MANIFEST
 *~
 
 # =========================================================
-# Django Migrations
+# Django migrations are source files; keep them in version control.
 # =========================================================
-
-**/migrations/*
-!**/migrations/__init__.py
