@@ -2,9 +2,13 @@ from rest_framework import serializers
 from articles.models import ArticleCategory, Article
 
 
-class ArticleCategorySerializer(serializers.ModelSerializer):
-    """Serializer for ArticleCategory model"""
 
+from django.utils.text import slugify
+from rest_framework import serializers
+from articles.models import ArticleCategory, Article
+
+
+class ArticleCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = ArticleCategory
         fields = [
@@ -14,7 +18,35 @@ class ArticleCategorySerializer(serializers.ModelSerializer):
             "description",
             "is_active",
         ]
-        read_only_fields = ["slug"]
+        read_only_fields = ["id", "slug"]
+
+    def validate_name(self, value):
+        return value.strip()
+
+    def create(self, validated_data):
+        name = validated_data["name"]
+
+        base_slug = slugify(name, allow_unicode=True)
+
+        if not base_slug:
+            raise serializers.ValidationError({
+                "name": "Cannot generate a valid slug."
+            })
+
+        slug = base_slug
+        counter = 2
+
+        while ArticleCategory.objects.filter(
+            slug=slug
+        ).exists():
+            suffix = f"-{counter}"
+            slug = f"{base_slug[:180 - len(suffix)]}{suffix}"
+            counter += 1
+
+        validated_data["slug"] = slug
+
+        return super().create(validated_data)
+
 
 
 class ArticleListSerializer(serializers.ModelSerializer):
