@@ -820,6 +820,14 @@ def process_payment_callback(
     # Finalize Transaction
     # =====================================================
 
+    # TCART_PRESERVE_PENDING_V2: a pending bank-transfer invoice is not failed.
+    if (
+        provider_key == PaymentAttempt.Provider.TCART
+        and not result.success
+        and result.failure_code == "pending"
+    ):
+        return attempt
+
     with transaction.atomic():
 
         # -------------------------------------------------

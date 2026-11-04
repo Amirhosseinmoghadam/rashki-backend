@@ -784,3 +784,7 @@ SPECTACULAR_SETTINGS = {
     ),
 },
 }
+
+# TCART_CALLBACK_SETTINGS_V2 - callback_secret differs from the SMS secret.
+TCART_CALLBACK_SECRET = os.getenv("TCART_CALLBACK_SECRET", "")
+TCART_RETURN_URL = os.getenv("TCART_RETURN_URL", "")

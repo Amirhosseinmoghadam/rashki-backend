@@ -270,6 +270,27 @@ class TCartCallbackAPIView(
         **kwargs,
     ):
 
+        # TCART_HMAC_GUARD_V2: authenticate signed provider webhook before DB mutation.
+        from payments.providers.tcart import TCartProvider
+
+        payload = request.data
+        if not isinstance(payload, dict):
+            return Response({"success": False, "message": "Invalid TCart payload"}, status=400)
+        if not TCartProvider.verify_callback_signature(
+            payload,
+            request.headers.get("X-Resid-Signature", ""),
+            getattr(settings, "TCART_CALLBACK_SECRET", ""),
+        ):
+            return Response({"success": False, "message": "Invalid TCart signature"}, status=403)
+        if payload.get("event") != "payment.confirmed" or payload.get("status") != "paid":
+            return Response({"success": False, "message": "Unexpected TCart event"}, status=400)
+        if not PaymentAttempt.objects.filter(
+            public_id=public_id,
+            provider=PaymentAttempt.Provider.TCART,
+            provider_reference=str(payload.get("invoice_id", "")),
+        ).exists():
+            return Response({"success": False, "message": "Unknown TCart invoice"}, status=404)
+
         try:
 
             attempt = process_payment_callback(
